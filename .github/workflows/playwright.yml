@@ -12,12 +12,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build and Start Containers
-        run: docker-compose up -d --build
+        # මෙතන 'docker-compose' වෙනුවට 'docker compose' කියලා මාරු කළා
+        run: docker compose up -d --build
 
       - name: Wait for App to be ready
-        run: |
-          # Frontend එක පණ ගන්නකම් තත්පර 30ක් ඉන්නවා
-          sleep 30
+        run: sleep 30
 
       - name: Run Playwright Tests inside Docker
-        run: docker-compose run tests npx playwright test
+        # මෙතනත් මැද ඉර අයින් කළා
+        run: docker compose run tests npx playwright test
