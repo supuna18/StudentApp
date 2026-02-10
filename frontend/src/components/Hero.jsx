@@ -1,94 +1,64 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Activity, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 const Hero = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.3 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  };
-
   return (
-    <section className="relative min-h-screen pt-32 pb-20 flex flex-col items-center justify-center overflow-hidden bg-white">
-      {/* Background Decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-3xl opacity-50" />
+    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/sliit-bg.jpg')" }} // public folder එකේ තියෙන රූපය
+      >
+        {/* Blue Gradient Overlay - මේකෙන් තමයි professional look එක එන්නේ */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/70 to-transparent" />
       </div>
 
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="container mx-auto px-6 text-center"
-      >
-        <motion.span 
-          variants={itemVariants}
-          className="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-wider text-blue-600 uppercase bg-blue-50 rounded-full"
-        >
-          Smart University Sports Management
-        </motion.span>
-        
-        <motion.h1 
-          variants={itemVariants}
-          className="text-5xl md:text-7xl font-extrabold text-blue-950 mb-6 leading-tight"
-        >
-          Streamline Your Sports <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">
-            Operations with Ease
-          </span>
-        </motion.h1>
-
-        <motion.p 
-          variants={itemVariants}
-          className="max-w-2xl mx-auto text-lg text-gray-600 mb-10 leading-relaxed"
-        >
-          Manage player profiles, track equipment inventory, and sync QR transactions in real-time. The ultimate unified platform for modern university sports.
-        </motion.p>
-
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row gap-4 justify-center">
-          <button className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all">
-            Get Started Now <ArrowRight size={20} />
-          </button>
-          <button className="bg-white text-blue-900 border-2 border-blue-100 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all">
-            View Live Demo
-          </button>
-        </motion.div>
-
-        {/* Stats / Mini Features */}
+      <div className="container mx-auto px-8 z-10 grid md:grid-cols-2 gap-10 items-center">
         <motion.div 
-          variants={itemVariants}
-          className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-left"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
         >
-          <div className="flex items-start gap-4 p-4">
-            <div className="bg-blue-100 p-3 rounded-lg text-blue-600"><Zap size={24} /></div>
-            <div>
-              <h3 className="font-bold text-blue-950">Real-time Sync</h3>
-              <p className="text-sm text-gray-500">Instant updates via SignalR technology.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4 p-4">
-            <div className="bg-blue-100 p-3 rounded-lg text-blue-600"><ShieldCheck size={24} /></div>
-            <div>
-              <h3 className="font-bold text-blue-950">Secure QR</h3>
-              <p className="text-sm text-gray-500">Encrypted QR authentication for lending.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4 p-4">
-            <div className="bg-blue-100 p-3 rounded-lg text-blue-600"><Activity size={24} /></div>
-            <div>
-              <h3 className="font-bold text-blue-950">Analytics</h3>
-              <p className="text-sm text-gray-500">Automated ranking and performance tracking.</p>
-            </div>
+          <motion.span 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="inline-block px-4 py-1 mb-6 text-xs font-bold tracking-[0.2em] text-blue-300 uppercase border-l-2 border-blue-500"
+          >
+            Unified Sports Management
+          </motion.span>
+          
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-[1.1]">
+            Elevating <br />
+            <span className="text-blue-400">University Athletics</span>
+          </h1>
+
+          <p className="text-lg text-blue-50/80 mb-10 leading-relaxed max-w-lg">
+            An integrated digital platform designed to streamline SLIIT sports management, 
+            player profiling, and real-time equipment tracking.
+          </p>
+
+          <div className="flex flex-wrap gap-4">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg font-bold shadow-2xl hover:bg-blue-500 transition-all flex items-center gap-2"
+            >
+              Explore Modules <ArrowRight size={20} />
+            </motion.button>
+            <button className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-lg font-bold hover:bg-white/20 transition-all">
+              Inventory Sync
+            </button>
           </div>
         </motion.div>
+      </div>
+
+      {/* Animated Scroll Down Indicator */}
+      <motion.div 
+        animate={{ y: [0, 10, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/50"
+      >
+        <ChevronDown size={32} />
       </motion.div>
     </section>
   );
