@@ -13,7 +13,7 @@ const Navbar = () => {
       <div className="flex items-center gap-2">
         <Trophy className="text-blue-600" size={32} />
         <span className="text-2xl font-bold text-blue-900 tracking-tight">
-          Sport<span className="text-blue-600">Flow</span>
+          Uni<span className="text-blue-600">fied</span>
         </span>
       </div>
 
