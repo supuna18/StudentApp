@@ -7,7 +7,7 @@ const Hero = () => {
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/sliit-bg.jpg')" }} // public folder එකේ තියෙන රූපය
+        style={{ backgroundImage: "url('/sliit-bg.png')" }} // public folder එකේ තියෙන රූපය
       >
         {/* Blue Gradient Overlay - මේකෙන් තමයි professional look එක එන්නේ */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/70 to-transparent" />
