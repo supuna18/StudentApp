@@ -22,7 +22,7 @@ const Hero = () => {
           <motion.span 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="inline-block px-4 py-1 mb-6 text-xs font-bold tracking-[0.2em] text-blue-300 uppercase border-l-2 border-blue-500"
+            className="inline-block px-4 py-1 mt-10 mb-6 text-xs font-bold tracking-[0.2em] text-blue-300 uppercase border-l-2 border-blue-500"
           >
             Unified Sports Management
           </motion.span>
