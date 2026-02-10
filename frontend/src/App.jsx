@@ -1,5 +1,6 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import Features from "./components/Features";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       {/* ප්‍රධාන පෙනුම (Hero Section) */}
       <main>
         <Hero />
+      <Features /> {/* අලුතින් හැදූ කොටස */}
       </main>
 
       {/* ඊළඟට අපි මෙතනට Modules Section එක එකතු කරමු */}
