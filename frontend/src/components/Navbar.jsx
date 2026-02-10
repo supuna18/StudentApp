@@ -1,43 +1,74 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Menu } from "lucide-react";
 
 const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Scroll කරන ප්‍රමාණය අනුව state එක මාරු කරනවා
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-blue-100 px-8 py-4 flex justify-between items-center"
+      className={`fixed top-0 w-full z-50 transition-all duration-300 px-8 md:px-12 py-4 flex justify-between items-center ${
+        isScrolled 
+          ? "bg-white/70 backdrop-blur-xl shadow-lg border-b border-blue-100 py-3" // සුදු පසුබිමට ආවම පෙනෙන ලුක් එක
+          : "bg-transparent backdrop-blur-sm border-b border-white/10" // Hero section එකේ තියෙන ලුක් එක
+      }`}
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <div className="flex items-center gap-2">
-        <Trophy className="text-blue-600" size={32} />
-        <span className="text-2xl font-bold text-blue-900 tracking-tight">
-          Uni<span className="text-blue-600">fied</span>
+        <Trophy className={isScrolled ? "text-blue-600" : "text-blue-400"} size={28} />
+        <span className={`text-2xl font-bold tracking-tight transition-colors ${
+          isScrolled ? "text-blue-950" : "text-white"
+        }`}>
+          Sport<span className="text-blue-500">Flow</span>
         </span>
       </div>
 
-      {/* Desktop Menu */}
-      <div className="hidden md:flex items-center gap-8 text-blue-900 font-medium">
-        <a href="#" className="hover:text-blue-600 transition-colors">Profiles</a>
-        <a href="#" className="hover:text-blue-600 transition-colors">Inventory</a>
-        <a href="#" className="hover:text-blue-600 transition-colors">Lending</a>
-        <a href="#" className="hover:text-blue-600 transition-colors">Announcements</a>
+      {/* Menu Links */}
+      <div className={`hidden md:flex items-center gap-8 font-semibold text-sm uppercase tracking-widest transition-colors ${
+        isScrolled ? "text-slate-700" : "text-white/80"
+      }`}>
+        {["Profiles", "Inventory", "Lending", "Announcements"].map((item) => (
+          <a 
+            key={item} 
+            href={`#${item.toLowerCase()}`} 
+            className="hover:text-blue-500 transition-colors relative group"
+          >
+            {item}
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full"></span>
+          </a>
+        ))}
       </div>
 
-      {/* CTA Button */}
-      <div className="flex items-center gap-4">
-        <button className="hidden md:block text-blue-600 font-semibold hover:text-blue-800">
+      {/* Buttons */}
+      <div className="flex items-center gap-5">
+        <button className={`hidden sm:block font-bold transition-colors ${
+          isScrolled ? "text-blue-600 hover:text-blue-800" : "text-white hover:text-blue-300"
+        }`}>
           Login
         </button>
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all"
+          className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all"
         >
           Get Started
         </motion.button>
-        <Menu className="md:hidden text-blue-900" size={28} />
+        <Menu className={`md:hidden ${isScrolled ? "text-blue-950" : "text-white"}`} />
       </div>
     </motion.nav>
   );
