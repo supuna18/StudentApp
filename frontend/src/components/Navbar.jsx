@@ -60,7 +60,7 @@ const Navbar = () => {
         <button className={`hidden sm:block font-bold transition-colors ${
           isScrolled ? "text-blue-600 hover:text-blue-800" : "text-white hover:text-blue-300"
         }`}>
-          <Link to="/login">Login</Link>
+          <Link to="/login" className="text-blue-600 font-bold">Login</Link>
         </button>
         <motion.button
           whileHover={{ scale: 1.05 }}
