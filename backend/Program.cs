@@ -22,11 +22,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Swagger පේන්න හදන්නේ මෙතනින්
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
 app.UseAuthorization();
