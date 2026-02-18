@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Menu } from "lucide-react";
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -59,7 +60,7 @@ const Navbar = () => {
         <button className={`hidden sm:block font-bold transition-colors ${
           isScrolled ? "text-blue-600 hover:text-blue-800" : "text-white hover:text-blue-300"
         }`}>
-          Login
+          <Link to="/login">Login</Link>
         </button>
         <motion.button
           whileHover={{ scale: 1.05 }}
