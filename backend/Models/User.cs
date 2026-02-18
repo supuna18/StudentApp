@@ -1,8 +1,20 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace StudentApp.Api.Models;
 
 public class User
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+
+    //  "Student" or "Admin" selecting the role of the user, default is "Student"
+    public string Role { get; set; } = "Student";
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
