@@ -5,7 +5,7 @@ using StudentApp.Api.Services;
 namespace StudentApp.Api.Controllers;
 
 [ApiController]
-[Route("api/auth")] // URL එක ලේසි කරා: /api/auth/register
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
@@ -15,13 +15,15 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    // Register Endpoint
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var user = new User
         {
             Username = request.Username,
-            Email = request.Email
+            Email = request.Email,
+            Role = "Student" // මුලින්ම හැමෝම Student විදිහට සේව් වෙන්නේ
         };
 
         var result = await _authService.RegisterAsync(user, request.Password);
@@ -29,12 +31,30 @@ public class AuthController : ControllerBase
         if (result == "Success") return Ok(new { message = "User registered successfully!" });
         return BadRequest(new { message = result });
     }
+
+    // Login Endpoint
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var token = await _authService.LoginAsync(request.Email, request.Password);
+
+        if (token == null)
+            return Unauthorized(new { message = "Invalid email or password" });
+
+        return Ok(new { token });
+    }
 }
 
-// මේක ලේසි වෙන්න මෙතනම තියන්න
+// දත්ත බාරගන්නා පන්ති (Request Classes)
 public class RegisterRequest
 {
     public string Username { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string Password { get; set; } = "";
+}
+
+public class LoginRequest
+{
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
 }
