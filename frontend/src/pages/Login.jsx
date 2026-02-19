@@ -46,7 +46,7 @@ const Login = () => {
                 .login-root {
                     min-height: 100vh;
                     display: flex;
-                    font-family: 'DM Sans', sans-serif;
+                    font-family: 'Poppins', Poppins;
                     background: #05070f;
                     overflow: hidden;
                 }
@@ -489,7 +489,7 @@ const Login = () => {
                         <div className="float-count"><strong>248</strong> users online</div>
                     </div>
 
-                    <div className="left-footer">© 2025 EduSync. All rights reserved.</div>
+                    <div className="left-footer">© 2026 EduSync. All rights reserved.</div>
                 </div>
 
                 {/* ── Right Form Panel ── */}
