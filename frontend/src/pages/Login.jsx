@@ -19,16 +19,16 @@ const Login = () => {
             const data = await res.json();
 
             if (res.ok) {
-                // 1. ටෝකන් එක බ්‍රවුසරයේ සේව් කරනවා
+                // 1. Save the token in the browser 
                 localStorage.setItem('token', data.token);
 
-                // 2. ටෝකන් එක ඇතුළේ තියෙන Role එක බලනවා
+                // 2. select the role from the token
                 const decoded = jwtDecode(data.token);
                 const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
                 alert(`Welcome ${decoded.unique_name}! Role: ${userRole}`);
 
-                // 3. Role එක අනුව අදාළ Dashboard එකට යවනවා
+                // 3. According to the role data sent to the database 
                 if (userRole === "Admin") {
                     navigate('/admin-dashboard');
                 } else {
