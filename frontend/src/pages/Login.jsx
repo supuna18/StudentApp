@@ -964,7 +964,7 @@ const Login = () => {
                                 <div className="l-forgot-row">
                                     <a href="#" className="l-forgot">
                                         <PopText text="Forgot password?" baseDelay={1240} step={24} />
-                                    </a>
+                                    </a> 
                                 </div>
 
                                 <button type="submit" className="l-btn">
