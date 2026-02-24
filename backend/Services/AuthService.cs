@@ -19,7 +19,7 @@ public class AuthService
         _config = config;
     }
 
-    // 1. ලියාපදිංචි වීමේ කොටස (Register)
+    // 1. Register Part
     public async Task<string> RegisterAsync(User user, string password)
     {
         var existingUser = await _mongoService.GetUserByEmailAsync(user.Email);
@@ -31,7 +31,7 @@ public class AuthService
         return "Success";
     }
 
-    // 2. ඇතුළු වීමේ කොටස (Login)
+    // 2.Login Part 
     public async Task<string?> LoginAsync(string email, string password)
     {
         var user = await _mongoService.GetUserByEmailAsync(email);
