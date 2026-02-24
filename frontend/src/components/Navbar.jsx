@@ -62,14 +62,15 @@ const Navbar = () => {
         }`}>
           <Link to="/login" className="text-blue-600 font-bold">Login</Link>
         </button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all"
-        >
-          Get Started
-        </motion.button>
-        <Menu className={`md:hidden ${isScrolled ? "text-blue-950" : "text-white"}`} />
+        <Link to="/signup">
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all"
+    >
+      Get Started
+    </motion.button>
+</Link>
       </div>
     </motion.nav>
   );
