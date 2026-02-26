@@ -4,6 +4,7 @@ import Hero from "./components/Hero";
 import Features from "./components/Features";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
 
           {/* 2. Login Page එක (Navbar/Footer නැතිව පිරිසිදුව පෙන්වීමට) */}
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
           {/* 3. Student Dashboard (Member 1, 2, 3 සඳහා) */}
           <Route path="/student-dashboard" element={
@@ -46,6 +48,8 @@ function App() {
             </div>
           } />
         </Routes>
+
+        
 
       </div>
     </Router>
