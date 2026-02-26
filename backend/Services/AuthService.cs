@@ -19,7 +19,7 @@ public class AuthService
         _config = config;
     }
 
-    // 1. ලියාපදිංචි වීමේ කොටස (Register)
+    // 1. Register Part
     public async Task<string> RegisterAsync(User user, string password)
     {
         var existingUser = await _mongoService.GetUserByEmailAsync(user.Email);
@@ -31,7 +31,7 @@ public class AuthService
         return "Success";
     }
 
-    // 2. ඇතුළු වීමේ කොටස (Login)
+    // 2.Login Part 
     public async Task<string?> LoginAsync(string email, string password)
     {
         var user = await _mongoService.GetUserByEmailAsync(email);
@@ -49,7 +49,6 @@ public class AuthService
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role)
             }),
-            // ටෝකන් එක දින 7ක් වලංගුයි
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = _config["Jwt:Issuer"],
@@ -58,5 +57,11 @@ public class AuthService
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    // 3. ඩේටාබේස් එක චෙක් කරන්න දත්ත ටික ඉල්ලන කොටස (අලුත්)
+    public async Task<List<User>> GetAllUsersForDebugAsync()
+    {
+        return await _mongoService.GetAllUsersAsync();
     }
 }

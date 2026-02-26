@@ -4,6 +4,7 @@ import Hero from "./components/Hero";
 import Features from "./components/Features";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 // --- MEMBER 2 COMPONENTS IMPORT ---
 import ReportSite from './components/Safety/ReportSite';
@@ -29,6 +30,7 @@ function App() {
 
           {/* 2. Login Page එක */}
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
           {/* 3. Student Dashboard (Member 1, 2, 3 සඳහා) */}
           <Route path="/student-dashboard" element={
@@ -64,6 +66,8 @@ function App() {
             </div>
           } />
         </Routes>
+
+        
 
       </div>
     </Router>
