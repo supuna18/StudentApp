@@ -10,6 +10,7 @@ const ReportSite = () => {
     setStatus('Submitting...');
 
     try {
+      //  port  5000(Docker Mapping )
       const response = await fetch('http://localhost:5000/api/safety/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -17,7 +18,7 @@ const ReportSite = () => {
       });
 
       if (response.ok) {
-        setStatus('✅ Successfully reported to EduSyncDB!');
+        setStatus('✅ Successfully reported to StudentDB!');
         setUrl(''); setReason('');
       } else {
         setStatus('❌ Failed to submit report.');
