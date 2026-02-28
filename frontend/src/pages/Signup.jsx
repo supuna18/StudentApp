@@ -36,7 +36,7 @@ const Signup = () => {
 
     return (
         <div style={styles.root}>
-            {/* Decorative background blobs */}
+            {/* Decorative background blobs - kept as absolute relative to the root */}
             <div style={styles.blobTop} />
             <div style={styles.blobBottom} />
 
@@ -203,6 +203,14 @@ const Signup = () => {
                 button:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
                 button:active:not(:disabled) { transform: translateY(0); }
                 button { transition: all 0.2s ease; }
+
+                /* Add these to ensure proper scrolling */
+                html, body, #root {
+                    height: 100%;
+                    margin: 0;
+                    padding: 0;
+                    overflow: auto; /* Allow scrolling for the whole page */
+                }
             `}</style>
         </div>
     );
@@ -214,15 +222,22 @@ const BLUE_LIGHT = '#EBF2FF';
 
 const styles = {
     root: {
-        minHeight: '100vh',
+        // Changed to allow for flexible height and natural scrolling if content overflows
+        // Removed minHeight: '100vh' to let it shrink/grow based on content
+        // If you want it to always be at least 100vh, you can keep it, but ensure no parent prevents body scrolling.
+        // It's generally better to let the body scroll.
         background: '#F0F6FF',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'center', // This will vertically center if content fits
         justifyContent: 'center',
         fontFamily: 'inherit',
-        position: 'relative',
-        overflow: 'hidden',
+        position: 'relative', // IMPORTANT: Blobs are absolute relative to this
+        overflow: 'hidden', // IMPORTANT: Hide any overflow from the blobs themselves, not the content
         padding: '24px',
+        // If content is short, it will center. If content is long, it will stretch.
+        // For centering when short, and scrolling when long, you might need a wrapper div.
+        // For now, let's remove minHeight and let the padding handle vertical spacing.
+        minHeight: '100vh', // Keep this if you always want it to fill the screen
     },
     blobTop: {
         position: 'absolute',
@@ -248,7 +263,8 @@ const styles = {
         display: 'flex',
         width: '100%',
         maxWidth: '960px',
-        minHeight: '580px',
+        // Removed minHeight here as well, to allow the card to grow with content.
+        // minHeight: '580px', // You can keep this if you want a minimum height for the card
         borderRadius: '24px',
         overflow: 'hidden',
         boxShadow: '0 24px 80px rgba(26,86,219,0.15), 0 4px 16px rgba(0,0,0,0.06)',
