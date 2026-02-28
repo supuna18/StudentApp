@@ -15,7 +15,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    // Register Endpoint
+    // 1. Register Endpoint
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
         {
             Username = request.Username,
             Email = request.Email,
-            Role = "Student" // මුලින්ම හැමෝම Student විදිහට සේව් වෙන්නේ
+            Role = "Student"
         };
 
         var result = await _authService.RegisterAsync(user, request.Password);
@@ -32,7 +32,7 @@ public class AuthController : ControllerBase
         return BadRequest(new { message = result });
     }
 
-    // Login Endpoint
+    // 2. Login Endpoint
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -43,9 +43,17 @@ public class AuthController : ControllerBase
 
         return Ok(new { token });
     }
+
+    // 3. Debug Endpoint (මෙන්න අලුත් කෑල්ල)
+    // මේකෙන් තමයි අපි ඇත්තටම DB එකේ දත්ත ඉන්නවද බලන්නේ
+    [HttpGet("check-db")]
+    public async Task<IActionResult> CheckDb()
+    {
+        var users = await _authService.GetAllUsersForDebugAsync();
+        return Ok(users);
+    }
 }
 
-// දත්ත බාරගන්නා පන්ති (Request Classes)
 public class RegisterRequest
 {
     public string Username { get; set; } = "";

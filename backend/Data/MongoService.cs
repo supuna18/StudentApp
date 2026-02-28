@@ -28,4 +28,8 @@ public class MongoService
 
     public async Task<User?> GetUserByEmailAsync(string email) => 
         await _usersCollection.Find(u => u.Email == email).FirstOrDefaultAsync();
+
+
+    public async Task<List<User>> GetAllUsersAsync() =>
+        await _usersCollection.Find(_ => true).ToListAsync();
 }
