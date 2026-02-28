@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. MongoDB Database
+  # 1. Local MongoDB (නමුත් අපේ API එක දැන් Cloud එක පාවිච්චි කරයි)
   db:
     image: mongo:latest
     container_name: student-app-db
@@ -21,8 +21,8 @@ services:
     depends_on:
       - db
     environment:
-      - ConnectionStrings__DefaultConnection=mongodb://db:27017/StudentDB
-    # Hot-reloading (සමහර විට backend එකේ අවශ්‍ය නම්)
+      # මෙහි අවසානයේ EduSyncDB ඇති බව තහවුරු කරගන්න
+      - ConnectionStrings__DefaultConnection=mongodb+srv://supuna793_db_user:4doop6exUXH6JKRr@edusynccluster.6vex2af.mongodb.net/EduSyncDB?retryWrites=true&w=majority
     volumes:
       - ./backend:/app
 
@@ -39,7 +39,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    # Docker ඇතුළේ Vite දුවවන්න අවශ්‍ය පරිසරය
     environment:
       - CHOKIDAR_USEPOLLING=true
 
@@ -53,7 +52,6 @@ services:
       - web
     environment:
       - BASE_URL=http://web:5173
-    # මෙය නිකන්ම run නොවීමට profile එකක් දමමු
     profiles:
       - testing
 

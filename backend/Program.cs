@@ -3,23 +3,31 @@ using StudentApp.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using MongoDB.Driver; // මෙය අලුතින් ඇතුළත් කළා
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. සර්විස් රෙජිස්ටර් කරන කොටස (Build එකට කලින්) ---
+
+// MongoDB සම්බන්ධතාවය IMongoClient හරහා රෙජිස්ටර් කිරීම (Member 2 ගේ Controller එක සඳහා)
+builder.Services.AddSingleton<IMongoClient>(sp => 
+{
+    var connectionString = builder.Configuration.GetSection("StudentDatabase")["ConnectionString"];
+    return new MongoClient(connectionString);
+});
 
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddControllers();
 
-// CORS සැකසුම්
+// CORS සැකසුම් (දැනටමත් තිබුණා, එය එලෙසම තබා ගත්තා)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// Authentication සහ JWT සැකසුම් (මෙතනයි වැරදිලා තිබ්බේ)
+// Authentication සහ JWT සැකසුම් (ඔයාගේ code එක එලෙසම තබා ගත්තා)
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(x =>
 {
@@ -41,13 +49,13 @@ builder.Services.AddAuthentication(x =>
 
 // --------------------------------------------------------
 
-var app = builder.Build(); // මෙතනින් පස්සේ builder පාවිච්චි කරන්න බැහැ
+var app = builder.Build(); 
 
 // --- 2. මිඩ්ල්වෙයාර් (Middleware) පයිප්ලයින් එක ---
 
+// CORS සක්‍රීය කිරීම
 app.UseCors("AllowAll");
 
-// මේ පේළි දෙක අනිවාර්යයෙන්ම තියෙන්න ඕනේ JWT වැඩ කරන්න
 app.UseAuthentication();
 app.UseAuthorization();
 
