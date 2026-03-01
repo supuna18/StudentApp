@@ -40,7 +40,7 @@ export default function StudyGroupsPage() {
       const data = await res.json();
       setGroups(data);
       if (data.length > 0 && !selectedId) {
-        setSelectedId(data[0].id);
+        setSelectedId(data[0].id || data[0]._id);
       }
     } catch (err) {
       console.error("Backend connection failed.", err);
@@ -51,7 +51,7 @@ export default function StudyGroupsPage() {
   };
 
   const selected = useMemo(() => 
-    groups.find((g) => g.id === selectedId) ?? null, 
+    groups.find((g) => (g.id === selectedId || g._id === selectedId)) ?? null, 
     [groups, selectedId]
   );
 
