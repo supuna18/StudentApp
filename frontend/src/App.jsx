@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Sidebar from "./components/Sidebar"; // Sidebar Component එක
+import SetLimitForm from './components/Wellbeing/SetLimitForm';
 
 // --- MEMBER 2 COMPONENTS IMPORT ---
 import ReportSite from './components/Safety/ReportSite';
@@ -71,6 +72,20 @@ function App() {
                       </div>
                     </div>
                   } />
+
+                {/* --- MEMBER 1 PAGES (ඔයාගේ DIGITAL WELLBEING එක) --- */}
+                  <Route path="/set-limit" element={
+                    <div className="max-w-3xl mx-auto py-6">
+                      <SetLimitForm />
+                    </div>
+                  } />
+
+                  {/* --- MEMBER 2 PAGES (CRUD & ANIMATIONS INTEGRATED) --- */}
+
+
+
+
+
 
                   {/* --- MEMBER 2 PAGES (CRUD & ANIMATIONS INTEGRATED) --- */}
                   <Route path="/safety" element={
