@@ -59,7 +59,7 @@ public class AuthService
         return tokenHandler.WriteToken(token);
     }
 
-    // 3. ඩේටාබේස් එක චෙක් කරන්න දත්ත ටික ඉල්ලන කොටස (අලුත්)
+    // 3. chack user exist or not in database
     public async Task<List<User>> GetAllUsersForDebugAsync()
     {
         return await _mongoService.GetAllUsersAsync();
