@@ -133,466 +133,51 @@ const Login = () => {
                     0%,100% { transform: scale(1); opacity:0.7; }
                     50%     { transform: scale(1.3); opacity:1; }
                 }
-
-                /* ── Page ── */
-                .page {
-                    height: 100vh; /* Use viewport height to make it fill the screen */
-                    width: 100%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 28px 20px;
-                    position: relative;
-                    overflow: hidden; /* Prevent page content from overflowing */
-                    background: linear-gradient(135deg, #8B7FF0 0%, #6C5CE7 40%, #5649C0 70%, #7B6FE8 100%);
-                }
-
-                /* BG dot pattern */
-                .page::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
-                    background-size: 28px 28px;
-                    z-index: 0;
-                }
-
-                /* BG blobs */
-                .page-blob {
-                    position: absolute;
-                    border-radius: 50%;
-                    filter: blur(70px);
-                    pointer-events: none;
-                    z-index: 0;
-                }
-                .page-blob-a {
-                    width: 420px; height: 420px;
-                    top: -160px; left: -120px;
-                    background: rgba(139,127,240,0.55);
-                }
-                .page-blob-b {
-                    width: 340px; height: 340px;
-                    bottom: -120px; right: -80px;
-                    background: rgba(86,73,192,0.50);
-                }
-
-                /* ── Card ── */
-                .card {
-                    position: relative;
-                    z-index: 1;
-                    width: 100%;
-                    max-width: 1000px;
-                    height: calc(100vh - 56px); /* Adjust card height to fit within viewport and account for page padding */
-                    border-radius: 20px;
-                    background: var(--bg-card);
-                    box-shadow:
-                        0 4px 8px rgba(0,0,0,0.06),
-                        0 20px 60px rgba(0,0,0,0.18),
-                        0 0 0 1px rgba(255,255,255,0.6);
-                    display: flex;
-                    flex-direction: column; /* Stack children vertically */
-                    overflow: hidden; /* Keep the card's rounded corners */
-                    animation: fadeUp 0.65s var(--ease) both;
-                }
-
-                /* ── Top nav bar ── */
-                .topbar {
-                    position: sticky;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    height: 64px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 0 32px;
-                    z-index: 10;
-                    background: rgba(248,249,255,0.95);
-                    border-bottom: 1px solid rgba(108,92,231,0.08);
-                    backdrop-filter: blur(8px);
-                    flex-shrink: 0; /* Prevent it from shrinking */
-                }
-
-                .nav-brand {
-                    display: flex;
-                    align-items: center;
-                    gap: 9px;
-                }
-                .nav-brand-icon {
-                    display: flex;
-                    align-items: center;
-                    gap: 3px;
-                }
-                .nav-diamond {
-                    width: 8px; height: 8px;
-                    background: var(--violet);
-                    transform: rotate(45deg);
-                    border-radius: 2px;
-                }
-                .nav-diamond.sm {
-                    width: 5px; height: 5px;
-                    background: var(--violet-lt);
-                }
-                .nav-brand-name {
-                    font-size: 14px;
-                    font-weight: 800;
-                    letter-spacing: 2.5px;
-                    text-transform: uppercase;
-                    color: var(--violet);
-                }
-
-                .nav-right {
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-                }
-                .nav-hint {
-                    font-size: 13px;
-                    font-weight: 400;
-                    color: var(--text-soft);
-                }
-                .nav-btn {
-                    padding: 7px 18px;
-                    border: 1.5px solid var(--text);
-                    border-radius: 100px;
-                    background: transparent;
-                    font-family: var(--sans);
-                    font-size: 12px;
-                    font-weight: 700;
-                    letter-spacing: 0.8px;
-                    color: var(--text);
-                    cursor: pointer;
-                    transition: background 0.2s, color 0.2s;
-                    text-decoration: none; /* For Link component */
-                }
-                .nav-btn:hover {
-                    background: var(--text);
-                    color: var(--white);
-                }
-
-                /* ── Content Wrapper for scrolling ── */
-                .card-content-wrapper {
-                    display: flex;
-                    flex: 1; /* Allows this wrapper to fill remaining space */
-                    overflow-y: auto; /* Enable vertical scrolling for the content inside the card */
-                }
-
-
-                /* ── Left illustration panel ── */
-                .panel-left {
-                    width: 46%;
-                    flex-shrink: 0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 80px 32px 40px;
-                    position: relative;
-                    overflow: hidden;
-                    background: linear-gradient(160deg, #FFFFFF 0%, #F0F1FF 60%, #EAE9FF 100%);
-                }
-
-                /* Floating decorative shards */
-                .shard {
-                    position: absolute;
-                    border-radius: 4px;
-                    animation: floatShard var(--dur, 5s) ease-in-out infinite;
-                    opacity: 0.55;
-                }
-                .shard-1 { width:18px;height:18px; top:18%; left:10%; background:var(--violet-lt); transform:rotate(30deg); --r:30deg; --d:-14px; --dur:4.5s; }
-                .shard-2 { width:12px;height:12px; top:30%; left:82%; background:var(--teal); transform:rotate(45deg); --r:45deg; --d:-10px; --dur:6s; }
-                .shard-3 { width:22px;height:22px; top:70%; left:8%; background:#C5C0FF; transform:rotate(15deg); --r:15deg; --d:-8px; --dur:5.5s; }
-                .shard-4 { width:10px;height:10px; top:78%; left:75%; background:var(--coral); transform:rotate(60deg); --r:60deg; --d:-12px; --dur:4s; }
-                .shard-5 { width:14px;height:14px; top:50%; left:88%; background:var(--violet); transform:rotate(20deg); --r:20deg; --d:-16px; --dur:7s; opacity:0.3; }
-                .shard-6 { width:8px; height:8px; top:14%; left:60%; background:var(--teal); transform:rotate(45deg); --r:45deg; --d:-9px; --dur:5s; }
-
-                /* Isometric illustration */
-                .illo-wrap {
-                    animation: floatIllo 6s ease-in-out infinite;
-                    width: 100%;
-                    max-width: 340px;
-                }
-
-                .illo-svg {
-                    width: 100%;
-                    height: auto;
-                }
-
-                /* ── Right form panel ── */
-                .panel-right {
-                    flex: 1;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 80px 52px 48px;
-                    position: relative;
-                }
-
-                .form-wrap {
-                    width: 100%;
-                    max-width: 360px;
-                    animation: fadeUp 0.6s 0.18s var(--ease) both;
-                }
-
-                .form-title {
-                    font-size: 28px;
-                    font-weight: 800;
-                    color: var(--text);
-                    letter-spacing: -0.5px;
-                    margin-bottom: 4px;
-                    line-height: 1.2;
-                }
-                .form-sub {
-                    font-size: 14px;
-                    font-weight: 400;
-                    color: var(--text-muted);
-                    margin-bottom: 30px;
-                }
-
-                /* Fields */
-                .field {
-                    margin-bottom: 20px;
-                    animation: fadeUp 0.5s var(--ease) both;
-                }
-                .label {
-                    display: block;
-                    font-size: 13.5px;
-                    font-weight: 600;
-                    color: var(--text);
-                    margin-bottom: 8px;
-                }
-                .input-wrap { position: relative; }
-                .input {
-                    width: 100%;
-                    padding: 13px 16px;
-                    border: 1.5px solid var(--border);
-                    border-radius: 10px;
-                    font-family: var(--sans);
-                    font-size: 14px;
-                    font-weight: 400;
-                    color: var(--text);
-                    background: var(--field-bg);
-                    outline: none;
-                    transition: border-color 0.2s, box-shadow 0.2s;
-                }
-                .input.has-icon { padding-right: 46px; }
-                .input::placeholder { color: var(--text-muted); font-weight: 300; }
-                .input:focus {
-                    border-color: var(--border-foc);
-                    box-shadow: 0 0 0 3px var(--violet-dim);
-                }
-                .input.error {
-                    border-color: var(--coral);
-                }
-                .error-message {
-                    color: var(--coral);
-                    font-size: 12px;
-                    margin-top: 5px;
-                }
-
-                /* Password toggle */
-                .eye-btn {
-                    position: absolute;
-                    right: 14px; top: 50%;
-                    transform: translateY(-50%);
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    color: var(--text-muted);
-                    display: flex;
-                    align-items: center;
-                    padding: 2px;
-                    transition: color 0.2s;
-                }
-                .eye-btn:hover { color: var(--violet); }
-
-                /* Submit button */
-                .btn {
-                    width: 100%;
-                    padding: 14px 24px;
-                    border: none;
-                    border-radius: 100px;
-                    background: linear-gradient(130deg, var(--violet-dark) 0%, var(--violet) 60%, var(--violet-lt) 100%);
-                    color: var(--white);
-                    font-family: var(--sans);
-                    font-size: 15px;
-                    font-weight: 700;
-                    letter-spacing: 0.2px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                    box-shadow: 0 6px 24px rgba(108,92,231,0.38);
-                    transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
-                    margin-top: 6px;
-                    margin-bottom: 28px;
-                }
-                .btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 10px 32px rgba(108,92,231,0.48);
-                }
-                .btn:active { transform: translateY(0); }
-                .btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
-
-                .spinner {
-                    width: 17px; height: 17px;
-                    border: 2.5px solid rgba(255,255,255,0.35);
-                    border-top-color: white;
-                    border-radius: 50%;
-                    animation: spin 0.7s linear infinite;
-                }
-
-                /* Social row */
-                .social-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    animation: fadeIn 0.5s 0.7s both;
-                }
-                .social-label {
-                    font-size: 13px;
-                    font-weight: 400;
-                    color: var(--text-muted);
-                    white-space: nowrap;
-                }
-                .social-btn {
-                    width: 40px; height: 40px;
-                    border-radius: 50%;
-                    border: 1.5px solid var(--border);
-                    background: var(--white);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
-                    flex-shrink: 0;
-                }
-                .social-btn:hover {
-                    border-color: var(--violet-lt);
-                    box-shadow: 0 4px 14px rgba(108,92,231,0.18);
-                    transform: translateY(-2px);
-                }
-                .social-btn svg { width: 18px; height: 18px; }
-
-                /* ── Responsive Adjustments ── */
-                @media (max-width: 768px) {
-                    .page {
-                        padding: 15px; /* Less padding on smaller screens */
-                    }
-
-                    .card {
-                        max-width: 95%; /* Adjust card width for smaller screens */
-                        height: auto; /* Allow card height to adjust based on content */
-                        min-height: unset; /* Remove min-height for mobile */
-                        flex-direction: column; /* Stack panels vertically */
-                        overflow-y: auto; /* Allow card to scroll on small screens if content is tall */
-                    }
-
-                    .topbar {
-                        padding: 0 20px;
-                        height: 56px; /* Slightly smaller topbar */
-                    }
-                    .nav-brand-name {
-                        font-size: 12px;
-                        letter-spacing: 1.5px;
-                    }
-                    .nav-hint {
-                        display: none; /* Hide hint on small screens */
-                    }
-                    .nav-btn {
-                        padding: 5px 14px;
-                        font-size: 11px;
-                    }
-
-                    .card-content-wrapper {
-                        flex-direction: column; /* Stack panels vertically inside wrapper */
-                        overflow-y: visible; /* Let the main card overflow-y handle scrolling */
-                    }
-
-                    .panel-left {
-                        width: 100%; /* Full width for left panel */
-                        min-height: 200px; /* Give some height to the illustration */
-                        padding: 40px 20px; /* Adjusted padding */
-                        border-bottom: 1px solid var(--border); /* Separator */
-                    }
-                    .illo-wrap {
-                        max-width: 250px; /* Smaller illustration */
-                    }
-
-                    .panel-right {
-                        padding: 40px 25px; /* Adjusted padding for form */
-                    }
-                    .form-title {
-                        font-size: 24px;
-                    }
-                    .form-sub {
-                        font-size: 13px;
-                        margin-bottom: 25px;
-                    }
-                    .label {
-                        font-size: 12.5px;
-                    }
-                    .input {
-                        font-size: 13px;
-                        padding: 11px 14px;
-                    }
-                    .btn {
-                        padding: 12px 20px;
-                        font-size: 14px;
-                        margin-top: 20px;
-                        margin-bottom: 20px;
-                    }
-                    .social-label {
-                        font-size: 12px;
-                    }
-                    .social-btn {
-                        width: 36px; height: 36px;
-                    }
-                    .social-btn svg {
-                        width: 16px; height: 16px;
-                    }
-                }
             `}</style>
 
-            <div className="page">
-                <div className="page-blob page-blob-a" />
-                <div className="page-blob page-blob-b" />
+            <div className="min-h-screen w-full flex items-center justify-center p-7 relative overflow-hidden bg-gradient-to-br from-[#8B7FF0] via-[#6C5CE7] to-[#5649C0]">
+                {/* BG dot pattern */}
+                <div className="absolute inset-0 bg-radial-gradient-circle bg-[length:28px_28px] from-[rgba(255,255,255,0.12)] to-transparent z-0"></div>
 
-                <div className="card">
+                {/* BG blobs */}
+                <div className="absolute rounded-full filter blur-lg pointer-events-none z-0 w-[420px] h-[420px] top-[-160px] left-[-120px] bg-purple-400 opacity-55"></div>
+                <div className="absolute rounded-full filter blur-lg pointer-events-none z-0 w-[340px] h-[340px] bottom-[-120px] right-[-80px] bg-purple-700 opacity-50"></div>
+
+                <div className="relative z-10 w-full max-w-[1000px] h-[calc(100vh-56px)] rounded-2xl bg-[#F8F9FF] shadow-lg md:shadow-xl flex flex-col overflow-hidden animate-fadeUp">
 
                     {/* ── Top bar ── */}
-                    <div className="topbar">
-                        <div className="nav-brand">
-                            <div className="nav-brand-icon">
-                                <div className="nav-diamond sm" style={{ marginRight: 1 }} />
-                                <div className="nav-diamond" />
-                                <div className="nav-diamond sm" style={{ marginLeft: 1 }} />
+                    <div className="sticky top-0 left-0 right-0 h-16 flex items-center justify-between px-8 z-10 bg-[rgba(248,249,255,0.95)] border-b border-[rgba(108,92,231,0.08)] backdrop-blur-sm flex-shrink-0">
+                        <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 bg-[#8B7FF0] transform rotate-45 rounded-sm mr-px"></div>
+                                <div className="w-2 h-2 bg-[#6C5CE7] transform rotate-45 rounded-sm"></div>
+                                <div className="w-1.5 h-1.5 bg-[#8B7FF0] transform rotate-45 rounded-sm ml-px"></div>
                             </div>
-                            <span className="nav-brand-name">EduSync</span>
+                            <span className="text-sm font-extrabold tracking-wider uppercase text-[#6C5CE7]">EduSync</span>
                         </div>
-                        <div className="nav-right">
-                            <span className="nav-hint">Do you haven't an account?</span>
-                            <Link to="/signup" className="nav-btn bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">
+                        <div className="flex items-center gap-3.5">
+                            <span className="text-sm font-normal text-[#636E72] hidden sm:block">Don't have an account?</span>
+                            <Link to="/signup" className="py-2 px-4 rounded-full border-2 border-[#2D3436] bg-transparent text-[#2D3436] text-xs font-bold tracking-wide cursor-pointer transition-all duration-200 hover:bg-[#2D3436] hover:text-white">
                                 SIGN UP
                             </Link>
                         </div>
                     </div>
 
                     {/* ── Content Wrapper for scrolling ── */}
-                    <div className="card-content-wrapper">
+                    <div className="flex flex-1 overflow-y-auto md:flex-row flex-col">
                         {/* ── Left illustration ── */}
-                        <div className="panel-left">
+                        <div className="w-full md:w-[46%] flex-shrink-0 flex items-center justify-center p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-white via-[#F0F1FF] to-[#EAE9FF] border-b md:border-b-0 md:border-r border-gray-200">
                             {/* Floating shards */}
-                            <div className="shard shard-1" />
-                            <div className="shard shard-2" />
-                            <div className="shard shard-3" />
-                            <div className="shard shard-4" />
-                            <div className="shard shard-5" />
-                            <div className="shard shard-6" />
+                            <div className="absolute rounded-md animate-floatShard opacity-55" style={{ width: '18px', height: '18px', top: '18%', left: '10%', background: '#8B7FF0', transform: 'rotate(30deg)', '--r': '30deg', '--d': '-14px', '--dur': '4.5s' }}></div>
+                            <div className="absolute rounded-md animate-floatShard opacity-55" style={{ width: '12px', height: '12px', top: '30%', left: '82%', background: '#00CEC9', transform: 'rotate(45deg)', '--r': '45deg', '--d': '-10px', '--dur': '6s' }}></div>
+                            <div className="absolute rounded-md animate-floatShard opacity-55" style={{ width: '22px', height: '22px', top: '70%', left: '8%', background: '#C5C0FF', transform: 'rotate(15deg)', '--r': '15deg', '--d': '-8px', '--dur': '5.5s' }}></div>
+                            <div className="absolute rounded-md animate-floatShard opacity-55" style={{ width: '10px', height: '10px', top: '78%', left: '75%', background: '#FF7675', transform: 'rotate(60deg)', '--r': '60deg', '--d': '-12px', '--dur': '4s' }}></div>
+                            <div className="absolute rounded-md animate-floatShard opacity-30" style={{ width: '14px', height: '14px', top: '50%', left: '88%', background: '#6C5CE7', transform: 'rotate(20deg)', '--r': '20deg', '--d': '-16px', '--dur': '7s' }}></div>
+                            <div className="absolute rounded-md animate-floatShard opacity-55" style={{ width: '8px', height: '8px', top: '14%', left: '60%', background: '#00CEC9', transform: 'rotate(45deg)', '--r': '45deg', '--d': '-9px', '--dur': '5s' }}></div>
 
                             {/* Isometric illustration (SVG) */}
-                            <div className="illo-wrap">
-                                <svg className="illo-svg" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <div className="animate-floatIllo w-full max-w-[340px] md:max-w-[250px]">
+                                <svg className="w-full h-auto" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     {/* Shadow */}
                                     <ellipse cx="170" cy="285" rx="110" ry="12" fill="rgba(108,92,231,0.10)" />
 
@@ -652,19 +237,19 @@ const Login = () => {
                         </div>
 
                         {/* ── Right form ── */}
-                        <div className="panel-right">
-                            <div className="form-wrap">
+                        <div className="flex-1 flex items-center justify-center p-8 md:p-12 relative">
+                            <div className="w-full max-w-sm animate-fadeUp animation-delay-300">
 
-                                <h2 className="form-title">Welcome to EduSync!</h2>
-                                <p className="form-sub">Sign in to your account</p>
+                                <h2 className="text-3xl font-extrabold text-[#2D3436] tracking-tight mb-1 leading-tight md:text-2xl">Welcome to EduSync!</h2>
+                                <p className="text-sm font-normal text-[#A0A8B8] mb-8 md:mb-6">Sign in to your account</p>
 
                                 <form onSubmit={handleLogin}>
-                                    <div className="field" style={{ animationDelay: '0.28s' }}>
-                                        <label className="label">Email</label>
+                                    <div className="mb-5 animate-fadeUp animation-delay-400">
+                                        <label className="block text-sm font-semibold text-[#2D3436] mb-2">Email</label>
                                         <input
                                             type="email"
                                             placeholder="edusync001@gmail.com"
-                                            className={`input ${emailError ? 'error' : ''}`}
+                                            className={`w-full py-3 px-4 border-2 rounded-lg font-sans text-sm text-[#2D3436] bg-white outline-none transition-all duration-200 placeholder:text-[#A0A8B8] placeholder:font-light ${emailError ? 'border-[#FF7675]' : 'border-[#E8EAF6] focus:border-[#6C5CE7] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)]'}`}
                                             value={email}
                                             onChange={e => {
                                                 setEmail(e.target.value);
@@ -672,16 +257,16 @@ const Login = () => {
                                             }}
                                             required
                                         />
-                                        {emailError && <p className="error-message">{emailError}</p>}
+                                        {emailError && <p className="text-[#FF7675] text-xs mt-1.5">{emailError}</p>}
                                     </div>
 
-                                    <div className="field" style={{ animationDelay: '0.36s' }}>
-                                        <label className="label">Password</label>
-                                        <div className="input-wrap">
+                                    <div className="mb-5 animate-fadeUp animation-delay-500">
+                                        <label className="block text-sm font-semibold text-[#2D3436] mb-2">Password</label>
+                                        <div className="relative">
                                             <input
                                                 type={showPass ? 'text' : 'password'}
                                                 placeholder="8+ characters"
-                                                className={`input has-icon ${passwordError ? 'error' : ''}`}
+                                                className={`w-full py-3 px-4 pr-11 border-2 rounded-lg font-sans text-sm text-[#2D3436] bg-white outline-none transition-all duration-200 placeholder:text-[#A0A8B8] placeholder:font-light ${passwordError ? 'border-[#FF7675]' : 'border-[#E8EAF6] focus:border-[#6C5CE7] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)]'}`}
                                                 value={password}
                                                 onChange={e => {
                                                     setPassword(e.target.value);
@@ -691,7 +276,7 @@ const Login = () => {
                                             />
                                             <button
                                                 type="button"
-                                                className="eye-btn"
+                                                className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[#A0A8B8] flex items-center p-0.5 transition-colors duration-200 hover:text-[#6C5CE7]"
                                                 onClick={() => setShowPass(p => !p)}
                                                 tabIndex={-1}
                                             >
@@ -709,20 +294,20 @@ const Login = () => {
                                                 )}
                                             </button>
                                         </div>
-                                        {passwordError && <p className="error-message">{passwordError}</p>}
+                                        {passwordError && <p className="text-[#FF7675] text-xs mt-1.5">{passwordError}</p>}
                                     </div>
 
-                                    <button type="submit" className="btn" disabled={loading} style={{ animationDelay: '0.44s' }}>
-                                        {loading ? <div className="spinner" /> : 'Login'}
+                                    <button type="submit" className="w-full py-3.5 px-6 border-none rounded-full bg-gradient-to-br from-[#5649C0] via-[#6C5CE7] to-[#8B7FF0] text-white font-sans text-base font-bold tracking-tight cursor-pointer flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-150 transform hover:-translate-y-0.5 mt-6 mb-7 disabled:opacity-65 disabled:cursor-not-allowed disabled:transform-none" disabled={loading} style={{ animationDelay: '0.6s' }}>
+                                        {loading ? <div className="w-4.5 h-4.5 border-2.5 border-[rgba(255,255,255,0.35)] border-t-white rounded-full animate-spin" /> : 'Login'}
                                     </button>
                                 </form>
 
                                 {/* Social */}
-                                <div className="social-row">
-                                    <span className="social-label">Create account with</span>
+                                <div className="flex items-center gap-3 animate-fadeIn animation-delay-700">
+                                    <span className="text-sm font-normal text-[#A0A8B8] whitespace-nowrap">Create account with</span>
 
                                     {/* Facebook */}
-                                    <button className="social-btn" title="Continue with Facebook">
+                                    <button className="w-10 h-10 rounded-full border-2 border-[#E8EAF6] bg-white flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-[#8B7FF0] hover:shadow-md hover:shadow-[rgba(108,92,231,0.18)] hover:-translate-y-0.5 flex-shrink-0" title="Continue with Facebook">
                                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <rect width="24" height="24" rx="12" fill="#1877F2"/>
                                             <path d="M15.5 8H13.5C13.2 8 13 8.2 13 8.5V10H15.5L15.1 12.5H13V19H10.5V12.5H9V10H10.5V8.5C10.5 7.1 11.6 6 13 6H15.5V8Z" fill="white"/>
@@ -730,7 +315,7 @@ const Login = () => {
                                     </button>
 
                                     {/* LinkedIn */}
-                                    <button className="social-btn" title="Continue with LinkedIn">
+                                    <button className="w-10 h-10 rounded-full border-2 border-[#E8EAF6] bg-white flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-[#8B7FF0] hover:shadow-md hover:shadow-[rgba(108,92,231,0.18)] hover:-translate-y-0.5 flex-shrink-0" title="Continue with LinkedIn">
                                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <rect width="24" height="24" rx="12" fill="#0A66C2"/>
                                             <path d="M7 10H9.5V17H7V10ZM8.25 9C7.56 9 7 8.44 7 7.75C7 7.06 7.56 6.5 8.25 6.5C8.94 6.5 9.5 7.06 9.5 7.75C9.5 8.44 8.94 9 8.25 9Z" fill="white"/>
@@ -739,7 +324,7 @@ const Login = () => {
                                     </button>
 
                                     {/* Google */}
-                                    <button className="social-btn" title="Continue with Google">
+                                    <button className="w-10 h-10 rounded-full border-2 border-[#E8EAF6] bg-white flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-[#8B7FF0] hover:shadow-md hover:shadow-[rgba(108,92,231,0.18)] hover:-translate-y-0.5 flex-shrink-0" title="Continue with Google">
                                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
