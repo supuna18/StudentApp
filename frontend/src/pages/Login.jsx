@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
@@ -429,9 +429,11 @@ const Login = () => {
                             </div>
                             <span className="nav-brand-name">EduSync</span>
                         </div>
-                        <div className="nav-right">
-                            <span className="nav-hint">Already have an account?</span>
-                            <button className="nav-btn">SIGN IN</button>
+                        <div className="nav-right text-right">
+                        <span className="nav-hint text-slate-400 mr-2">Do you haven't an account?</span>
+                        <Link to="/signup" className="nav-btn bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">
+                        SIGN UP
+                        </Link>
                         </div>
                     </div>
 
