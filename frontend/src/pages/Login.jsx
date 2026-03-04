@@ -58,7 +58,9 @@ const Login = () => {
                 const decoded = jwtDecode(data.token);
                 const userRole = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
                 alert(`Welcome ${decoded.unique_name}! Role: ${userRole}`);
-                navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard');
+                // --- FIX APPLIED HERE ---
+                // Using { replace: true } to remove the login page from browser history
+                navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });
             } else {
                 alert(data.message || 'Login failed. Please check your credentials.');
             }
