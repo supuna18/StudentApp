@@ -1,27 +1,61 @@
 import { useState } from 'react';
-import { useNavigate,Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
-    const [email,    setEmail]    = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading,  setLoading]  = useState(false);
+    const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            return 'Email field cannot be empty.';
+        }
+        if (!emailRegex.test(email)) {
+            return 'Please enter a valid email address.';
+        }
+        return '';
+    };
+
+    const validatePassword = (password) => {
+        if (!password) {
+            return 'Password field cannot be empty.';
+        }
+        if (password.length < 8) {
+            return 'Password must be at least 8 characters long.';
+        }
+        return '';
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        const emailErr = validateEmail(email);
+        const passErr = validatePassword(password);
+
+        setEmailError(emailErr);
+        setPasswordError(passErr);
+
+        if (emailErr || passErr) {
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await fetch('http://localhost:5000/api/auth/login', {
-                method:  'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password }),
             });
             const data = await res.json();
             if (res.ok) {
                 localStorage.setItem('token', data.token);
-                const decoded  = jwtDecode(data.token);
+                const decoded = jwtDecode(data.token);
                 const userRole = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
                 alert(`Welcome ${decoded.unique_name}! Role: ${userRole}`);
                 navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard');
@@ -30,6 +64,7 @@ const Login = () => {
             }
         } catch (err) {
             console.error('Login Error:', err);
+            alert('An error occurred during login. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -37,6 +72,9 @@ const Login = () => {
 
     return (
         <>
+            {/* Viewport Meta Tag for responsiveness */}
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Lora:ital,wght@1,600&display=swap');
 
@@ -64,9 +102,11 @@ const Login = () => {
                 }
 
                 html, body, #root {
-                    width: 100%; height: 100%;
+                    width: 100%;
+                    height: 100%; /* Full height for the root elements */
                     font-family: var(--sans);
                     -webkit-font-smoothing: antialiased;
+                    overflow: hidden; /* Prevent body scrolling */
                 }
 
                 @keyframes fadeUp {
@@ -96,14 +136,14 @@ const Login = () => {
 
                 /* ── Page ── */
                 .page {
-                    min-height: 100vh;
+                    height: 100vh; /* Use viewport height to make it fill the screen */
                     width: 100%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     padding: 28px 20px;
                     position: relative;
-                    overflow: hidden;
+                    overflow: hidden; /* Prevent page content from overflowing */
                     background: linear-gradient(135deg, #8B7FF0 0%, #6C5CE7 40%, #5649C0 70%, #7B6FE8 100%);
                 }
 
@@ -142,7 +182,7 @@ const Login = () => {
                     z-index: 1;
                     width: 100%;
                     max-width: 1000px;
-                    min-height: 580px;
+                    height: calc(100vh - 56px); /* Adjust card height to fit within viewport and account for page padding */
                     border-radius: 20px;
                     background: var(--bg-card);
                     box-shadow:
@@ -150,14 +190,17 @@ const Login = () => {
                         0 20px 60px rgba(0,0,0,0.18),
                         0 0 0 1px rgba(255,255,255,0.6);
                     display: flex;
-                    overflow: hidden;
+                    flex-direction: column; /* Stack children vertically */
+                    overflow: hidden; /* Keep the card's rounded corners */
                     animation: fadeUp 0.65s var(--ease) both;
                 }
 
                 /* ── Top nav bar ── */
                 .topbar {
-                    position: absolute;
-                    top: 0; left: 0; right: 0;
+                    position: sticky;
+                    top: 0;
+                    left: 0;
+                    right: 0;
                     height: 64px;
                     display: flex;
                     align-items: center;
@@ -166,6 +209,8 @@ const Login = () => {
                     z-index: 10;
                     background: rgba(248,249,255,0.95);
                     border-bottom: 1px solid rgba(108,92,231,0.08);
+                    backdrop-filter: blur(8px);
+                    flex-shrink: 0; /* Prevent it from shrinking */
                 }
 
                 .nav-brand {
@@ -218,11 +263,20 @@ const Login = () => {
                     color: var(--text);
                     cursor: pointer;
                     transition: background 0.2s, color 0.2s;
+                    text-decoration: none; /* For Link component */
                 }
                 .nav-btn:hover {
                     background: var(--text);
                     color: var(--white);
                 }
+
+                /* ── Content Wrapper for scrolling ── */
+                .card-content-wrapper {
+                    display: flex;
+                    flex: 1; /* Allows this wrapper to fill remaining space */
+                    overflow-y: auto; /* Enable vertical scrolling for the content inside the card */
+                }
+
 
                 /* ── Left illustration panel ── */
                 .panel-left {
@@ -326,6 +380,14 @@ const Login = () => {
                     border-color: var(--border-foc);
                     box-shadow: 0 0 0 3px var(--violet-dim);
                 }
+                .input.error {
+                    border-color: var(--coral);
+                }
+                .error-message {
+                    color: var(--coral);
+                    font-size: 12px;
+                    margin-top: 5px;
+                }
 
                 /* Password toggle */
                 .eye-btn {
@@ -411,6 +473,85 @@ const Login = () => {
                     transform: translateY(-2px);
                 }
                 .social-btn svg { width: 18px; height: 18px; }
+
+                /* ── Responsive Adjustments ── */
+                @media (max-width: 768px) {
+                    .page {
+                        padding: 15px; /* Less padding on smaller screens */
+                    }
+
+                    .card {
+                        max-width: 95%; /* Adjust card width for smaller screens */
+                        height: auto; /* Allow card height to adjust based on content */
+                        min-height: unset; /* Remove min-height for mobile */
+                        flex-direction: column; /* Stack panels vertically */
+                        overflow-y: auto; /* Allow card to scroll on small screens if content is tall */
+                    }
+
+                    .topbar {
+                        padding: 0 20px;
+                        height: 56px; /* Slightly smaller topbar */
+                    }
+                    .nav-brand-name {
+                        font-size: 12px;
+                        letter-spacing: 1.5px;
+                    }
+                    .nav-hint {
+                        display: none; /* Hide hint on small screens */
+                    }
+                    .nav-btn {
+                        padding: 5px 14px;
+                        font-size: 11px;
+                    }
+
+                    .card-content-wrapper {
+                        flex-direction: column; /* Stack panels vertically inside wrapper */
+                        overflow-y: visible; /* Let the main card overflow-y handle scrolling */
+                    }
+
+                    .panel-left {
+                        width: 100%; /* Full width for left panel */
+                        min-height: 200px; /* Give some height to the illustration */
+                        padding: 40px 20px; /* Adjusted padding */
+                        border-bottom: 1px solid var(--border); /* Separator */
+                    }
+                    .illo-wrap {
+                        max-width: 250px; /* Smaller illustration */
+                    }
+
+                    .panel-right {
+                        padding: 40px 25px; /* Adjusted padding for form */
+                    }
+                    .form-title {
+                        font-size: 24px;
+                    }
+                    .form-sub {
+                        font-size: 13px;
+                        margin-bottom: 25px;
+                    }
+                    .label {
+                        font-size: 12.5px;
+                    }
+                    .input {
+                        font-size: 13px;
+                        padding: 11px 14px;
+                    }
+                    .btn {
+                        padding: 12px 20px;
+                        font-size: 14px;
+                        margin-top: 20px;
+                        margin-bottom: 20px;
+                    }
+                    .social-label {
+                        font-size: 12px;
+                    }
+                    .social-btn {
+                        width: 36px; height: 36px;
+                    }
+                    .social-btn svg {
+                        width: 16px; height: 16px;
+                    }
+                }
             `}</style>
 
             <div className="page">
@@ -429,177 +570,188 @@ const Login = () => {
                             </div>
                             <span className="nav-brand-name">EduSync</span>
                         </div>
-                        <div className="nav-right text-right">
-                        <span className="nav-hint text-slate-400 mr-2">Do you haven't an account?</span>
-                        <Link to="/signup" className="nav-btn bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">
-                        SIGN UP
-                        </Link>
+                        <div className="nav-right">
+                            <span className="nav-hint">Do you haven't an account?</span>
+                            <Link to="/signup" className="nav-btn bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">
+                                SIGN UP
+                            </Link>
                         </div>
                     </div>
 
-                    {/* ── Left illustration ── */}
-                    <div className="panel-left">
-                        {/* Floating shards */}
-                        <div className="shard shard-1" />
-                        <div className="shard shard-2" />
-                        <div className="shard shard-3" />
-                        <div className="shard shard-4" />
-                        <div className="shard shard-5" />
-                        <div className="shard shard-6" />
+                    {/* ── Content Wrapper for scrolling ── */}
+                    <div className="card-content-wrapper">
+                        {/* ── Left illustration ── */}
+                        <div className="panel-left">
+                            {/* Floating shards */}
+                            <div className="shard shard-1" />
+                            <div className="shard shard-2" />
+                            <div className="shard shard-3" />
+                            <div className="shard shard-4" />
+                            <div className="shard shard-5" />
+                            <div className="shard shard-6" />
 
-                        {/* Isometric illustration (SVG) */}
-                        <div className="illo-wrap">
-                            <svg className="illo-svg" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                {/* Shadow */}
-                                <ellipse cx="170" cy="285" rx="110" ry="12" fill="rgba(108,92,231,0.10)" />
+                            {/* Isometric illustration (SVG) */}
+                            <div className="illo-wrap">
+                                <svg className="illo-svg" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    {/* Shadow */}
+                                    <ellipse cx="170" cy="285" rx="110" ry="12" fill="rgba(108,92,231,0.10)" />
 
-                                {/* Back screen */}
-                                <rect x="60" y="50" width="180" height="140" rx="10" fill="#D9D6FF" />
-                                <rect x="60" y="50" width="180" height="28" rx="10" fill="#B8B4F5" />
-                                <rect x="60" y="64" width="180" height="14" fill="#B8B4F5" />
+                                    {/* Back screen */}
+                                    <rect x="60" y="50" width="180" height="140" rx="10" fill="#D9D6FF" />
+                                    <rect x="60" y="50" width="180" height="28" rx="10" fill="#B8B4F5" />
+                                    <rect x="60" y="64" width="180" height="14" fill="#B8B4F5" />
 
-                                {/* Screen content lines */}
-                                <rect x="76" y="92" width="80" height="8" rx="4" fill="#9B96EB" opacity="0.7" />
-                                <rect x="76" y="108" width="120" height="6" rx="3" fill="#C4C0F7" opacity="0.8" />
-                                <rect x="76" y="120" width="100" height="6" rx="3" fill="#C4C0F7" opacity="0.6" />
-                                <rect x="76" y="132" width="90" height="6" rx="3" fill="#C4C0F7" opacity="0.5" />
-                                <rect x="76" y="148" width="60" height="6" rx="3" fill="#C4C0F7" opacity="0.4" />
+                                    {/* Screen content lines */}
+                                    <rect x="76" y="92" width="80" height="8" rx="4" fill="#9B96EB" opacity="0.7" />
+                                    <rect x="76" y="108" width="120" height="6" rx="3" fill="#C4C0F7" opacity="0.8" />
+                                    <rect x="76" y="120" width="100" height="6" rx="3" fill="#C4C0F7" opacity="0.6" />
+                                    <rect x="76" y="132" width="90" height="6" rx="3" fill="#C4C0F7" opacity="0.5" />
+                                    <rect x="76" y="148" width="60" height="6" rx="3" fill="#C4C0F7" opacity="0.4" />
 
-                                {/* Avatar circle on screen */}
-                                <circle cx="200" cy="115" r="28" fill="#E8E6FF" />
-                                <circle cx="200" cy="108" r="11" fill="#B8B4F5" />
-                                <ellipse cx="200" cy="132" rx="17" ry="10" fill="#B8B4F5" opacity="0.7" />
+                                    {/* Avatar circle on screen */}
+                                    <circle cx="200" cy="115" r="28" fill="#E8E6FF" />
+                                    <circle cx="200" cy="108" r="11" fill="#B8B4F5" />
+                                    <ellipse cx="200" cy="132" rx="17" ry="10" fill="#B8B4F5" opacity="0.7" />
 
-                                {/* Teal lock/badge */}
-                                <rect x="188" y="168" width="52" height="62" rx="10" fill="#00CEC9" />
-                                <rect x="200" y="154" width="28" height="26" rx="14" fill="none" stroke="#00CEC9" strokeWidth="6" />
-                                <circle cx="214" cy="189" r="7" fill="white" opacity="0.9" />
-                                <rect x="211" y="190" width="6" height="10" rx="3" fill="white" opacity="0.9" />
+                                    {/* Teal lock/badge */}
+                                    <rect x="188" y="168" width="52" height="62" rx="10" fill="#00CEC9" />
+                                    <rect x="200" y="154" width="28" height="26" rx="14" fill="none" stroke="#00CEC9" strokeWidth="6" />
+                                    <circle cx="214" cy="189" r="7" fill="white" opacity="0.9" />
+                                    <rect x="211" y="190" width="6" height="10" rx="3" fill="white" opacity="0.9" />
 
-                                {/* Teal checkmark circle */}
-                                <circle cx="95" cy="178" r="24" fill="#00CEC9" />
-                                <polyline points="84,178 92,186 108,168" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                                    {/* Teal checkmark circle */}
+                                    <circle cx="95" cy="178" r="24" fill="#00CEC9" />
+                                    <polyline points="84,178 92,186 108,168" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
 
-                                {/* Coral/pink document card */}
-                                <rect x="110" y="200" width="72" height="56" rx="8" fill="#FF7675" />
-                                <rect x="120" y="212" width="52" height="6" rx="3" fill="rgba(255,255,255,0.6)" />
-                                <rect x="120" y="224" width="40" height="6" rx="3" fill="rgba(255,255,255,0.4)" />
-                                <rect x="120" y="236" width="46" height="6" rx="3" fill="rgba(255,255,255,0.4)" />
+                                    {/* Coral/pink document card */}
+                                    <rect x="110" y="200" width="72" height="56" rx="8" fill="#FF7675" />
+                                    <rect x="120" y="212" width="52" height="6" rx="3" fill="rgba(255,255,255,0.6)" />
+                                    <rect x="120" y="224" width="40" height="6" rx="3" fill="rgba(255,255,255,0.4)" />
+                                    <rect x="120" y="236" width="46" height="6" rx="3" fill="rgba(255,255,255,0.4)" />
 
-                                {/* White floating paper */}
-                                <rect x="152" y="195" width="60" height="72" rx="8" fill="white" filter="url(#s1)" />
-                                <rect x="162" y="208" width="40" height="5" rx="2.5" fill="#E8E6FF" />
-                                <rect x="162" y="219" width="30" height="5" rx="2.5" fill="#E8E6FF" opacity="0.8"/>
-                                <rect x="162" y="230" width="35" height="5" rx="2.5" fill="#E8E6FF" opacity="0.6"/>
-                                <rect x="162" y="241" width="25" height="5" rx="2.5" fill="#E8E6FF" opacity="0.5"/>
+                                    {/* White floating paper */}
+                                    <rect x="152" y="195" width="60" height="72" rx="8" fill="white" filter="url(#s1)" />
+                                    <rect x="162" y="208" width="40" height="5" rx="2.5" fill="#E8E6FF" />
+                                    <rect x="162" y="219" width="30" height="5" rx="2.5" fill="#E8E6FF" opacity="0.8"/>
+                                    <rect x="162" y="230" width="35" height="5" rx="2.5" fill="#E8E6FF" opacity="0.6"/>
+                                    <rect x="162" y="241" width="25" height="5" rx="2.5" fill="#E8E6FF" opacity="0.5"/>
 
-                                {/* Small violet diamond decorations */}
-                                <rect x="50" y="95" width="12" height="12" rx="2" fill="#9B96EB" transform="rotate(45 56 101)" opacity="0.6" />
-                                <rect x="268" y="140" width="10" height="10" rx="2" fill="#6C5CE7" transform="rotate(45 273 145)" opacity="0.5" />
-                                <rect x="52" y="220" width="16" height="16" rx="3" fill="#C4C0F7" transform="rotate(45 60 228)" opacity="0.55" />
-                                <rect x="270" y="200" width="12" height="12" rx="2" fill="#00CEC9" transform="rotate(45 276 206)" opacity="0.45" />
+                                    {/* Small violet diamond decorations */}
+                                    <rect x="50" y="95" width="12" height="12" rx="2" fill="#9B96EB" transform="rotate(45 56 101)" opacity="0.6" />
+                                    <rect x="268" y="140" width="10" height="10" rx="2" fill="#6C5CE7" transform="rotate(45 273 145)" opacity="0.5" />
+                                    <rect x="52" y="220" width="16" height="16" rx="3" fill="#C4C0F7" transform="rotate(45 60 228)" opacity="0.55" />
+                                    <rect x="270" y="200" width="12" height="12" rx="2" fill="#00CEC9" transform="rotate(45 276 206)" opacity="0.45" />
 
-                                <defs>
-                                    <filter id="s1" x="-20%" y="-20%" width="140%" height="140%">
-                                        <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(108,92,231,0.15)" />
-                                    </filter>
-                                </defs>
-                            </svg>
+                                    <defs>
+                                        <filter id="s1" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(108,92,231,0.15)" />
+                                        </filter>
+                                    </defs>
+                                </svg>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* ── Right form ── */}
-                    <div className="panel-right">
-                        <div className="form-wrap">
+                        {/* ── Right form ── */}
+                        <div className="panel-right">
+                            <div className="form-wrap">
 
-                            <h2 className="form-title">Welcome to EduSync!</h2>
-                            <p className="form-sub">Sign in to your account</p>
+                                <h2 className="form-title">Welcome to EduSync!</h2>
+                                <p className="form-sub">Sign in to your account</p>
 
-                            <form onSubmit={handleLogin}>
-                                <div className="field" style={{ animationDelay: '0.28s' }}>
-                                    <label className="label">Email</label>
-                                    <input
-                                        type="email"
-                                        placeholder="edusync001@gmail.com"
-                                        className="input"
-                                        value={email}
-                                        onChange={e => setEmail(e.target.value)}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="field" style={{ animationDelay: '0.36s' }}>
-                                    <label className="label">Password</label>
-                                    <div className="input-wrap">
+                                <form onSubmit={handleLogin}>
+                                    <div className="field" style={{ animationDelay: '0.28s' }}>
+                                        <label className="label">Email</label>
                                         <input
-                                            type={showPass ? 'text' : 'password'}
-                                            placeholder="8+ characters"
-                                            className="input has-icon"
-                                            value={password}
-                                            onChange={e => setPassword(e.target.value)}
+                                            type="email"
+                                            placeholder="edusync001@gmail.com"
+                                            className={`input ${emailError ? 'error' : ''}`}
+                                            value={email}
+                                            onChange={e => {
+                                                setEmail(e.target.value);
+                                                setEmailError('');
+                                            }}
                                             required
                                         />
-                                        <button
-                                            type="button"
-                                            className="eye-btn"
-                                            onClick={() => setShowPass(p => !p)}
-                                            tabIndex={-1}
-                                        >
-                                            {showPass ? (
-                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                                                    <line x1="1" y1="1" x2="23" y2="23"/>
-                                                </svg>
-                                            ) : (
-                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            )}
-                                        </button>
+                                        {emailError && <p className="error-message">{emailError}</p>}
                                     </div>
+
+                                    <div className="field" style={{ animationDelay: '0.36s' }}>
+                                        <label className="label">Password</label>
+                                        <div className="input-wrap">
+                                            <input
+                                                type={showPass ? 'text' : 'password'}
+                                                placeholder="8+ characters"
+                                                className={`input has-icon ${passwordError ? 'error' : ''}`}
+                                                value={password}
+                                                onChange={e => {
+                                                    setPassword(e.target.value);
+                                                    setPasswordError('');
+                                                }}
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                className="eye-btn"
+                                                onClick={() => setShowPass(p => !p)}
+                                                tabIndex={-1}
+                                            >
+                                                {showPass ? (
+                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                                    </svg>
+                                                ) : (
+                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                        <circle cx="12" cy="12" r="3"/>
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </div>
+                                        {passwordError && <p className="error-message">{passwordError}</p>}
+                                    </div>
+
+                                    <button type="submit" className="btn" disabled={loading} style={{ animationDelay: '0.44s' }}>
+                                        {loading ? <div className="spinner" /> : 'Login'}
+                                    </button>
+                                </form>
+
+                                {/* Social */}
+                                <div className="social-row">
+                                    <span className="social-label">Create account with</span>
+
+                                    {/* Facebook */}
+                                    <button className="social-btn" title="Continue with Facebook">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect width="24" height="24" rx="12" fill="#1877F2"/>
+                                            <path d="M15.5 8H13.5C13.2 8 13 8.2 13 8.5V10H15.5L15.1 12.5H13V19H10.5V12.5H9V10H10.5V8.5C10.5 7.1 11.6 6 13 6H15.5V8Z" fill="white"/>
+                                        </svg>
+                                    </button>
+
+                                    {/* LinkedIn */}
+                                    <button className="social-btn" title="Continue with LinkedIn">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect width="24" height="24" rx="12" fill="#0A66C2"/>
+                                            <path d="M7 10H9.5V17H7V10ZM8.25 9C7.56 9 7 8.44 7 7.75C7 7.06 7.56 6.5 8.25 6.5C8.94 6.5 9.5 7.06 9.5 7.75C9.5 8.44 8.94 9 8.25 9Z" fill="white"/>
+                                            <path d="M11 10H13.4V11.1H13.44C13.79 10.46 14.6 9.8 15.84 9.8C18.38 9.8 18.84 11.48 18.84 13.65V17H16.34V14.16C16.34 13.18 16.32 11.91 14.96 11.91C13.58 11.91 13.38 12.99 13.38 14.08V17H10.88V10H11Z" fill="white"/>
+                                        </svg>
+                                    </button>
+
+                                    {/* Google */}
+                                    <button className="social-btn" title="Continue with Google">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                            <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                                        </svg>
+                                    </button>
                                 </div>
 
-                                <button type="submit" className="btn" disabled={loading} style={{ animationDelay: '0.44s' }}>
-                                    {loading ? <div className="spinner" /> : 'Login'}
-                                </button>
-                            </form>
-
-                            {/* Social */}
-                            <div className="social-row">
-                                <span className="social-label">Create account with</span>
-
-                                {/* Facebook */}
-                                <button className="social-btn" title="Continue with Facebook">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="24" height="24" rx="12" fill="#1877F2"/>
-                                        <path d="M15.5 8H13.5C13.2 8 13 8.2 13 8.5V10H15.5L15.1 12.5H13V19H10.5V12.5H9V10H10.5V8.5C10.5 7.1 11.6 6 13 6H15.5V8Z" fill="white"/>
-                                    </svg>
-                                </button>
-
-                                {/* LinkedIn */}
-                                <button className="social-btn" title="Continue with LinkedIn">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="24" height="24" rx="12" fill="#0A66C2"/>
-                                        <path d="M7 10H9.5V17H7V10ZM8.25 9C7.56 9 7 8.44 7 7.75C7 7.06 7.56 6.5 8.25 6.5C8.94 6.5 9.5 7.06 9.5 7.75C9.5 8.44 8.94 9 8.25 9Z" fill="white"/>
-                                        <path d="M11 10H13.4V11.1H13.44C13.79 10.46 14.6 9.8 15.84 9.8C18.38 9.8 18.84 11.48 18.84 13.65V17H16.34V14.16C16.34 13.18 16.32 11.91 14.96 11.91C13.58 11.91 13.38 12.99 13.38 14.08V17H10.88V10H11Z" fill="white"/>
-                                    </svg>
-                                </button>
-
-                                {/* Google */}
-                                <button className="social-btn" title="Continue with Google">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                                        <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-                                    </svg>
-                                </button>
                             </div>
-
                         </div>
-                    </div>
+                    </div> {/* End card-content-wrapper */}
 
                 </div>
             </div>
