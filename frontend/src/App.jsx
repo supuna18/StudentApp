@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Sidebar from "./components/Sidebar"; // Sidebar Component එක
 import SetLimitForm from './components/Wellbeing/SetLimitForm';
-import Sidebar from "./components/Sidebar";
+
 
 // --- MEMBER 2 COMPONENTS IMPORT ---
 import ReportSite from './components/Safety/ReportSite';
