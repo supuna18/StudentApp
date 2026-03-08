@@ -3,13 +3,13 @@ using StudentApp.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using MongoDB.Driver; // මෙය අලුතින් ඇතුළත් කළා
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. සර්විස් රෙජිස්ටර් කරන කොටස (Build එකට කලින්) ---
+// --- සර්විස් රෙජිස්ටර් කිරීම ---
 
-// MongoDB සම්බන්ධතාවය IMongoClient හරහා රෙජිස්ටර් කිරීම (Member 2 ගේ Controller එක සඳහා)
+// MongoDB Client එක Register කිරීම (EduSyncCluster Atlas එකට සම්බන්ධ වේ)
 builder.Services.AddSingleton<IMongoClient>(sp => 
 {
     var connectionString = builder.Configuration.GetSection("StudentDatabase")["ConnectionString"];
@@ -18,16 +18,15 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
-
 builder.Services.AddControllers();
 
-// CORS සැකසුම් (දැනටමත් තිබුණා, එය එලෙසම තබා ගත්තා)
+// CORS සැකසුම්: Browser Extension එකට API එකට කතා කිරීමට මෙයින් අවසර ලැබේ
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// Authentication සහ JWT සැකසුම් (ඔයාගේ code එක එලෙසම තබා ගත්තා)
+// Authentication සහ JWT සැකසුම්
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(x =>
 {
@@ -51,15 +50,12 @@ builder.Services.AddAuthentication(x =>
 
 var app = builder.Build(); 
 
-// --- 2. මිඩ්ල්වෙයාර් (Middleware) පයිප්ලයින් එක ---
-
-// CORS සක්‍රීය කිරීම
+// CORS සක්‍රීය කිරීම (අනිවාර්යයි)
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
-// Docker ඇතුළේ දුවන්න මේ පේළිය
+// Docker ඇතුළේ 8080 හි දුවන නමුත් Docker Compose එක මගින් මෙය පිටතට 5000 ලෙස ලැබේ
 app.Run("http://0.0.0.0:8080");
