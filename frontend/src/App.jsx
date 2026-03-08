@@ -5,7 +5,9 @@ import Features from "./components/Features";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/AdminDashboard"; // Sidebar Component එක
+import SetLimitForm from './components/Wellbeing/SetLimitForm';
+
 import StudentDashboard from "./pages/StudentDashboard"; 
 import ProtectedRoute from "./components/ProtectedRoute";
 

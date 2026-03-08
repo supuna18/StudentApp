@@ -8,6 +8,8 @@ const Sidebar = () => {
     { name: 'Dashboard Home', path: '/student-dashboard', icon: '🏠' },
     { name: 'Security Guard', path: '/student-dashboard/safety', icon: '🛡️' },
     { name: 'Mindfulness Zone', path: '/student-dashboard/wellness', icon: '🧘' },
+    { name: 'Usage Limits', path: '/student-dashboard/set-limit', icon: '⏳' }, 
+
   ];
 
   return (

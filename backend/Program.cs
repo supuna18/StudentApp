@@ -19,6 +19,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
 
+builder.Services.AddSingleton<WellbeingService>(); 
 
 
 
@@ -63,3 +64,4 @@ app.MapControllers();
 
 // Docker ඇතුළේ දුවන්න මේ පේළිය
 app.Run("http://0.0.0.0:8080");
+
