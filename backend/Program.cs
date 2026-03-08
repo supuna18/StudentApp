@@ -18,6 +18,10 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddSingleton<WellbeingService>(); 
+
+
 builder.Services.AddControllers();
 
 // CORS සැකසුම්: Browser Extension එකට API එකට කතා කිරීමට මෙයින් අවසර ලැබේ
@@ -57,5 +61,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Docker ඇතුළේ 8080 හි දුවන නමුත් Docker Compose එක මගින් මෙය පිටතට 5000 ලෙස ලැබේ
+// Docker ඇතුළේ දුවන්න මේ පේළිය
 app.Run("http://0.0.0.0:8080");
+
