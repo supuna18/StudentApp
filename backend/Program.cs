@@ -22,6 +22,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddSingleton<WellbeingService>(); 
 
 
+
 builder.Services.AddControllers();
 
 // CORS සැකසුම්: Browser Extension එකට API එකට කතා කිරීමට මෙයින් අවසර ලැබේ
