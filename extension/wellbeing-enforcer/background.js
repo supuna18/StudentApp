@@ -1,64 +1,47 @@
-// 1. මුලින්ම අවශ්‍ය Variables හඳුන්වා දීම
-console.log("EduSync Background Script Loaded! 🚀");
+let usageData = {}; 
+let LIMITS = { "facebook.com": 1, "youtube.com": 2, "instagram.com": 1 }; 
 
-let usageData = {}; // වෙබ් අඩවි වල ගත කළ කාලය තබා ගැනීමට
-const LIMITS = { 
-    "facebook.com": 1,   // විනාඩි 1ක ලිමිට් එකක්
-    "youtube.com": 2     // විනාඩි 2ක ලිමිට් එකක්
-}; 
-
-// 2. ටැබ් එකක් මාරු කරන විට හෝ අලුත් එකක් Open කරන විට ක්‍රියාත්මක වන Listener එක
-chrome.tabs.onActivated.addListener(() => {
-    console.log("Tab switched! Checking for limits...");
-});
-
-// 3. ටයිමර් එක - සෑම තත්පර 10කට වරක්ම කාලය ගණනය කරයි
-chrome.alarms.create("usageTimer", { periodInMinutes: 0.166 }); // තත්පර 10ක්
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "usageTimer") {
+// තත්පරයෙන් තත්පරයට කාලය ගණනය කිරීම
+setInterval(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length === 0 || !tabs[0].url) return;
+        if (tabs.length === 0 || !tabs[0].url) return;
 
-      try {
-        let url = new URL(tabs[0].url);
-        let domain = url.hostname.replace('www.', '');
-
-        // ලිමිට් එකක් දාපු සයිට් එකක් නම් (facebook/youtube) පමණක් කාලය ගණනය කරන්න
-        if (LIMITS[domain]) {
-          usageData[domain] = (usageData[domain] || 0) + 10; // තත්පර 10ක් එකතු කරන්න
-          let minutesSpent = usageData[domain] / 60;
-
-          console.log(`${domain} වල ගත කළ කාලය: ${minutesSpent.toFixed(2)} min / Limit: ${LIMITS[domain]} min`);
-
-          // ලිමිට් එක පැනලා නම් Content Script එකට "Block" කරන්න මැසේජ් එකක් යවන්න
-          if (minutesSpent >= LIMITS[domain]) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: "BLOCK_SITE", domain: domain });
-          }
-        }
-      } catch (e) {
-        // chrome:// හෝ වෙනත් URL වලදී error එන එක වැළැක්වීමට
-      }
-    });
-  }
-});
-
-// 4. Content Script එකට අවශ්‍ය තොරතුරු ලබා දීමට (Refresh කළ විට අවශ්‍ය වේ)
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "CHECK_CURRENT_STATUS") {
         try {
-            let url = new URL(sender.tab.url);
-            let domain = url.hostname.replace('www.', '');
-            let spent = (usageData[domain] || 0) / 60;
-            let limit = LIMITS[domain] || Infinity;
+            let url = new URL(tabs[0].url);
+            let hostname = url.hostname;
+            
+            // Domain එක Extract කිරීම (facebook.com)
+            let parts = hostname.split('.');
+            let domain = parts.slice(-2).join('.'); 
 
-            if (spent >= limit) {
-                sendResponse({ isBlocked: true, domain: domain });
-            } else {
-                sendResponse({ isBlocked: false });
+            if (LIMITS[domain]) {
+                // කාලය තත්පරයකින් වැඩි කිරීම
+                usageData[domain] = (usageData[domain] || 0) + 1;
+                
+                let limitInSeconds = LIMITS[domain] * 60;
+                let timeLeft = limitInSeconds - usageData[domain];
+
+                if (timeLeft <= 0) {
+                    chrome.tabs.sendMessage(tabs[0].id, { action: "BLOCK_SITE", domain: domain });
+                } else {
+                    // ඉතිරි වෙලාව Update කිරීමට Content Script එකට යවයි
+                    chrome.tabs.sendMessage(tabs[0].id, { action: "UPDATE_TIMER", timeLeft: timeLeft });
+                }
             }
         } catch (e) {
-            sendResponse({ isBlocked: false });
+            // chrome:// URLs වැනි දේවල් මඟහරියි
+        }
+    });
+}, 1000);
+
+// කාලය වැඩි කිරීමට එන Request එක බාර ගැනීම (Listener එක Interval එකෙන් එළියේ තිබිය යුතුය)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "EXTEND_TIME") {
+        let domain = request.domain;
+        if (LIMITS[domain]) {
+            LIMITS[domain] += 5; // තව විනාඩි 5ක් එකතු කරයි
+            console.log(`${domain} සඳහා කාලය විනාඩි 5කින් වැඩි කළා! ✅`);
+            sendResponse({ success: true });
         }
     }
     return true; 

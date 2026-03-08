@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Sidebar from "../components/Sidebar";
 import ReportSite from '../components/Safety/ReportSite';
 import MindfulnessZone from '../components/Safety/MindfulnessZone';
+import SetLimitForm from '../components/Wellbeing/SetLimitForm';  
 
 const StudentDashboard = () => {
   return (
@@ -47,6 +48,8 @@ const StudentDashboard = () => {
           {/* MEMBER 2 PAGES */}
           <Route path="safety" element={<div className="max-w-3xl mx-auto py-6"><ReportSite /></div>} />
           <Route path="wellness" element={<div className="max-w-2xl mx-auto py-6"><MindfulnessZone /></div>} />
+          <Route path="set-limit" element={<SetLimitForm />} />
+
         </Routes>
       </div>
     </div>
