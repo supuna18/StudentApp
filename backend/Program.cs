@@ -18,6 +18,8 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddSingleton<WellbeingService>(); 
+
 
 builder.Services.AddControllers();
 
