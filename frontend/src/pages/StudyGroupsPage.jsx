@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; 
 
 // --- Helpers ---
 function onlyDigits(s) { return (s || "").replace(/\D/g, ""); }
@@ -10,6 +10,7 @@ function isValidPhone(phone) {
 
 export default function StudyGroupsPage() {
   const currentUser = localStorage.getItem("username") || "kavishalenee1302";
+  const navigate = useNavigate();
 
   // States
   const [groups, setGroups] = useState([]); 
@@ -121,6 +122,10 @@ export default function StudyGroupsPage() {
       if (res.ok) {
         setOtpCode(""); setPhone(""); loadGroups();
         showToast("success", "✅ Joined successfully via Backend!");
+                // [ADD] Automatically navigate to the chat page using the Join Code as the room ID
+        setTimeout(() => {
+            navigate(`/chat/${otpCode}`);
+        }, 1000);
       } else {
         setJoinErrors(p => ({ ...p, code: "Invalid Code" }));
         showToast("error", "❌ Invalid join code.");
@@ -216,6 +221,12 @@ export default function StudyGroupsPage() {
                  <div>
                    <h2 className="text-3xl font-black text-slate-800">{selected.name}</h2>
                    <p className="text-slate-500 mt-3 leading-relaxed">{selected.description}</p>
+                    <button 
+                    onClick={() => navigate(`/chat/${selected.joinCode}`)} 
+                    className="mt-6 w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-black py-4 rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-100"
+                   >
+                     💬 ENTER GROUP CHAT
+                   </button>
                    <div className="mt-6 flex items-center gap-4">
                       <div className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase tracking-widest">
                         Code: {selected.joinCode}

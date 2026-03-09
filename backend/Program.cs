@@ -1,5 +1,6 @@
 using StudentApp.Api.Data;
 using StudentApp.Api.Services;
+using StudentApp.Api.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -8,7 +9,7 @@ using MongoDB.Driver;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- සර්විස් රෙජිස්ටර් කිරීම ---
-
+builder.Services.AddSignalR();
 // MongoDB Client එක Register කිරීම (EduSyncCluster Atlas එකට සම්බන්ධ වේ)
 builder.Services.AddSingleton<IMongoClient>(sp => 
 {
@@ -26,9 +27,14 @@ builder.Services.AddSingleton<WellbeingService>();
 builder.Services.AddControllers();
 
 // CORS සැකසුම්: Browser Extension එකට API එකට කතා කිරීමට මෙයින් අවසර ලැබේ
+// [EDIT] Updated to support SignalR without breaking other teammates' functions or the Extension
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowAll", b => b
+        .SetIsOriginAllowed(_ => true) // Allows any origin (including the Extension and other ports)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()); // Required for your SignalR chat to connect
 });
 
 // Authentication සහ JWT සැකසුම්
@@ -61,6 +67,7 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ChatHub>("/chatHub");
 
 // Docker ඇතුළේ දුවන්න මේ පේළිය
 app.Run("http://0.0.0.0:8080");
