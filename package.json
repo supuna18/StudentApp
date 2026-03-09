@@ -1,40 +1,10 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using System.Collections.Generic;
-
-namespace StudentApp.Api.Models;
-
-public class StudyGroup
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string? Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    
-    // මේ ගෲප් එක හදපු කෙනාගේ User ID එක
-    public string CreatedBy { get; set; } = string.Empty;
-
-    // අනිත් අයට ජොයින් වෙන්න දෙන රහස් කේතය
-    public string JoinCode { get; set; } = string.Empty;
-
-    // ගෲප් එකේ ඉන්න සාමාජිකයින්ගේ ලැයිස්තුව
-    public List<GroupMember> Members { get; set; } = new();
+"dependencies": {
+    "@microsoft/signalr": "^10.0.0",
+    "canvas-confetti": "^1.9.4",
+    "framer-motion": "^12.35.0",
+    "lucide-react": "^0.576.0",
+    "react-router-dom": "^7.13.1",
+    "recharts": "^3.7.0"
 }
-
-public class GroupMember
-{
-    // Auth system එකේ තියෙන User ID එක මෙතනට ගන්න එක වටිනවා
-    public string UserId { get; set; } = string.Empty;
-    public string Username { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty; // Phone වෙනුවට Email දාන එක ලේසියි Auth එක එක්ක බලද්දී
-}
-
-// ජොයින් වෙන්න රික්වෙස්ට් එක එවද්දී පාවිච්චි කරන එක
-public class JoinGroupRequest
-{
-    public string JoinCode { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string Username { get; set; } = string.Empty;
 }
