@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     container_name: student-app-api
     ports:
-      - "5000:8080"
+      - "5005:8080"
     depends_on:
       - db
     environment:
