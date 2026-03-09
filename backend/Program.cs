@@ -7,10 +7,10 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- සර්විස් රෙජිස්ටර් කිරීම ---
+// --- Services Registration ---
 
-// MongoDB Client එක Register කිරීම (EduSyncCluster Atlas එකට සම්බන්ධ වේ)
-builder.Services.AddSingleton<IMongoClient>(sp => 
+// MongoDB Client registration: Connection string එක appsettings.json එකෙන් ගන්නවා
+builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var connectionString = builder.Configuration.GetSection("StudentDatabase")["ConnectionString"];
     return new MongoClient(connectionString);
@@ -19,7 +19,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
 
-builder.Services.AddSingleton<WellbeingService>(); 
+builder.Services.AddSingleton<WellbeingService>();
 
 
 
@@ -53,7 +53,7 @@ builder.Services.AddAuthentication(x =>
 
 // --------------------------------------------------------
 
-var app = builder.Build(); 
+var app = builder.Build();
 
 // CORS සක්‍රීය කිරීම (අනිවාර්යයි)
 app.UseCors("AllowAll");
