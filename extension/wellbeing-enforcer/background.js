@@ -10,7 +10,7 @@ setInterval(() => {
             let url = new URL(tabs[0].url);
             let hostname = url.hostname;
             
-            // Domain එක Extract කිරීම (facebook.com)
+            // To Domain extract (facebook.com)
             let parts = hostname.split('.');
             let domain = parts.slice(-2).join('.'); 
 
