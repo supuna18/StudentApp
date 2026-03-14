@@ -14,12 +14,12 @@ namespace StudentApp.Api.Controllers
 
         public SafetyController(IMongoClient mongoClient)
         {
-            // Docker පාවිච්චි කළත් MongoClient එක මගින් Atlas එකට සම්බන්ධ වේ
+            // Docker use kalath MongoClient magin Atlas connect wei
             var database = mongoClient.GetDatabase("EduSyncDB");
             _safetyCollection = database.GetCollection<SafetyReport>("SafetyReports");
         }
 
-        // 1. Report එකක් ඇතුළත් කිරීම (CREATE)
+        // 1. Report ekak insert kirma (CREATE)
         [HttpPost("report")]
         public async Task<IActionResult> CreateReport([FromBody] SafetyReport report)
         {
@@ -30,7 +30,7 @@ namespace StudentApp.Api.Controllers
             return Ok(new { message = "Safety report submitted!" });
         }
 
-        // 2. සියලුම Reports ලබා ගැනීම (READ)
+        // 2. get all Reports (READ)
         [HttpGet("my-reports")]
         public async Task<ActionResult<IEnumerable<SafetyReport>>> GetMyReports()
         {
@@ -38,20 +38,20 @@ namespace StudentApp.Api.Controllers
             return Ok(reports);
         }
 
-        // 3. Extension එක සඳහා URL එක Database එකේ තිබේදැයි පරීක්ෂා කිරීම (THE CHECK)
+        // 3. Extension eka sadaha URL ek Database eke thibedai check kirma (THE CHECK)
         [HttpGet("check-url")]
         public async Task<IActionResult> CheckUrl([FromQuery] string url)
         {
             if (string.IsNullOrEmpty(url)) return BadRequest();
 
-            // URL එක පිරිසිදු කිරීම (Case-insensitive matching සඳහා)
+            // URL eka clear kirima (Case-insensitive matching සඳහා)
             string cleanUrl = url.ToLower()
                 .Replace("https://", "").Replace("http://", "").Replace("www.", "");
             
-            // Domain එකේ මුල් කොටස (උදා: ndtv.com) Database එකේ ඕනෑම තැනක තිබේදැයි Regex මගින් පරීක්ෂා කරයි
+            // Domain eke mul kotasa (ex: ndtv.com) Database eke onema thanka thibedai Regex magin check karai
             string domainOnly = cleanUrl.Split('/')[0];
 
-            // Regex filter එකක් මගින් "ndtv.com" යන වචනය ඇති සියලුම records සොයයි
+            // Regex filter ekk magin "ndtv.com" yana word eka ati records soyai
             var filter = Builders<SafetyReport>.Filter.Regex("Url", 
                 new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
 
