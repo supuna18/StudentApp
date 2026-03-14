@@ -65,7 +65,7 @@ function createTimerUI() {
     document.head.appendChild(style);
 }
 
-// සයිට් එක සම්පූර්ණයෙන්ම බ්ලොක් කරන ස්ක්‍රීන් එක
+// site block screen
 function blockSite(domain) {
     if (timerElement) timerElement.remove();
     
