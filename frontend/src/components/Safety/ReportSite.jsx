@@ -7,7 +7,7 @@ const ReportSite = () => {
     const [status, setStatus] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // 1. Database එකෙන් History එක ගෙන ඒම (READ)
+    // 1. Database eken History eka gena ema (READ)
     const fetchReports = async () => {
         try {
             const res = await fetch('http://localhost:5000/api/safety/my-reports');
@@ -24,7 +24,7 @@ const ReportSite = () => {
         fetchReports();
     }, []);
 
-    // 2. Submit හෝ Update කිරීම (CREATE / UPDATE)
+    // 2. Submit or Update  (CREATE / UPDATE)
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -50,8 +50,8 @@ const ReportSite = () => {
                 setStatus(editId ? '✅ Report Updated!' : '✅ Report Submitted!');
                 setFormData({ url: '', reason: '' });
                 setEditId(null);
-                await fetchReports(); // History එක refresh කිරීම
-                setTimeout(() => setStatus(''), 3000); // තත්පර 3කින් මැසේජ් එක අයින් කිරීම
+                await fetchReports(); // History ekaa refresh kirima
+                setTimeout(() => setStatus(''), 3000); //  3s walin msg eka remove kirima
             }
         } catch (err) {
             setStatus('❌ Error connecting to server');
@@ -60,7 +60,7 @@ const ReportSite = () => {
         }
     };
 
-    // 3. Delete කිරීම (DELETE)
+    // 3. Delete kirima (DELETE)
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this report?")) {
             try {
@@ -74,7 +74,7 @@ const ReportSite = () => {
         }
     };
 
-    // 4. Edit mode එකට යාම
+    // 4. Edit mode ekt yaama
     const startEdit = (report) => {
         setEditId(report.id || report.Id);
         setFormData({ 
