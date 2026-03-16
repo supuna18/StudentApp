@@ -19,7 +19,7 @@ namespace StudentApp.Api.Controllers
             _safetyCollection = database.GetCollection<SafetyReport>("SafetyReports");
         }
 
-        // 1. Report ekak insert kirma (CREATE)
+        // 1.inserting a report (CREATE)
         [HttpPost("report")]
         public async Task<IActionResult> CreateReport([FromBody] SafetyReport report)
         {
