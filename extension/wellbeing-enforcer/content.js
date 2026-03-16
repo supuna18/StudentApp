@@ -30,7 +30,7 @@ function updateFloatingTimer(seconds) {
     }
 }
 
-// ටයිමර් එක මුලින්ම සයිට් එකේ නිර්මාණය කිරීම
+// timer set for web
 function createTimerUI() {
     timerElement = document.createElement("div");
     timerElement.id = "edusync-floating-timer";
@@ -64,7 +64,6 @@ function createTimerUI() {
     `;
     document.head.appendChild(style);
 }
-
 // site block screen
 function blockSite(domain) {
     if (timerElement) timerElement.remove();
