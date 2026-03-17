@@ -20,7 +20,7 @@ function updateFloatingTimer(seconds) {
     let secs = seconds % 60;
     timerElement.innerText = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs} Left`;
 
-    // කාලය විනාඩියකට වඩා අඩු නම් රතු කර ගැහෙන්න (Pulse) සලස්වයි
+    // If the time is less than a minute, it will turn red and pulse.
     if (seconds < 60) {
         timerElement.style.background = "#ef4444";
         timerElement.style.animation = "pulse 1s infinite";
