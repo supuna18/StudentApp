@@ -14,7 +14,7 @@ namespace StudentApp.Api.Controllers
 
         public SafetyController(IMongoClient mongoClient)
         {
-            // Docker use kalath MongoClient magin Atlas connect wei
+            //Even when using Docker, the connection to MongoDB Atlas is done via MongoClient.
             var database = mongoClient.GetDatabase("EduSyncDB");
             _safetyCollection = database.GetCollection<SafetyReport>("SafetyReports");
         }
@@ -38,20 +38,20 @@ namespace StudentApp.Api.Controllers
             return Ok(reports);
         }
 
-        // 3. Extension eka sadaha URL ek Database eke thibedai check kirma (THE CHECK)
+        // 3. Checking whether the URL for the extension exists in the database.
         [HttpGet("check-url")]
         public async Task<IActionResult> CheckUrl([FromQuery] string url)
         {
             if (string.IsNullOrEmpty(url)) return BadRequest();
 
-            // URL eka clear kirima (Case-insensitive matching සඳහා)
+            // clear the URL (Case-insensitive matching සඳහා)
             string cleanUrl = url.ToLower()
                 .Replace("https://", "").Replace("http://", "").Replace("www.", "");
             
-            // Domain eke mul kotasa (ex: ndtv.com) Database eke onema thanka thibedai Regex magin check karai
+            //Using regex to check whether the main part of the domain (e.g., ndtv.com) exists anywhere in the database.
             string domainOnly = cleanUrl.Split('/')[0];
 
-            // Regex filter ekk magin "ndtv.com" yana word eka ati records soyai
+            // Using a regex filter to find records that contain the word ‘ndtv.com
             var filter = Builders<SafetyReport>.Filter.Regex("Url", 
                 new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
 
