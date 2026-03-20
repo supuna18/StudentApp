@@ -24,7 +24,7 @@ setInterval(() => {
                 if (timeLeft <= 0) {
                     chrome.tabs.sendMessage(tabs[0].id, { action: "BLOCK_SITE", domain: domain });
                 } else {
-                    // ඉතිරි වෙලාව Update කිරීමට Content Script එකට යවයි
+                    // ඉතිරි වෙලාව Update කිරීමට Content Script එකට යවයි.
                     chrome.tabs.sendMessage(tabs[0].id, { action: "UPDATE_TIMER", timeLeft: timeLeft });
                 }
             }
