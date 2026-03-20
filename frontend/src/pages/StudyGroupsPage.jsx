@@ -26,8 +26,8 @@ export default function StudyGroupsPage() {
   const [joinErrors, setJoinErrors] = useState({ code: "", phone: "" });
 
   // --- API Connection ---
-  // FIXED: Changed from 8080 to 5000 to match Docker external mapping
-  const API_BASE_URL = "http://localhost:5000/api/studygroups";
+  // FIXED: Changed from 8080 to 5005 to match Docker external mapping
+  const API_BASE_URL = "http://localhost:5005/api/studygroups";
 
   useEffect(() => {
     loadGroups();
@@ -135,7 +135,7 @@ export default function StudyGroupsPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="text-center">
         <p className="text-blue-600 font-bold animate-pulse text-xl">Connecting to EduSync Server...</p>
-        <p className="text-slate-400 text-sm mt-2">Checking Backend on Port 5000</p>
+        <p className="text-slate-400 text-sm mt-2">Checking Backend on Port 5005</p>
       </div>
     </div>
   );

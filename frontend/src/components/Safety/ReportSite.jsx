@@ -10,7 +10,7 @@ const ReportSite = () => {
     // 1. Database eken History eka gena ema (READ)
     const fetchReports = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/safety/my-reports');
+            const res = await fetch('http://localhost:5005/api/safety/my-reports');
             if (res.ok) {
                 const data = await res.json();
                 setReports(data);
@@ -31,7 +31,7 @@ const ReportSite = () => {
         setStatus(editId ? 'Updating...' : 'Submitting...');
 
         const method = editId ? 'PUT' : 'POST';
-        const endpoint = editId ? `http://localhost:5000/api/safety/report/${editId}` : 'http://localhost:5000/api/safety/report';
+        const endpoint = editId ? `http://localhost:5005/api/safety/report/${editId}` : 'http://localhost:5005/api/safety/report';
 
         try {
             const res = await fetch(endpoint, {
@@ -64,7 +64,7 @@ const ReportSite = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this report?")) {
             try {
-                const res = await fetch(`http://localhost:5000/api/safety/report/${id}`, { method: 'DELETE' });
+                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     fetchReports();
                 }
