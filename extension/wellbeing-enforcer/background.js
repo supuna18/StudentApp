@@ -1,48 +1,67 @@
-let usageData = {}; 
-let LIMITS = { "facebook.com": 1, "youtube.com": 2, "instagram.com": 1 }; 
+let LIMITS = { "facebook.com": 1, "youtube.com": 2 }; 
+let userId = "user123";
 
-// තත්පරයෙන් තත්පරයට කාලය ගණනය කිරීම
-setInterval(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+// 1. Backend එකෙන් Limits ලබා ගැනීම
+async function syncLimitsFromBackend() {
+    try {
+        const response = await fetch(`http://localhost:5005/api/wellbeing/limits/${userId}`);
+        const result = await response.json();
+        
+        if (result && result.data) {
+            let newLimits = {};
+            result.data.forEach(item => {
+                newLimits[item.domain] = item.limitMinutes;
+            });
+            LIMITS = newLimits;
+            console.log("Limits Updated! ✅", LIMITS);
+        }
+    } catch (err) {
+        console.log("Sync failed. Using local defaults.");
+    }
+}
+
+// 2. ටයිමර් එක
+setInterval(async () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
         if (tabs.length === 0 || !tabs[0].url) return;
 
         try {
             let url = new URL(tabs[0].url);
-            let hostname = url.hostname;
-            
-            // To Domain extract (facebook.com)
-            let parts = hostname.split('.');
-            let domain = parts.slice(-2).join('.'); 
+            let domain = url.hostname.replace('www.', '').split('.').slice(-2).join('.');
 
             if (LIMITS[domain]) {
-                // කාලය තත්පරයකින් වැඩි කිරීම
-                usageData[domain] = (usageData[domain] || 0) + 1;
-                
-                let limitInSeconds = LIMITS[domain] * 60;
-                let timeLeft = limitInSeconds - usageData[domain];
+                let storageKey = `usage_${domain}`;
+                let res = await chrome.storage.local.get([storageKey]);
+                let spentSeconds = res[storageKey] || 0;
+
+                spentSeconds += 1;
+                await chrome.storage.local.set({ [storageKey]: spentSeconds });
+
+                let timeLeft = (LIMITS[domain] * 60) - spentSeconds;
 
                 if (timeLeft <= 0) {
-                    chrome.tabs.sendMessage(tabs[0].id, { action: "BLOCK_SITE", domain: domain });
+                    chrome.tabs.sendMessage(tabs[0].id, { action: "BLOCK_SITE", domain: domain }).catch(() => {});
                 } else {
-                    // ඉතිරි වෙලාව Update කිරීමට Content Script එකට යවයි.
-                    chrome.tabs.sendMessage(tabs[0].id, { action: "UPDATE_TIMER", timeLeft: timeLeft });
+                    chrome.tabs.sendMessage(tabs[0].id, { action: "UPDATE_TIMER", timeLeft: timeLeft, domain: domain }).catch(() => {});
                 }
             }
-        } catch (e) {
-            // chrome:// URLs වැනි දේවල් මඟහරියි
-        }
+        } catch (e) {}
     });
 }, 1000);
 
-// කාලය වැඩි කිරීමට එන Request එක බාර ගැනීම (Listener එක Interval එකෙන් එළියේ තිබිය යුතුය)
+// 3. Messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    let domain = request.domain;
     if (request.action === "EXTEND_TIME") {
-        let domain = request.domain;
-        if (LIMITS[domain]) {
-            LIMITS[domain] += 5; // තව විනාඩි 5ක් එකතු කරයි
-            console.log(`${domain} සඳහා කාලය විනාඩි 5කින් වැඩි කළා! ✅`);
+        LIMITS[domain] = (LIMITS[domain] || 0) + 5;
+        sendResponse({ success: true });
+    } else if (request.action === "REDUCE_TIME") {
+        if (LIMITS[domain] > 1) {
+            LIMITS[domain] -= 1;
             sendResponse({ success: true });
         }
     }
-    return true; 
+    return true;
 });
+
+syncLimitsFromBackend();
