@@ -95,7 +95,7 @@ const Hero = () => {
             <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-[14px] font-semibold px-7 py-3.5 rounded-xl shadow-[0_8px_24px_rgba(34,85,210,0.4)] hover:shadow-[0_12px_32px_rgba(34,85,210,0.5)] transition-all duration-200 hover:-translate-y-0.5">
               <Play size={15} fill="white" strokeWidth={0} />
               Start Focusing
-              <ArrowRight size={15} />
+              <ArrowRight size={15} /> 
             </button>
 
             <button className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] backdrop-blur-md text-white border border-white/15 text-[14px] font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5">
