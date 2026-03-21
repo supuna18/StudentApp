@@ -8,19 +8,19 @@ public class MongoService
     private readonly IMongoCollection<User> _usersCollection;
     private readonly IMongoCollection<StudyGroup> _studyGroupsCollection;
 
-    public MongoService(IConfiguration config)
+    public MongoService(IMongoClient client, IConfiguration config)
     {
-        var client = new MongoClient(config.GetSection("StudentDatabase:ConnectionString").Value);
-        var database = client.GetDatabase(config.GetSection("StudentDatabase:DatabaseName").Value);
+        var databaseName = config.GetSection("StudentDatabase:DatabaseName").Value;
+        var database = client.GetDatabase(databaseName);
         
-        // 1. Initializing the Users collection (Leader's code)
-        _usersCollection = database.GetCollection<User>(config.GetSection("StudentDatabase:CollectionName").Value);
+        var usersCollectionName = config.GetSection("StudentDatabase:CollectionName").Value;
+        _usersCollection = database.GetCollection<User>(usersCollectionName);
 
-        // 2. YOU MUST INITIALIZE your StudyGroups collection here:
-        _studyGroupsCollection = database.GetCollection<StudyGroup>("StudyGroups");
+        // Best practice: Read from configuration, fallback if needed
+        var groupsCollectionName = config.GetSection("StudentDatabase:GroupsCollectionName")?.Value ?? "StudyGroups";
+        _studyGroupsCollection = database.GetCollection<StudyGroup>(groupsCollectionName);
     }
 
-    // 3. ADD THIS PROPERTY so your Controller can access the data:
     public IMongoCollection<StudyGroup> StudyGroups => _studyGroupsCollection;
 
     public async Task CreateUserAsync(User newUser) => 
@@ -28,7 +28,6 @@ public class MongoService
 
     public async Task<User?> GetUserByEmailAsync(string email) => 
         await _usersCollection.Find(u => u.Email == email).FirstOrDefaultAsync();
-
 
     public async Task<List<User>> GetAllUsersAsync() =>
         await _usersCollection.Find(_ => true).ToListAsync();

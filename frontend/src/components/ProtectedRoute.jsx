@@ -1,15 +1,26 @@
 import { Navigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
-const ProtectedRoute = ({ children }) => {
-    // Check if there's a token in local storage
+const ProtectedRoute = ({ children, allowedRoles }) => {
     const token = localStorage.getItem('token');
 
-    // If there's no token, redirect to login page
     if (!token) {
         return <Navigate to="/login" replace />;
     }
 
-    // If there's a token, allow access to the protected route
+    try {
+        const decoded = jwtDecode(token);
+        const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+        if (allowedRoles && !allowedRoles.includes(userRole)) {
+            // Redirect to their respective dashboard if they try to access a route they aren't allowed to
+            return <Navigate to={userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard'} replace />;
+        }
+    } catch (e) {
+        localStorage.removeItem('token');
+        return <Navigate to="/login" replace />;
+    }
+
     return children;
 };
 

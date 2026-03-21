@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import Sidebar from "../components/Sidebar";
 import ReportSite from '../components/Safety/ReportSite';
 import MindfulnessZone from '../components/Safety/MindfulnessZone';
@@ -29,9 +29,9 @@ const StudentDashboard = () => {
               </p>
               
               <div className="mt-10">
-                <a href="/hub" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition">
+                <Link to="/hub" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition">
                   Open Collaboration Hub
-                </a>
+                </Link>
               </div>
 
               <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 opacity-25 grayscale">

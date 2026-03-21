@@ -4,14 +4,14 @@ using StudentApp.Api.Services;
 namespace StudentApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")] // මෙතනින් තමයි /api/users කියන පාර හැදෙන්නේ
+[Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
     private readonly UserService _userService;
 
-    public UsersController()
+    public UsersController(UserService userService)
     {
-        _userService = new UserService(); // පස්සේ මේක Dependency Injection වලින් හදමු
+        _userService = userService;
     }
 
     [HttpGet]

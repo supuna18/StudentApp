@@ -4,7 +4,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         const checkUrl = tab.url;
 
         // Docker එකේ පිටතට පේන Port එක 5000 බැවින් එයට Request එක යවයි
-        fetch(`http://localhost:5000/api/safety/check-url?url=${encodeURIComponent(checkUrl)}`)
+        fetch(`http://localhost:5005/api/safety/check-url?url=${encodeURIComponent(checkUrl)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.unsafeSite) {

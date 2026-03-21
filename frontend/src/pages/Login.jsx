@@ -59,10 +59,14 @@ const Login = () => {
                 localStorage.setItem('token', data.token);
                 const decoded = jwtDecode(data.token);
                 
-                // --- FIX 2: Role එක undefined වීම වැළැක්වීම ---
+                // Store username and role for other components to use
                 const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                const username = decoded.unique_name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'User';
                 
-                alert(`Welcome ${decoded.unique_name || 'User'}! Role: ${userRole}`);
+                localStorage.setItem('username', username);
+                localStorage.setItem('role', userRole);
+                
+                alert(`Welcome ${username}! Role: ${userRole}`);
                 
                 // replace: true මගින් history එකෙන් ලොගින් පේජ් එක මකනවා
                 navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });

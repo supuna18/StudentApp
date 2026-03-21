@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -9,11 +10,18 @@ public class User
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
+    [Required]
+    [StringLength(50, MinimumLength = 3)]
     public string Username { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
+
+    [Required]
     public string PasswordHash { get; set; } = string.Empty;
 
-    //  "Student" or "Admin" selecting the role of the user, default is "Student"
+    [Required]
     public string Role { get; set; } = "Student";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
