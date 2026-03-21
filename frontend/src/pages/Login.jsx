@@ -66,8 +66,6 @@ const Login = () => {
                 localStorage.setItem('username', username);
                 localStorage.setItem('role', userRole);
                 
-                alert(`Welcome ${username}! Role: ${userRole}`);
-                
                 // replace: true මගින් history එකෙන් ලොගින් පේජ් එක මකනවා
                 navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });
             } else {
