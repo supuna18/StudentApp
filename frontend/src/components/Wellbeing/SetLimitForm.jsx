@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import UsageChart from './UsageChart';
 
 const SetLimitForm = () => {
   const [domain, setDomain] = useState('');
@@ -328,7 +329,9 @@ const SetLimitForm = () => {
             </form>
           </div>
         </div>
+
       </div>
+      <UsageChart />
     </div>
     </>
   );

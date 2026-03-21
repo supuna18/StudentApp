@@ -18,5 +18,10 @@ namespace StudentApp.Api.Services // Namespace එක Services විය යු�
 
         public async Task CreateLimitAsync(UserLimit newLimit) =>
             await _userLimitsCollection.InsertOneAsync(newLimit);
+        
+        // අලුතින් එකතු කළ යුතු කොටස
+public async Task<List<UserLimit>> GetLimitsByUserAsync(string userId) =>
+    await _userLimitsCollection.Find(x => x.UserId == userId).ToListAsync();
+     
     }
 }
