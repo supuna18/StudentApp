@@ -39,5 +39,14 @@ public class WellbeingController : ControllerBase
             return BadRequest(new { message = "Error fetching limits", error = ex.Message });
         }
     }
+
+    [HttpPost("usage")]
+public async Task<IActionResult> SaveUsage([FromBody] DailyUsage usage)
+{
+    await _wellbeingService.UpdateUsageAsync(usage);
+    return Ok(new { message = "Usage recorded! 📊" });
+}
+
+
 }
 }

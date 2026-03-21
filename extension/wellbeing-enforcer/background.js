@@ -1,22 +1,24 @@
+// Default Limits (Backend එක Fail වුණොත් පාවිච්චි කිරීමට)
 let LIMITS = { "facebook.com": 1, "youtube.com": 2 }; 
+let usageData = {}; 
 let userId = "user123";
 
-// 1. Backend එකෙන් Limits ලබා ගැනීම
+// 1. Backend එකෙන් සැබෑ Limits ලබා ගැනීම
 async function syncLimitsFromBackend() {
     try {
         const response = await fetch(`http://localhost:5005/api/wellbeing/limits/${userId}`);
         const result = await response.json();
         
-        if (result && result.data) {
+        if (result && result.data && result.data.length > 0) {
             let newLimits = {};
             result.data.forEach(item => {
                 newLimits[item.domain] = item.limitMinutes;
             });
             LIMITS = newLimits;
-            console.log("Limits Updated! ✅", LIMITS);
+            console.log("Database එකෙන් ලිමිට්ස් ලැබුණා! ✅", LIMITS);
         }
     } catch (err) {
-        console.log("Sync failed. Using local defaults.");
+        console.log("Backend sync failed. Default limits පාවිච්චි කරනවා.");
     }
 }
 
