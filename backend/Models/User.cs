@@ -13,8 +13,11 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
 
-    //  "Student" or "Admin" selecting the role of the user, default is "Student"
+    // "Student" or "Admin" selecting the role of the user, default is "Student"
     public string Role { get; set; } = "Student";
+
+    // --- NEW ADDITION FOR MUSIC PREFERENCES ---
+    public List<string> MusicPreferences { get; set; } = new List<string>();
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
