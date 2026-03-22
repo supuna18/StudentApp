@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentApp.Api.Models;
 using StudentApp.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentApp.Api.Controllers;
 
@@ -23,7 +24,7 @@ public class AuthController : ControllerBase
         {
             Username = request.Username,
             Email = request.Email,
-            Role = "Student"
+            Role = string.IsNullOrEmpty(request.Role) ? "Student" : request.Role
         };
 
         var result = await _authService.RegisterAsync(user, request.Password);
@@ -44,12 +45,12 @@ public class AuthController : ControllerBase
         return Ok(new { token });
     }
 
-    // 3. Debug Endpoint (මෙන්න අලුත් කෑල්ල)
-    // මේකෙන් තමයි අපි ඇත්තටම DB එකේ දත්ත ඉන්නවද බලන්නේ
+    // 3. User Management Endpoint (Requested as check-db)
+    [Authorize(Roles = "Admin")]
     [HttpGet("check-db")]
     public async Task<IActionResult> CheckDb()
     {
-        var users = await _authService.GetAllUsersForDebugAsync();
+        var users = await _authService.GetAllUsersForManagementAsync();
         return Ok(users);
     }
 }
@@ -59,6 +60,7 @@ public class RegisterRequest
     public string Username { get; set; } = "";
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
+    public string? Role { get; set; }
 }
 
 public class LoginRequest
