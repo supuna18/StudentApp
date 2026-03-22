@@ -19,7 +19,6 @@ public class AuthService
         _config = config;
     }
 
-    // 1. Register Part
     public async Task<string> RegisterAsync(User user, string password)
     {
         var existingUser = await _mongoService.GetUserByEmailAsync(user.Email);
@@ -31,7 +30,6 @@ public class AuthService
         return "Success";
     }
 
-    // 2.Login Part 
     public async Task<string?> LoginAsync(string email, string password)
     {
         var user = await _mongoService.GetUserByEmailAsync(email);
@@ -40,12 +38,17 @@ public class AuthService
             return null;
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]!);
+        var jwtKey = _config["Jwt:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            throw new InvalidOperationException("JWT Key is missing in configuration.");
+        }
+        var key = Encoding.ASCII.GetBytes(jwtKey);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] {
-                new Claim(ClaimTypes.NameIdentifier, user.Id!),
+                new Claim(ClaimTypes.NameIdentifier, user.Id ?? string.Empty),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role)
             }),
@@ -59,8 +62,7 @@ public class AuthService
         return tokenHandler.WriteToken(token);
     }
 
-    // 3. chack user exist or not in database
-    public async Task<List<User>> GetAllUsersForDebugAsync()
+    public async Task<List<User>> GetAllUsersForManagementAsync()
     {
         return await _mongoService.GetAllUsersAsync();
     }

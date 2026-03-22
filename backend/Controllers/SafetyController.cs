@@ -4,6 +4,8 @@ using StudentApp.Api.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System; // DateTime සඳහා අනිවාර්යයි
+using StudentApp.Api.Data;
+
 
 namespace StudentApp.Api.Controllers
 {
@@ -11,12 +13,13 @@ namespace StudentApp.Api.Controllers
     [Route("api/[controller]")]
     public class SafetyController : ControllerBase
     {
-        private readonly IMongoCollection<SafetyReport> _safetyCollection;
+        private readonly MongoService _mongoService;
 
-        public SafetyController(IMongoClient mongoClient)
+        public SafetyController(MongoService mongoService)
         {
-            var database = mongoClient.GetDatabase("EduSyncDB");
-            _safetyCollection = database.GetCollection<SafetyReport>("SafetyReports");
+
+            _mongoService = mongoService;
+
         }
 
         [HttpPost("report")]
@@ -25,14 +28,14 @@ namespace StudentApp.Api.Controllers
             if (report == null) return BadRequest();
             report.ReportedAt = DateTime.UtcNow;
             report.Status = "Pending";
-            await _safetyCollection.InsertOneAsync(report);
+            await _mongoService.SafetyReports.InsertOneAsync(report);
             return Ok(new { message = "Safety report submitted!" });
         }
 
         [HttpGet("my-reports")]
         public async Task<ActionResult<IEnumerable<SafetyReport>>> GetMyReports()
         {
-            var reports = await _safetyCollection.Find(_ => true).ToListAsync();
+            var reports = await _mongoService.SafetyReports.Find(_ => true).ToListAsync();
             return Ok(reports);
         }
 
@@ -42,8 +45,15 @@ namespace StudentApp.Api.Controllers
             if (string.IsNullOrEmpty(url)) return BadRequest();
             string cleanUrl = url.ToLower().Replace("https://", "").Replace("http://", "").Replace("www.", "");
             string domainOnly = cleanUrl.Split('/')[0];
+
             var filter = Builders<SafetyReport>.Filter.Regex("Url", new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
             var reportExists = await _safetyCollection.Find(filter).AnyAsync();
+
+            // Regex filter එකක් මගින් "ndtv.com" යන වචනය ඇති සියලුම records සොයයි
+            var filter = Builders<SafetyReport>.Filter.Regex("Url", 
+                new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
+
+            var reportExists = await _mongoService.SafetyReports.Find(filter).AnyAsync();
             return Ok(new { unsafeSite = reportExists });
         }
 

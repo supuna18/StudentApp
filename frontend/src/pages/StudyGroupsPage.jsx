@@ -9,7 +9,7 @@ function isValidPhone(phone) {
 }
 
 export default function StudyGroupsPage() {
-  const currentUser = localStorage.getItem("username") || "kavishalenee1302";
+  const currentUser = localStorage.getItem("username") || "User";
 
   // States
   const [groups, setGroups] = useState([]); 
@@ -26,7 +26,7 @@ export default function StudyGroupsPage() {
   const [joinErrors, setJoinErrors] = useState({ code: "", phone: "" });
 
   // --- API Connection ---
-  // FIXED: Changed from 8080 to 5005 to match Docker external mapping
+
   const API_BASE_URL = "http://localhost:5005/api/studygroups";
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function StudyGroupsPage() {
       const data = await res.json();
       setGroups(data);
       if (data.length > 0 && !selectedId) {
-        setSelectedId(data[0].id || data[0]._id);
+        setSelectedId(data[0]._id || data[0].id);
       }
     } catch (err) {
       console.error("Backend connection failed.", err);
@@ -51,7 +51,7 @@ export default function StudyGroupsPage() {
   };
 
   const selected = useMemo(() => 
-    groups.find((g) => (g.id === selectedId || g._id === selectedId)) ?? null, 
+    groups.find((g) => (g._id === selectedId || g.id === selectedId)) ?? null, 
     [groups, selectedId]
   );
 
@@ -173,16 +173,19 @@ export default function StudyGroupsPage() {
               {groups.length === 0 ? (
                 <p className="text-slate-400 italic px-2">No groups found in database.</p>
               ) : (
-                groups.map((g) => (
-                  <button key={g.id} onClick={() => setSelectedId(g.id)} className={`w-full text-left rounded-2xl p-5 border transition-all ${ g.id === selectedId ? 'bg-white border-blue-500 shadow-md ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:border-blue-300 shadow-sm'}`}>
-                    <p className="font-bold text-lg">{g.name}</p>
-                    <p className="text-sm text-slate-500 line-clamp-1 mt-1">{g.description}</p>
-                    <div className="mt-3 flex justify-between items-center">
-                       <span className="text-[10px] font-bold text-blue-500 uppercase">Code: {g.joinCode}</span>
-                       <span className="text-[10px] font-bold text-slate-400 uppercase">{g.members?.length || 0} Members</span>
-                    </div>
-                  </button>
-                ))
+                groups.map((g) => {
+                  const id = g._id || g.id;
+                  return (
+                    <button key={id} onClick={() => setSelectedId(id)} className={`w-full text-left rounded-2xl p-5 border transition-all ${ id === selectedId ? 'bg-white border-blue-500 shadow-md ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:border-blue-300 shadow-sm'}`}>
+                      <p className="font-bold text-lg">{g.name}</p>
+                      <p className="text-sm text-slate-500 line-clamp-1 mt-1">{g.description}</p>
+                      <div className="mt-3 flex justify-between items-center">
+                         <span className="text-[10px] font-bold text-blue-500 uppercase">Code: {g.joinCode}</span>
+                         <span className="text-[10px] font-bold text-slate-400 uppercase">{g.members?.length || 0} Members</span>
+                      </div>
+                    </button>
+                  );
+                })
               )}
             </div>
           </div>

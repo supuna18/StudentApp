@@ -1,60 +1,137 @@
 import { motion } from "framer-motion";
-import { UserCircle, Package, QrCode, AlertCircle } from "lucide-react";
+import { Clock, ShieldAlert, Users, LayoutDashboard } from "lucide-react";
 
-const modules = [
+const features = [
   {
-    title: "Sports Profile",
-    desc: "Comprehensive student profiles and institutional achievement maintenance.",
-    icon: <UserCircle size={30} />,
-    color: "bg-blue-500"
+    title: "Usage Control",
+    desc: "Set daily limits for distracting sites and monitor your screen time with detailed analytics.",
+    icon: <Clock size={26} />,
+    iconColor: "text-blue-600",
+    iconBg: "bg-blue-50",
+    border: "hover:border-blue-200",
+    glow: "hover:shadow-blue-100",
   },
   {
-    title: "Equipment Tracker",
-    desc: "Real-time inventory monitoring and usage-based forecasting.",
-    icon: <Package size={30} />,
-    color: "bg-indigo-500"
+    title: "Content Safety",
+    desc: "AI-powered fake news detection and mindful break reminders within your browser.",
+    icon: <ShieldAlert size={26} />,
+    iconColor: "text-emerald-600",
+    iconBg: "bg-emerald-50",
+    border: "hover:border-emerald-200",
+    glow: "hover:shadow-emerald-100",
   },
   {
-    title: "Live Lending",
-    desc: "QR-based seamless borrowing and SignalR live synchronization.",
-    icon: <QrCode size={30} />,
-    color: "bg-sky-500"
+    title: "Study Hub",
+    desc: "Real-time collaboration with peers through synchronized study groups and live chat.",
+    icon: <Users size={26} />,
+    iconColor: "text-violet-600",
+    iconBg: "bg-violet-50",
+    border: "hover:border-violet-200",
+    glow: "hover:shadow-violet-100",
   },
   {
-    title: "Accountability",
-    desc: "Fine calculation, payment approval, and trust score systems.",
-    icon: <AlertCircle size={30} />,
-    color: "bg-blue-700"
-  }
+    title: "Admin Insights",
+    desc: "Comprehensive dashboard for administrators to manage resources and monitor system wellbeing.",
+    icon: <LayoutDashboard size={26} />,
+    iconColor: "text-sky-600",
+    iconBg: "bg-sky-50",
+    border: "hover:border-sky-200",
+    glow: "hover:shadow-sky-100",
+  },
 ];
 
-const Features = () => {
+export default function Features() {
   return (
-    <section className="py-24 bg-slate-50">
-      <div className="container mx-auto px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-blue-950 mb-4">Core Management Modules</h2>
-          <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full" />
+    <section id="features" className="bg-slate-50 py-24 px-6">
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
+        #features { font-family: 'DM Sans', sans-serif; }
+        .heading-serif { font-family: 'DM Serif Display', serif; }
+      `}</style>
+
+      <div className="max-w-6xl mx-auto">
+
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+          className="mb-5"
+        >
+          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
+            Core Modules
+          </span>
+        </motion.div>
+
+        {/* Heading Row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="heading-serif text-4xl md:text-5xl text-slate-900 leading-tight max-w-xl"
+          >
+            Everything you need to{" "}
+            <span className="text-blue-600 italic">stay productive.</span>
+          </motion.h2>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="self-start md:self-auto inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3 rounded-full shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5"
+          >
+            Explore All Features
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {modules.map((m, i) => (
-            <motion.div 
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((f, i) => (
+            <motion.div
               key={i}
-              whileHover={{ y: -10 }}
-              className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl transition-all"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: i * 0.1 }}
+              whileHover={{ y: -6 }}
+              className={`
+                group relative bg-white rounded-2xl p-8
+                border border-slate-100 ${f.border}
+                shadow-sm hover:shadow-xl ${f.glow}
+                transition-all duration-300 cursor-default overflow-hidden
+              `}
             >
-              <div className={`${m.color} w-14 h-14 rounded-xl flex items-center justify-center text-white mb-6 shadow-lg`}>
-                {m.icon}
+              {/* Icon */}
+              <div className={`${f.iconBg} ${f.iconColor} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                {f.icon}
               </div>
-              <h3 className="text-xl font-bold text-blue-950 mb-3">{m.title}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{m.desc}</p>
+
+              {/* Text */}
+              <h4 className="text-slate-900 font-bold text-[17px] mb-3 tracking-tight">
+                {f.title}
+              </h4>
+              <p className="text-slate-500 text-sm leading-relaxed font-normal">
+                {f.desc}
+              </p>
+
+              {/* Arrow on hover */}
+              <div className={`mt-6 flex items-center gap-1 text-xs font-semibold ${f.iconColor} opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300`}>
+                Learn more
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </motion.div>
           ))}
         </div>
+
       </div>
     </section>
   );
-};
-
-export default Features;
+}
