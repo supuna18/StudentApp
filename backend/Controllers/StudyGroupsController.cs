@@ -17,7 +17,7 @@ public class StudyGroupsController : ControllerBase
         _groups = mongoService.StudyGroups;
     }
 
-    // 1. GET ALL: fetch("http://localhost:5000/api/studygroups")
+    // 1. GET ALL: fetch("http://localhost:5005/api/studygroups")
     [HttpGet]
     public async Task<ActionResult<List<StudyGroup>>> Get() =>
         await _groups.Find(_ => true).ToListAsync();

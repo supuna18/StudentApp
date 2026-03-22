@@ -3,7 +3,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'loading' && tab.url && tab.url.startsWith('http')) {
         const checkUrl = tab.url;
 
-        // Docker එකේ පිටතට පේන Port එක 5000 බැවින් එයට Request එක යවයි
+
         fetch(`http://localhost:5005/api/safety/check-url?url=${encodeURIComponent(checkUrl)}`)
             .then(response => response.json())
             .then(data => {
@@ -19,7 +19,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                     }, 700);
                 }
             })
-            .catch(err => console.error("EduSync API Offline. Run Docker and check Port 5000."));
+            .catch(err => console.error("EduSync API Offline. Run Docker and check Port 5005."));
     }
 });
 

@@ -2,6 +2,10 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Sidebar from "../components/Sidebar";
 import ReportSite from '../components/Safety/ReportSite';
 import MindfulnessZone from '../components/Safety/MindfulnessZone';
+
+import SetLimitForm from '../components/Wellbeing/SetLimitForm';  
+import MusicPlayerPage from './MusicPlayerPage'; // --- නව පේජ් එක මෙතනට IMPORT කළා ---
+
 import SetLimitForm from '../components/Wellbeing/SetLimitForm';
 import { Bell, Users, ShieldCheck, Heart, Clock, LayoutDashboard } from 'lucide-react';
 
@@ -38,6 +42,7 @@ const modules = [
 ];
 
 const placeholders = ["Member 1 Module", "Member 3 Module"];
+
 
 const StudentDashboard = () => {
   return (
@@ -162,9 +167,17 @@ const StudentDashboard = () => {
             </div>
           } />
 
+
+          
+          {/* --- නව MUSIC PLAYER ROUTE එක මෙතනට එකතු කළා --- */}
+          <Route path="music-player" element={<MusicPlayerPage />} />
+
+         
+
           {/* Member 2 routes */}
           <Route path="safety"    element={<div className="max-w-3xl mx-auto py-6"><ReportSite /></div>} />
           <Route path="wellness"  element={<div className="max-w-2xl mx-auto py-6"><MindfulnessZone /></div>} />
+
           <Route path="set-limit" element={<SetLimitForm />} />
 
         </Routes>
