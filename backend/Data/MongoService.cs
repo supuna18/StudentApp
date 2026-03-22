@@ -9,6 +9,8 @@ public class MongoService
     private readonly IMongoDatabase _database;
     private readonly IMongoCollection<User> _usersCollection;
     private readonly IMongoCollection<StudyGroup> _studyGroupsCollection;
+    private readonly IMongoCollection<StudySession> _studySessionsCollection;
+    private readonly IMongoCollection<ChatMessage> _chatMessagesCollection;
     private readonly IMongoCollection<SafetyReport> _safetyReportsCollection;
     private readonly IMongoCollection<UserLimit> _userLimitsCollection;
 
@@ -23,6 +25,12 @@ public class MongoService
         var groupsCollectionName = config.GetSection("StudentDatabase:GroupsCollectionName")?.Value ?? "StudyGroups";
         _studyGroupsCollection = _database.GetCollection<StudyGroup>(groupsCollectionName);
 
+        var sessionsCollectionName = "StudySessions";
+        _studySessionsCollection = _database.GetCollection<StudySession>(sessionsCollectionName);
+
+        var chatCollectionName = "ChatMessages";
+        _chatMessagesCollection = _database.GetCollection<ChatMessage>(chatCollectionName);
+
         var reportsCollectionName = config.GetSection("StudentDatabase:ReportsCollectionName")?.Value ?? "SafetyReports";
         _safetyReportsCollection = _database.GetCollection<SafetyReport>(reportsCollectionName);
 
@@ -33,6 +41,8 @@ public class MongoService
     // --- Collections ---
     public IMongoCollection<User> Users => _usersCollection;
     public IMongoCollection<StudyGroup> StudyGroups => _studyGroupsCollection;
+    public IMongoCollection<StudySession> StudySessions => _studySessionsCollection;
+    public IMongoCollection<ChatMessage> ChatHistory => _chatMessagesCollection;
     public IMongoCollection<SafetyReport> SafetyReports => _safetyReportsCollection;
     public IMongoCollection<UserLimit> UserLimits => _userLimitsCollection;
 
@@ -50,11 +60,9 @@ public class MongoService
     public async Task<object> GetAdminStatsAsync()
     {
         var totalStudents = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student");
-        
-        // Count active limits (Usage control)
+
         var activeBlocks = await _userLimitsCollection.CountDocumentsAsync(new BsonDocument());
 
-        // Count pending safety reports
         var pendingReports = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Pending");
 
         return new
@@ -68,8 +76,6 @@ public class MongoService
 
     public async Task<List<BsonDocument>> GetSystemUsageTrendsAsync()
     {
-        // For now, let's group by domain in UserLimits as a proxy for trends
-        // If a separate UsageStats collection is added later, we can point it there
         return await _userLimitsCollection.Aggregate()
             .Group(new BsonDocument { { "_id", "$domain" }, { "count", new BsonDocument("$sum", 1) } })
             .Sort(new BsonDocument("count", -1))

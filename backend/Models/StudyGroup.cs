@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
 
 namespace StudentApp.Api.Models;
 
@@ -12,36 +13,49 @@ public class StudyGroup
 
     [Required]
     [StringLength(100, MinimumLength = 3)]
-    public string Name { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
 
     [Required]
     public string Description { get; set; } = string.Empty;
 
     [Required]
-    public string CreatedBy { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
+
+    [Required]
+    public string CreatedByEmail { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    public string JoinCode { get; set; } = string.Empty;
+
+    public List<MemberDetail> Members { get; set; } = new();
+}
+
+// --- Member Details (combined version) ---
+public class MemberDetail
+{
+    [Required]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string Phone { get; set; } = string.Empty;
+}
+
+// --- Join Request ---
+public class JoinRequest
+{
+    [Required]
+    public string Email { get; set; } = string.Empty;
 
     [Required]
     public string JoinCode { get; set; } = string.Empty;
 
-    public List<Member> Members { get; set; } = new();
-}
-
-public class Member
-{
-    [Required]
-    public string Username { get; set; } = string.Empty;
-
     [Required]
     [Phone]
-    public string Phone { get; set; } = string.Empty;
-}
+    public string PhoneNumber { get; set; } = string.Empty;
 
-public class JoinRequest
-{
-    [Required]
-    public string Username { get; set; } = string.Empty;
-
-    [Required]
-    [Phone]
-    public string Phone { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
 }
