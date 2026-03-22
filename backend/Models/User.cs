@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic; // එකතු කළා
 
 namespace StudentApp.Api.Models;
 
@@ -16,8 +17,9 @@ public class User
     // "Student" or "Admin" selecting the role of the user, default is "Student"
     public string Role { get; set; } = "Student";
 
-    // --- NEW ADDITION FOR MUSIC PREFERENCES ---
-    public List<string> MusicPreferences { get; set; } = new List<string>();
+    // --- NEW ADDITIONS FOR MEMBER 2 (Music Preferences) ---
+    public List<string> FavoriteGenres { get; set; } = new List<string>();
+    public string PreferredMood { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

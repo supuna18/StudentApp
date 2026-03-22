@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import ReportSite from '../components/Safety/ReportSite';
 import MindfulnessZone from '../components/Safety/MindfulnessZone';
 import SetLimitForm from '../components/Wellbeing/SetLimitForm';  
+import MusicPlayerPage from './MusicPlayerPage'; // --- නව පේජ් එක මෙතනට IMPORT කළා ---
 
 const StudentDashboard = () => {
   return (
@@ -45,9 +46,14 @@ const StudentDashboard = () => {
             </div>
           } />
 
-          {/* MEMBER 2 PAGES */}
+          {/* MEMBER 2 PAGES (ඔයාගේ කොටස) */}
           <Route path="safety" element={<div className="max-w-3xl mx-auto py-6"><ReportSite /></div>} />
           <Route path="wellness" element={<div className="max-w-2xl mx-auto py-6"><MindfulnessZone /></div>} />
+          
+          {/* --- නව MUSIC PLAYER ROUTE එක මෙතනට එකතු කළා --- */}
+          <Route path="music-player" element={<MusicPlayerPage />} />
+
+          {/* MEMBER 3 PAGES */}
           <Route path="set-limit" element={<SetLimitForm />} />
 
         </Routes>

@@ -1,26 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Volume2, RefreshCw } from 'lucide-react';
+import { Play, Pause, Volume2, RefreshCw, Headphones, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // NEW IMPORT
 
-// --- Sub Component: Mindfulness Tools (Music & Game) ---
 const MindfulnessTools = () => {
-  // Music Player Logic
-  const [playing, setPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
-  const [audio] = useState(new Audio());
+  const navigate = useNavigate(); // NEW HOOK
 
-  const tracks = [
-    { name: 'Rainy Day', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', icon: '🌧️' },
-    { name: 'Nature Forest', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', icon: '🍃' },
-    { name: 'Lo-fi Study', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', icon: '🎧' },
-  ];
-
-  const togglePlay = () => {
-    if (playing) { audio.pause(); } 
-    else { audio.src = tracks[currentTrack].url; audio.play(); }
-    setPlaying(!playing);
-  };
-
-  // Memory Game Logic
+  // Memory Game Logic (KEEPING YOUR ORIGINAL LOGIC)
   const emojis = ['🌿', '🌸', '🍃', '☀️', '🌿', '🌸', '🍃', '☀️'];
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -47,29 +32,28 @@ const MindfulnessTools = () => {
 
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* Music Player */}
-      <div className="bg-white p-8 rounded-[40px] shadow-xl border border-indigo-50">
-        <h2 className="text-2xl font-black text-indigo-900 mb-6 flex items-center gap-2">
-          <Volume2 className="text-indigo-500" /> Relaxing Audio
-        </h2>
-        <div className="space-y-3">
-          {tracks.map((track, index) => (
-            <button key={index} onClick={() => { setCurrentTrack(index); setPlaying(false); audio.pause(); }}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${currentTrack === index ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}>
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">{track.icon}</span>
-                <span className="font-bold">{track.name}</span>
-              </div>
-              {currentTrack === index && playing ? <Pause size={18} /> : <Play size={18} />}
-            </button>
-          ))}
+      {/* NEW IMPROVED MUSIC PLAYER ENTRY */}
+      <div 
+        onClick={() => navigate('/student-dashboard/music-player')}
+        className="group relative bg-gradient-to-br from-indigo-600 to-blue-800 p-10 rounded-[45px] shadow-2xl border border-white/10 cursor-pointer overflow-hidden transition-all hover:scale-[1.02] active:scale-95"
+      >
+        <div className="relative z-10 text-white">
+          <div className="w-16 h-16 bg-white/10 rounded-[22px] flex items-center justify-center mb-6 group-hover:rotate-12 transition-transform">
+            <Headphones size={32} />
+          </div>
+          <h2 className="text-4xl font-black mb-3 tracking-tighter">Immersion <br/> Beats</h2>
+          <p className="text-indigo-100/70 font-medium mb-8 max-w-[200px] leading-snug">Personalized online music player for deep focus.</p>
+          <div className="flex items-center gap-3 font-black text-sm tracking-widest uppercase bg-white text-indigo-900 w-fit px-6 py-3 rounded-2xl shadow-lg">
+            Open Player <ArrowUpRight size={18} />
+          </div>
         </div>
-        <button onClick={togglePlay} className="mt-6 w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-indigo-700 shadow-lg shadow-indigo-100">
-          {playing ? 'PAUSE MUSIC' : 'PLAY RELAXING SOUND'}
-        </button>
+        
+        {/* Background Decorations */}
+        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-blue-400/20 transition-all"></div>
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
       </div>
 
-      {/* Focus Game */}
+      {/* Focus Game (ORIGINAL CODE KEPT AS REQUESTED) */}
       <div className="bg-white p-8 rounded-[40px] shadow-xl border border-indigo-50">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-black text-indigo-900">🧩 Focus Game</h2>
@@ -91,7 +75,6 @@ const MindfulnessTools = () => {
   );
 };
 
-// --- Main Component: Mindfulness Zone ---
 const MindfulnessZone = () => {
   const [isActive, setIsActive] = useState(false);
   const [breathingStatus, setBreathingStatus] = useState('Ready?');
@@ -119,8 +102,6 @@ const MindfulnessZone = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4 pb-20">
-      
-      {/* Deep Breathing Section */}
       <div className="min-h-[550px] flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-[2.5rem] shadow-2xl border border-white">
         <div className="text-center mb-10">
           <h2 className="text-4xl font-black text-indigo-950 mb-3 tracking-tight">Deep Breathing</h2>
@@ -150,20 +131,9 @@ const MindfulnessZone = () => {
           ) : (
             <button onClick={() => setIsActive(false)} className="w-full py-3 bg-red-50 text-red-500 rounded-2xl font-bold hover:bg-red-100 transition-all border border-red-100">QUIT SESSION</button>
           )}
-          <div className="flex gap-4 w-full">
-            <div className="flex-1 p-4 bg-white rounded-2xl border border-indigo-50 shadow-sm text-center">
-              <p className="text-[10px] text-indigo-300 uppercase font-black">Inhale</p>
-              <p className="text-sm text-indigo-900 font-bold">4 Secs</p>
-            </div>
-            <div className="flex-1 p-4 bg-white rounded-2xl border border-indigo-50 shadow-sm text-center">
-              <p className="text-[10px] text-indigo-300 uppercase font-black">Exhale</p>
-              <p className="text-sm text-indigo-900 font-bold">4 Secs</p>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Mindfulness Tools Section */}
       <MindfulnessTools />
 
     </div>
