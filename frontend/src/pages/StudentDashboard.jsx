@@ -6,7 +6,6 @@ import MindfulnessZone from '../components/Safety/MindfulnessZone';
 import SetLimitForm from '../components/Wellbeing/SetLimitForm';  
 import MusicPlayerPage from './MusicPlayerPage'; // --- නව පේජ් එක මෙතනට IMPORT කළා ---
 
-import SetLimitForm from '../components/Wellbeing/SetLimitForm';
 import { Bell, Users, ShieldCheck, Heart, Clock, LayoutDashboard } from 'lucide-react';
 
 const stats = [

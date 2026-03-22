@@ -47,12 +47,6 @@ namespace StudentApp.Api.Controllers
             string domainOnly = cleanUrl.Split('/')[0];
 
             var filter = Builders<SafetyReport>.Filter.Regex("Url", new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
-            var reportExists = await _safetyCollection.Find(filter).AnyAsync();
-
-            // Regex filter එකක් මගින් "ndtv.com" යන වචනය ඇති සියලුම records සොයයි
-            var filter = Builders<SafetyReport>.Filter.Regex("Url", 
-                new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
-
             var reportExists = await _mongoService.SafetyReports.Find(filter).AnyAsync();
             return Ok(new { unsafeSite = reportExists });
         }

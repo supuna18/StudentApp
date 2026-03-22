@@ -1,6 +1,8 @@
 using StudentApp.Api.Models;
 using MongoDB.Driver;
-
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace StudentApp.Api.Services
 {
@@ -44,27 +46,8 @@ namespace StudentApp.Api.Services
         }
 
         public async Task<List<DailyUsage>> GetUsageByUserAsync(string userId) =>
-    await _database.GetCollection<DailyUsage>("DailyUsage")
-                  .Find(u => u.UserId == userId)
-                  .ToListAsync();
-
-
-namespace StudentApp.Api.Services;
-
-public class WellbeingService
-{
-    private readonly IMongoCollection<UserLimit> _userLimitsCollection;
-
-    public WellbeingService(IMongoClient client, IConfiguration config)
-    {
-        var databaseName = config.GetSection("StudentDatabase")["DatabaseName"];
-        var database = client.GetDatabase(databaseName);
-
-        var collectionName = config.GetSection("StudentDatabase")["UserLimitsCollection"] ?? "UserLimits";
-        _userLimitsCollection = database.GetCollection<UserLimit>(collectionName);
-
+            await _database.GetCollection<DailyUsage>("DailyUsage")
+                          .Find(u => u.UserId == userId)
+                          .ToListAsync();
     }
-
-    public async Task CreateLimitAsync(UserLimit newLimit) =>
-        await _userLimitsCollection.InsertOneAsync(newLimit);
 }
