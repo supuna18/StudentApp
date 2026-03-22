@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Headphones, Sparkles, Heart, Music2, CheckCircle2, AlertCircle, Save } from 'lucide-react';
 
+
 const MusicPlayerPage = () => {
   const navigate = useNavigate();
   
