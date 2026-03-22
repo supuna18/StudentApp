@@ -1,259 +1,238 @@
-import { useMemo, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; 
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { Users, PlusCircle, LogIn, Hash, Key, User, Mail, ShieldCheck, MessageSquare, Phone, X, ArrowRight, BookOpen, AlertCircle } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
-// --- Helpers ---
-function onlyDigits(s) { return (s || "").replace(/\D/g, ""); }
-function isValidPhone(phone) { 
-  const d = onlyDigits(phone); 
-  return d.length >= 9 && d.length <= 12; 
-}
+const StudyGroupsPage = () => {
+    const [ownedGroups, setOwnedGroups] = useState([]); 
+    const [joinedGroups, setJoinedGroups] = useState([]);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showJoinModal, setShowJoinModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+    
+    // Field Errors State
+    const [errors, setErrors] = useState({});
 
-export default function StudyGroupsPage() {
-  const currentUser = localStorage.getItem("username") || "kavishalenee1302";
-  const navigate = useNavigate();
+    const [createForm, setCreateForm] = useState({ GroupName: '', Description: '', Subject: '', PhoneNumber: '' });
+    const [joinForm, setJoinForm] = useState({ phoneNumber: '', subject: '', joinCode: '' });
 
-  // States
-  const [groups, setGroups] = useState([]); 
-  const [selectedId, setSelectedId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState({ show: false, type: "success", text: "" });
+    const navigate = useNavigate();
+    const API_URL = "http://localhost:5005/api/studygroups";
+    const token = localStorage.getItem('token'); 
 
-  const [newName, setNewName] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [phone, setPhone] = useState("");
-
-  const [createErrors, setCreateErrors] = useState({ name: "", desc: "" });
-  const [joinErrors, setJoinErrors] = useState({ code: "", phone: "" });
-
-  // --- API Connection ---
-  // FIXED: Changed from 8080 to 5000 to match Docker external mapping
-  const API_BASE_URL = "http://localhost:5000/api/studygroups";
-
-  useEffect(() => {
-    loadGroups();
-  }, []);
-
-  const loadGroups = async () => {
-    try {
-      const res = await fetch(API_BASE_URL);
-      if (!res.ok) throw new Error("Server error");
-      const data = await res.json();
-      setGroups(data);
-      if (data.length > 0 && !selectedId) {
-        setSelectedId(data[0].id || data[0]._id);
-      }
-    } catch (err) {
-      console.error("Backend connection failed.", err);
-      showToast("error", "❌ Could not connect to the server.");
-    } finally {
-      setLoading(false);
+    // --- IDENTITY LOGIC ---
+    let userEmail = "";
+    let userName = "";
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            userName = decoded.unique_name || "Student";
+            const identity = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || decoded.email;
+            userEmail = (identity && identity.includes('@')) ? identity : `${userName.toLowerCase()}@gmail.com`;
+        } catch (e) { }
     }
-  };
 
-  const selected = useMemo(() => 
-    groups.find((g) => (g.id === selectedId || g._id === selectedId)) ?? null, 
-    [groups, selectedId]
-  );
+    useEffect(() => { if (userEmail) fetchUserGroups(); }, [userEmail]);
 
-  function showToast(type, text) {
-    setToast({ show: true, type, text });
-    setTimeout(() => setToast({ show: false, type: "success", text: "" }), 2500);
-  }
-
-  // --- Handlers ---
-  async function onCreate(e) {
-    e.preventDefault();
-    const nameErr = !newName.trim() ? "Please fill the required field" : "";
-    const descErr = !newDesc.trim() ? "Please fill the required field" : "";
-    setCreateErrors({ name: nameErr, desc: descErr });
-    if (nameErr || descErr) return;
-
-    const newGroup = {
-      name: newName.trim(),
-      description: newDesc.trim(),
-      createdBy: currentUser,
-      joinCode: Math.floor(100000 + Math.random() * 900000).toString(),
-      members: [{ username: currentUser, phone: "Admin" }]
+    const fetchUserGroups = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/user/${userEmail}`, { headers: { Authorization: `Bearer ${token}` } });
+            setOwnedGroups(res.data.filter(g => g.createdByEmail === userEmail));
+            setJoinedGroups(res.data.filter(g => g.createdByEmail !== userEmail));
+        } catch (err) { } finally { setLoading(false); }
     };
 
-    try {
-      const res = await fetch(API_BASE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newGroup)
-      });
+    // --- VALIDATION LOGIC ---
+    const validateCreateForm = () => {
+        let tempErrors = {};
+        if (!createForm.GroupName.trim()) tempErrors.GroupName = "Name is required";
+        if (!createForm.Subject.trim()) tempErrors.Subject = "Subject is required";
+        
+        // Description: Max 50 Characters
+        if (!createForm.Description.trim()) tempErrors.Description = "Description is required";
+        else if (createForm.Description.length > 50) tempErrors.Description = "Limit exceeded (Max 50 characters)";
 
-      if (res.ok) {
-        setNewName(""); setNewDesc("");
-        loadGroups();
-        showToast("success", "✅ Group created in MongoDB!");
-      } else {
-        showToast("error", "❌ Failed to create group.");
-      }
-    } catch (err) {
-      showToast("error", "❌ Server connection error.");
-    }
-  }
+        // Phone: Exact 10 digits
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(createForm.PhoneNumber)) tempErrors.PhoneNumber = "Enter a valid 10-digit number";
 
-  function onSendOTP(e) {
-    e.preventDefault();
-    if (!isValidPhone(phone)) {
-      setJoinErrors(prev => ({ ...prev, phone: "Invalid phone number" }));
-      return;
-    }
-    showToast("info", "📲 OTP Code sent to your phone!");
-  }
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    };
 
-  async function onJoin(e) {
-    e.preventDefault();
-    if (!otpCode.trim() || !isValidPhone(phone)) {
-      setJoinErrors({ code: !otpCode.trim() ? "Required" : "", phone: !isValidPhone(phone) ? "Invalid" : "" });
-      return;
-    }
+    const validateJoinForm = () => {
+        let tempErrors = {};
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(joinForm.phoneNumber)) tempErrors.joinPhone = "10-digit phone required";
+        if (!joinForm.subject.trim()) tempErrors.joinSubject = "Subject is required";
+        if (joinForm.joinCode.length !== 6) tempErrors.joinCode = "6-digit OTP required";
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/join/${otpCode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: currentUser, phone: phone })
-      });
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    };
 
-      if (res.ok) {
-        setOtpCode(""); setPhone(""); loadGroups();
-        showToast("success", "✅ Joined successfully via Backend!");
-                // [ADD] Automatically navigate to the chat page using the Join Code as the room ID
-        setTimeout(() => {
-            navigate(`/chat/${otpCode}`);
-        }, 1000);
-      } else {
-        setJoinErrors(p => ({ ...p, code: "Invalid Code" }));
-        showToast("error", "❌ Invalid join code.");
-      }
-    } catch (err) {
-      showToast("error", "❌ Server connection error.");
-    }
-  }
+    const handleCreate = async (e) => {
+        e.preventDefault();
+        if (!validateCreateForm()) return;
 
-  // --- UI PART ---
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="text-center">
-        <p className="text-blue-600 font-bold animate-pulse text-xl">Connecting to EduSync Server...</p>
-        <p className="text-slate-400 text-sm mt-2">Checking Backend on Port 5000</p>
-      </div>
-    </div>
-  );
+        try {
+            const payload = { 
+                GroupName: createForm.GroupName,
+                Description: createForm.Description,
+                Subject: createForm.Subject,
+                PhoneNumber: createForm.PhoneNumber,
+                CreatedByEmail: userEmail,
+                Members: [ { Email: userEmail, Phone: createForm.PhoneNumber } ]
+            };
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-12">
-      {toast.show && (
-        <div className="fixed top-5 right-5 z-50 animate-bounce">
-          <div className={`rounded-xl border px-6 py-3 shadow-2xl text-sm font-bold bg-white ${toast.type === 'success' ? 'border-emerald-200 text-emerald-600' : 'border-blue-200 text-blue-600'}`}>
-            {toast.text}
-          </div>
-        </div>
-      )}
+            const res = await axios.post(`${API_URL}/create`, payload, { headers: { Authorization: `Bearer ${token}` } });
+            alert(`SUCCESS! Group Created. OTP sent to: ${userEmail}`);
+            setShowCreateModal(false);
+            setCreateForm({ GroupName: '', Description: '', Subject: '', PhoneNumber: '' });
+            fetchUserGroups();
+        } catch (err) { alert("Error creating circle."); }
+    };
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div>
-            <Link to="/hub" className="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline mb-2">← Back to Hub</Link>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Study Groups</h1>
-            <p className="text-slate-500">Collaborate and manage your learning community.</p>
-          </div>
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase">{currentUser[0]}</div>
-             <div>
-               <p className="text-[10px] uppercase font-bold text-slate-400">User Account</p>
-               <p className="font-bold text-slate-700">{currentUser}</p>
-             </div>
-          </div>
-        </div>
+    const handleJoin = async (e) => {
+        e.preventDefault();
+        if (!validateJoinForm()) return;
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold px-2">Your Groups ({groups.length})</h2>
-            <div className="space-y-3 overflow-y-auto max-h-[600px] pr-2">
-              {groups.length === 0 ? (
-                <p className="text-slate-400 italic px-2">No groups found in database.</p>
-              ) : (
-                groups.map((g) => (
-                  <button key={g.id} onClick={() => setSelectedId(g.id)} className={`w-full text-left rounded-2xl p-5 border transition-all ${ g.id === selectedId ? 'bg-white border-blue-500 shadow-md ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:border-blue-300 shadow-sm'}`}>
-                    <p className="font-bold text-lg">{g.name}</p>
-                    <p className="text-sm text-slate-500 line-clamp-1 mt-1">{g.description}</p>
-                    <div className="mt-3 flex justify-between items-center">
-                       <span className="text-[10px] font-bold text-blue-500 uppercase">Code: {g.joinCode}</span>
-                       <span className="text-[10px] font-bold text-slate-400 uppercase">{g.members?.length || 0} Members</span>
+        try {
+            const res = await axios.post(`${API_URL}/join`, { 
+                Email: userEmail, 
+                JoinCode: joinForm.joinCode, 
+                PhoneNumber: joinForm.phoneNumber,
+                Subject: joinForm.subject 
+            }, { headers: { Authorization: `Bearer ${token}` } });
+            
+            alert("Successfully Joined!");
+            setShowJoinModal(false);
+            fetchUserGroups();
+            navigate(`/chat/${res.data.groupId}`);
+        } catch (err) { alert("Invalid Access Code or Subject Mismatch!"); }
+    };
+
+    return (
+        <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden text-slate-800">
+            {/* SIDEBAR */}
+            <div className="w-85 bg-white border-r border-slate-200 flex flex-col shadow-2xl z-10">
+                <div className="p-8 border-b border-slate-100 bg-indigo-50/30">
+                    <h2 className="text-2xl font-black flex items-center gap-3"><Users className="text-indigo-600" /> My Circles</h2>
+                    <div className="mt-4 p-3 bg-white rounded-2xl shadow-sm border border-indigo-100 truncate text-[10px] font-bold text-slate-400">
+                        USER: {userEmail}
                     </div>
-                  </button>
-                ))
-              )}
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-5 space-y-8">
+                    <div>
+                        <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2"><ShieldCheck size={14}/> Managed by You</h3>
+                        <div className="space-y-3">
+                            {ownedGroups.map(g => (
+                                <div key={g.id} onClick={() => navigate(`/chat/${g.id}`)} className="group p-5 rounded-3xl bg-indigo-50/50 border border-indigo-100 hover:border-indigo-400 cursor-pointer transition-all">
+                                    <h4 className="font-black text-indigo-900 text-base">{g.groupName}</h4>
+                                    <div className="flex items-center gap-2 mt-3 p-2 bg-white rounded-xl border border-indigo-100 w-fit">
+                                        <Key size={12} className="text-indigo-600"/><span className="text-xs font-black text-indigo-700 tracking-widest">{g.joinCode}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-4 flex items-center gap-2"><MessageSquare size={14}/> Joined Hubs</h3>
+                        <div className="space-y-3 pb-10">
+                            {joinedGroups.map(g => (
+                                <div key={g.id} onClick={() => navigate(`/chat/${g.id}`)} className="group p-5 rounded-3xl bg-white border border-slate-100 hover:border-emerald-400 cursor-pointer transition-all shadow-sm">
+                                    <h4 className="font-bold text-slate-700 text-sm">{g.groupName}</h4>
+                                    <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold flex items-center gap-1"><Phone size={10}/> Admin: {g.phoneNumber}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <div className="space-y-8">
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-slate-800">Create New Group</h2>
-              <p className="text-[10px] text-slate-400 font-bold uppercase mb-4 tracking-wider">All fields are required *</p>
-              <form onSubmit={onCreate} className="space-y-4">
-                <input value={newName} onChange={(e) => {setNewName(e.target.value); setCreateErrors(p=>({...p, name:""}))}} placeholder="Group Name *" className={`w-full rounded-xl border px-4 py-3 outline-none transition-all ${createErrors.name ? 'border-red-500 bg-red-50' : 'border-slate-200 focus:border-blue-400'}`} />
-                <textarea value={newDesc} onChange={(e) => {setNewDesc(e.target.value); setCreateErrors(p=>({...p, desc:""}))}} placeholder="Description *" rows={2} className={`w-full rounded-xl border px-4 py-3 outline-none resize-none transition-all ${createErrors.desc ? 'border-red-500 bg-red-50' : 'border-slate-200 focus:border-blue-400'}`} />
-                <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Create Group</button>
-              </form>
+            {/* MAIN AREA */}
+            <div className="flex-1 p-10 overflow-y-auto">
+                <div className="max-w-5xl mx-auto space-y-12">
+                    <div className="relative rounded-[3rem] overflow-hidden shadow-2xl h-[300px]">
+                        <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80" className="absolute inset-0 w-full h-full object-cover" alt="Hero" />
+                        <div className="absolute inset-0 bg-indigo-900/85 flex flex-col justify-center px-12 text-white font-sans uppercase italic">
+                            <h1 className="text-5xl font-black tracking-tighter">Collaboration Hub</h1>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-slate-800">
+                        <button onClick={() => { setErrors({}); setShowCreateModal(true); }} className="p-10 bg-white rounded-[3.5rem] shadow-xl border border-slate-50 hover:shadow-2xl transition-all border-b-8 border-b-indigo-500 text-left">
+                            <PlusCircle className="text-indigo-600 mb-6" size={40} /><h2 className="text-3xl font-black uppercase tracking-tight italic">Create Circle</h2>
+                        </button>
+                        <button onClick={() => { setErrors({}); setShowJoinModal(true); }} className="p-10 bg-white rounded-[3.5rem] shadow-xl border border-slate-50 hover:shadow-2xl transition-all border-b-8 border-b-emerald-500 text-left">
+                            <LogIn className="text-emerald-600 mb-6" size={40} /><h2 className="text-3xl font-black uppercase tracking-tight italic">Join Peer</h2>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div className="bg-blue-600 rounded-3xl p-6 shadow-xl shadow-blue-100 text-white">
-              <h2 className="text-xl font-bold text-white">Join via Code</h2>
-              <p className="text-[10px] text-blue-100 font-bold uppercase mb-6 tracking-wider">All fields are required *</p>
-              <form onSubmit={onJoin} className="space-y-4">
-                <input value={phone} onChange={(e) => {setPhone(e.target.value); setJoinErrors(p=>({...p, phone:""}))}} placeholder="Phone Number *" className={`w-full rounded-xl bg-blue-500 border px-4 py-3 text-white placeholder-blue-200 outline-none ${joinErrors.phone ? 'border-red-300' : 'border-blue-400'}`} />
-                <button type="button" onClick={onSendOTP} className="w-full bg-blue-400/40 border border-blue-300 text-white text-xs font-bold py-2 rounded-lg hover:bg-blue-400/60 transition">Send OTP Code</button>
-                <input value={otpCode} onChange={(e) => {setOtpCode(e.target.value); setJoinErrors(p=>({...p, code:""}))}} placeholder="ENTER 6-DIGIT CODE *" className={`w-full rounded-xl bg-blue-500 border px-4 py-3 text-white placeholder-blue-200 outline-none uppercase font-bold tracking-widest text-center ${joinErrors.code ? 'border-red-300' : 'border-blue-400'}`} />
-                <button type="submit" className="w-full bg-white text-blue-600 font-black py-4 rounded-xl hover:bg-slate-50 transition shadow-lg">Join Group</button>
-              </form>
-            </div>
-          </div>
+            {/* CREATE MODAL with Character Limit */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-50 p-6 animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 shadow-2xl relative text-slate-800">
+                        <button onClick={() => setShowCreateModal(false)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-600"><X size={32} /></button>
+                        <h2 className="text-3xl font-black text-center mb-8 uppercase italic">Setup Circle</h2>
+                        <form onSubmit={handleCreate} className="space-y-4">
+                            <div>
+                                <input type="text" className={`w-full px-6 py-4 bg-slate-50 border-2 rounded-2xl outline-none font-bold ${errors.GroupName ? 'border-red-400' : 'border-slate-100 focus:border-indigo-500'}`} placeholder="Group Name" onChange={e => setCreateForm({...createForm, GroupName: e.target.value})} />
+                                {errors.GroupName && <p className="text-red-500 text-[10px] font-bold ml-2 mt-1">{errors.GroupName}</p>}
+                            </div>
+                            <div>
+                                <input type="text" className={`w-full px-6 py-4 bg-slate-50 border-2 rounded-2xl outline-none font-bold ${errors.Subject ? 'border-red-400' : 'border-slate-100 focus:border-indigo-500'}`} placeholder="Subject Name" onChange={e => setCreateForm({...createForm, Subject: e.target.value})} />
+                                {errors.Subject && <p className="text-red-500 text-[10px] font-bold ml-2 mt-1">{errors.Subject}</p>}
+                            </div>
+                            <div className="relative">
+                                <textarea maxLength="50" className={`w-full px-6 py-4 bg-slate-50 border-2 rounded-2xl outline-none h-24 font-medium resize-none ${errors.Description ? 'border-red-400' : 'border-slate-100 focus:border-indigo-500'}`} placeholder="Description (Max 50 chars)" onChange={e => setCreateForm({...createForm, Description: e.target.value})} />
+                                <div className={`absolute bottom-3 right-4 text-[9px] font-black uppercase ${createForm.Description.length >= 50 ? 'text-red-500' : 'text-slate-300'}`}>{createForm.Description.length} / 50</div>
+                                {errors.Description && <p className="text-red-500 text-[10px] font-bold ml-2 mt-1">{errors.Description}</p>}
+                            </div>
+                            <div>
+                                <input type="tel" className={`w-full px-6 py-4 bg-slate-50 border-2 rounded-2xl outline-none font-bold ${errors.PhoneNumber ? 'border-red-400' : 'border-slate-100 focus:border-indigo-500'}`} placeholder="Phone Number (10 digits)" onChange={e => setCreateForm({...createForm, PhoneNumber: e.target.value})} />
+                                {errors.PhoneNumber && <p className="text-red-500 text-[10px] font-bold ml-2 mt-1">{errors.PhoneNumber}</p>}
+                            </div>
+                            <button type="submit" className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-xl hover:bg-indigo-700 shadow-lg uppercase mt-2">Start Hub</button>
+                        </form>
+                    </div>
+                </div>
+            )}
 
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm h-fit sticky top-10">
-             {selected ? (
-               <div className="space-y-8">
-                 <div>
-                   <h2 className="text-3xl font-black text-slate-800">{selected.name}</h2>
-                   <p className="text-slate-500 mt-3 leading-relaxed">{selected.description}</p>
-                    <button 
-                    onClick={() => navigate(`/chat/${selected.joinCode}`)} 
-                    className="mt-6 w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-black py-4 rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-100"
-                   >
-                     💬 ENTER GROUP CHAT
-                   </button>
-                   <div className="mt-6 flex items-center gap-4">
-                      <div className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase tracking-widest">
-                        Code: {selected.joinCode}
-                      </div>
-                      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">By: {selected.createdBy}</p>
-                   </div>
-                 </div>
-                 <div className="border-t border-slate-100 pt-6">
-                   <h3 className="font-bold text-slate-700 mb-4 tracking-wider text-sm uppercase">Members ({selected.members?.length || 0})</h3>
-                   <div className="space-y-3">
-                     {selected.members?.map((m, idx) => (
-                       <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                         <span className="font-bold text-slate-700">{m.username}</span>
-                         <span className="text-xs text-slate-400 font-medium italic">{m.phone}</span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               </div>
-             ) : (
-               <div className="flex flex-col items-center justify-center py-20 text-slate-300 italic">
-                 Select a group to view members
-               </div>
-             )}
-          </div>
+            {/* JOIN MODAL with 6-Digit Limit */}
+            {showJoinModal && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-50 p-6 animate-in zoom-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 shadow-2xl relative text-slate-800 text-center">
+                        <button onClick={() => setShowJoinModal(false)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-600"><X size={32} /></button>
+                        <h2 className="text-3xl font-black mb-8 uppercase italic">Join Peer Circle</h2>
+                        <form onSubmit={handleJoin} className="space-y-4 text-left">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="px-5 py-4 bg-slate-100 rounded-2xl text-slate-400 font-bold text-xs border border-slate-200 truncate">{userName}</div>
+                                <div className="px-5 py-4 bg-slate-100 rounded-2xl text-slate-400 font-bold text-[9px] border border-slate-200 truncate font-sans lowercase">{userEmail}</div>
+                            </div>
+                            <div>
+                                <input type="tel" className={`w-full px-6 py-4 bg-slate-50 border-2 rounded-2xl font-bold ${errors.joinPhone ? 'border-red-400' : 'border-slate-100 focus:border-emerald-500'}`} placeholder="Your Phone Number" onChange={e => setJoinForm({...joinForm, phoneNumber: e.target.value})} />
+                                {errors.joinPhone && <p className="text-red-500 text-[10px] font-bold ml-2 mt-1">{errors.joinPhone}</p>}
+                            </div>
+                            <div>
+                                <input type="text" className={`w-full px-6 py-4 bg-slate-50 border-2 rounded-2xl font-bold ${errors.joinSubject ? 'border-red-400' : 'border-slate-100 focus:border-emerald-500'}`} placeholder="Subject Name (Must Match)" onChange={e => setJoinForm({...joinForm, subject: e.target.value})} />
+                                {errors.joinSubject && <p className="text-red-500 text-[10px] font-bold ml-2 mt-1">{errors.joinSubject}</p>}
+                            </div>
+                            <div className="pt-4 border-t border-slate-100">
+                                <label className="text-[10px] font-black text-slate-400 uppercase mb-3 block text-center">Access Code (6 Digits)</label>
+                                <input type="text" maxLength="6" className={`w-full px-5 py-6 bg-slate-50 border-4 rounded-[2.5rem] text-center text-5xl font-black tracking-[1.2rem] outline-none ${errors.joinCode ? 'border-red-400 text-red-500' : 'border-slate-100 focus:border-emerald-500 text-emerald-600'}`} placeholder="000000" onChange={e => setJoinForm({ ...joinForm, joinCode: e.target.value })} />
+                                {errors.joinCode && <p className="text-red-500 text-[10px] font-bold text-center mt-2">{errors.joinCode}</p>}
+                            </div>
+                            <button type="submit" className="w-full py-6 bg-emerald-600 text-white rounded-[2rem] font-black text-xl hover:bg-emerald-700 uppercase shadow-xl mt-4">Join Circle</button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
-      </div>
-    </div>
-  );
-}
+    );
+};
+
+export default StudyGroupsPage;

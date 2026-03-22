@@ -9,25 +9,54 @@ namespace StudentApp.Api.Controllers;
 [ApiController]
 public class SchedulerController : ControllerBase
 {
-    private readonly IMongoCollection<StudyEvent> _events;
+    private readonly IMongoCollection<StudySession> _sessions;
 
     public SchedulerController(MongoService mongoService)
     {
-        // [EDIT] Use the Database property attached to the existing StudyGroups collection
-        // This avoids needing a separate .Database property in MongoService.cs
-        _events = mongoService.StudyGroups.Database.GetCollection<StudyEvent>("StudyEvents");
+        _sessions = mongoService.StudySessions;
     }
 
-    // [GET] Get all events for a specific group
-    [HttpGet("group/{groupId}")]
-    public async Task<ActionResult<List<StudyEvent>>> GetByGroup(string groupId) =>
-        await _events.Find(e => e.GroupId == groupId).ToListAsync();
+    // 1. GET ALL SESSIONS FOR A USER: api/scheduler/{email}
+    [HttpGet("{email}")]
+    public async Task<ActionResult<List<StudySession>>> Get(string email) =>
+        await _sessions.Find(s => s.UserEmail == email).ToListAsync();
 
-    // [POST] Create a new study session
-    [HttpPost]
-    public async Task<IActionResult> Create(StudyEvent newEvent)
+    // 2. CREATE NEW SESSION: api/scheduler/create
+    [HttpPost("create")]
+    public async Task<IActionResult> Create(StudySession session)
     {
-        await _events.InsertOneAsync(newEvent);
-        return Ok(newEvent);
+        await _sessions.InsertOneAsync(session);
+        return Ok(new { message = "Session Scheduled Successfully" });
+    }
+
+    // 3. UPDATE SESSION (EDIT): api/scheduler/{id}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(string id, StudySession updatedSession)
+    {
+        var filter = Builders<StudySession>.Filter.Eq(s => s.Id, id);
+        
+        // Database-la irukura pazhaya session-ah pudhu details vachi replace pannuvom
+        var result = await _sessions.ReplaceOneAsync(filter, updatedSession);
+
+        if (result.MatchedCount == 0)
+        {
+            return NotFound(new { message = "Session not found" });
+        }
+
+        return Ok(new { message = "Session Updated Successfully" });
+    }
+
+    // 4. DELETE SESSION: api/scheduler/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var result = await _sessions.DeleteOneAsync(s => s.Id == id);
+
+        if (result.DeletedCount == 0)
+        {
+            return NotFound(new { message = "Session not found" });
+        }
+
+        return Ok(new { message = "Session Deleted Successfully" });
     }
 }

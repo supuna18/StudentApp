@@ -1,87 +1,123 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Send, ArrowLeft, ShieldCheck, Users, Phone, Lock, Loader2 } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 import * as signalR from '@microsoft/signalr';
 
-export default function ChatPage() {
-    const { groupId } = useParams(); // Get ID from URL
-    const currentUser = localStorage.getItem("username") || "User";
+const ChatPage = () => {
+    const { groupId } = useParams();
+    const navigate = useNavigate();
+    const [group, setGroup] = useState(null);
     const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState("");
+    const [newMessage, setNewMessage] = useState("");
+    const [loading, setLoading] = useState(true);
     const [connection, setConnection] = useState(null);
     const chatEndRef = useRef(null);
 
-    // [ADD] Auto-scroll to bottom when new message arrives
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    const token = localStorage.getItem('token');
+    const API_URL = "http://localhost:5005/api/studygroups";
+
+    // --- IDENTITY LOGIC ---
+    let userEmail = "";
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            const identity = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || decoded.email || decoded.unique_name;
+            userEmail = (identity && !identity.includes('@')) ? `${identity.toLowerCase()}@gmail.com` : identity;
+        } catch (e) { }
+    }
+
+    const scrollToBottom = () => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
 
     useEffect(() => {
-        // [ADD] Initialize SignalR Connection
-        const newConnection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5000/chatHub") // Backend port
-            .withAutomaticReconnect()
-            .build();
+        const initChat = async () => {
+            try {
+                // Fetch Details & Old History
+                const [gRes, hRes] = await Promise.all([
+                    axios.get(`${API_URL}/${groupId}`, { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get(`${API_URL}/chat/history/${groupId}`)
+                ]);
+                setGroup(gRes.data);
+                setMessages(hRes.data.map(m => ({ user: m.senderEmail, message: m.message, time: new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) })));
+                setLoading(false);
+                setTimeout(scrollToBottom, 500);
+            } catch (err) { setLoading(false); }
+        };
 
+        const newConnection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5005/chatHub").withAutomaticReconnect().build();
         setConnection(newConnection);
-    }, []);
+        initChat();
+    }, [groupId]);
 
     useEffect(() => {
         if (connection) {
-            connection.start()
-                .then(() => {
-                    console.log("Connected to Chat Hub!");
-                    connection.invoke("JoinGroup", groupId); // Join specific group room
-
-                    connection.on("ReceiveMessage", (user, message) => {
-                        setMessages(prev => [...prev, { user, message, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
-                    });
-                })
-                .catch(e => console.log("Connection failed: ", e));
+            connection.start().then(() => {
+                connection.invoke("JoinGroup", groupId);
+                connection.on("ReceiveMessage", (user, message, time) => {
+                    setMessages(prev => [...prev, { user, message, time: new Date(time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) }]);
+                    scrollToBottom();
+                });
+            });
         }
-    }, [connection, groupId]);
+    }, [connection]);
 
     const sendMessage = async (e) => {
         e.preventDefault();
-        if (input.trim() && connection) {
-            await connection.invoke("SendMessage", groupId, currentUser, input);
-            setInput("");
+        if (connection && newMessage.trim()) {
+            await connection.invoke("SendMessage", groupId, userEmail, newMessage);
+            setNewMessage("");
         }
     };
 
+    const isOwner = userEmail?.toLowerCase() === group?.createdByEmail?.toLowerCase();
+
+    if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-600 animate-pulse">Loading Hub...</div>;
+
     return (
-        <div className="flex flex-col h-screen bg-slate-50">
-            {/* Header */}
-            <div className="bg-white border-b p-4 flex items-center justify-between shadow-sm">
-                
-<Link to="/hub/study-groups" className="text-blue-600 font-bold">← Leave Chat</Link>
-                <h2 className="font-black text-xl text-slate-800 uppercase tracking-tighter">Study Group Chat</h2>
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">{currentUser[0]}</div>
-            </div>
+        <div className="flex h-screen bg-[#F0F2F5] font-sans overflow-hidden">
+            <div className="flex-1 flex flex-col bg-white shadow-xl">
+                <div className="p-6 border-b border-slate-100 flex items-center gap-4 shadow-sm z-10 bg-white">
+                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400"><ArrowLeft size={20}/></button>
+                    <div><h2 className="text-xl font-black uppercase">{group?.groupName}</h2><p className="text-[10px] font-bold text-indigo-500 uppercase flex items-center gap-1"><ShieldCheck size={12}/> Secure Study Room</p></div>
+                </div>
 
-            {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {messages.map((m, i) => (
-                    <div key={i} className={`flex flex-col ${m.user === currentUser ? 'items-end' : 'items-start'}`}>
-                        <span className="text-[10px] font-bold text-slate-400 mb-1 uppercase">{m.user}</span>
-                        <div className={`max-w-[70%] px-4 py-2 rounded-2xl shadow-sm ${m.user === currentUser ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-800 border rounded-tl-none'}`}>
-                            <p className="text-sm">{m.message}</p>
-                            <p className={`text-[9px] mt-1 ${m.user === currentUser ? 'text-blue-200' : 'text-slate-400'}`}>{m.time}</p>
+                <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-slate-50/40 custom-scroll">
+                    {messages.map((m, idx) => (
+                        <div key={idx} className={`flex flex-col ${m.user === userEmail ? 'items-end' : 'items-start'}`}>
+                            <span className="text-[9px] font-black text-slate-400 mb-1 px-2 uppercase">{m.user}</span>
+                            <div className={`max-w-md p-4 rounded-2xl shadow-sm text-sm font-medium ${m.user === userEmail ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'}`}>
+                                {m.message}
+                                <p className={`text-[8px] mt-1 text-right opacity-50 ${m.user === userEmail ? 'text-white' : 'text-slate-400'}`}>{m.time}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
-                <div ref={chatEndRef} />
+                    ))}
+                    <div ref={chatEndRef} />
+                </div>
+
+                <div className="p-6 border-t border-slate-100 bg-white">
+                    <form onSubmit={sendMessage} className="max-w-3xl mx-auto flex gap-4">
+                        <input className="flex-1 px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Type message..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
+                        <button type="submit" className="p-4 bg-indigo-600 text-white rounded-2xl shadow-lg hover:bg-indigo-700"><Send size={24}/></button>
+                    </form>
+                </div>
             </div>
 
-            {/* Input Area */}
-            <form onSubmit={sendMessage} className="p-4 bg-white border-t flex gap-2">
-                <input 
-                    value={input} 
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type a message..." 
-                    className="flex-1 border rounded-xl px-4 py-2 outline-none focus:border-blue-500 transition-all"
-                />
-                <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700">Send</button>
-            </form>
+            <div className="w-85 bg-white border-l border-slate-200 hidden lg:flex flex-col shadow-2xl overflow-hidden">
+                <div className="p-8 border-b border-slate-100 bg-indigo-50/20"><h3 className="text-sm font-black uppercase text-indigo-900 tracking-widest leading-none flex items-center gap-2"><Users size={18}/> Hub Members</h3></div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {isOwner ? group?.members?.map((m, i) => (
+                        <div key={i} className="p-4 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-sm">{(m.email || m.Email)?.charAt(0)}</div>
+                            <div className="truncate"><p className="text-[10px] font-black text-slate-800 italic uppercase">Student {i+1}</p><p className="text-xs font-black text-emerald-600 flex items-center gap-1 mt-1 font-mono tracking-wider"><Phone size={10}/> {m.phone || m.Phone}</p></div>
+                        </div>
+                    )) : (
+                        <div className="p-10 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 text-center"><Lock className="text-slate-200 mx-auto mb-2" size={32}/><p className="text-[10px] font-black text-slate-400 uppercase leading-relaxed">Member Privacy On.</p></div>
+                    )}
+                </div>
+            </div>
         </div>
     );
-}
+};
+
+export default ChatPage;
