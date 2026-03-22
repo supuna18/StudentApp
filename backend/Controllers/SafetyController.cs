@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using StudentApp.Api.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using StudentApp.Api.Data;
 
 namespace StudentApp.Api.Controllers
 {
@@ -10,13 +9,11 @@ namespace StudentApp.Api.Controllers
     [Route("api/[controller]")]
     public class SafetyController : ControllerBase
     {
-        private readonly IMongoCollection<SafetyReport> _safetyCollection;
+        private readonly MongoService _mongoService;
 
-        public SafetyController(IMongoClient mongoClient)
+        public SafetyController(MongoService mongoService)
         {
-            // Docker පාවිච්චි කළත් MongoClient එක මගින් Atlas එකට සම්බන්ධ වේ
-            var database = mongoClient.GetDatabase("EduSyncDB");
-            _safetyCollection = database.GetCollection<SafetyReport>("SafetyReports");
+            _mongoService = mongoService;
         }
 
         // 1. Report එකක් ඇතුළත් කිරීම (CREATE)
@@ -26,7 +23,7 @@ namespace StudentApp.Api.Controllers
             if (report == null) return BadRequest();
             report.ReportedAt = DateTime.UtcNow;
             report.Status = "Pending";
-            await _safetyCollection.InsertOneAsync(report);
+            await _mongoService.SafetyReports.InsertOneAsync(report);
             return Ok(new { message = "Safety report submitted!" });
         }
 
@@ -34,7 +31,7 @@ namespace StudentApp.Api.Controllers
         [HttpGet("my-reports")]
         public async Task<ActionResult<IEnumerable<SafetyReport>>> GetMyReports()
         {
-            var reports = await _safetyCollection.Find(_ => true).ToListAsync();
+            var reports = await _mongoService.SafetyReports.Find(_ => true).ToListAsync();
             return Ok(reports);
         }
 
@@ -55,7 +52,7 @@ namespace StudentApp.Api.Controllers
             var filter = Builders<SafetyReport>.Filter.Regex("Url", 
                 new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
 
-            var reportExists = await _safetyCollection.Find(filter).AnyAsync();
+            var reportExists = await _mongoService.SafetyReports.Find(filter).AnyAsync();
 
             return Ok(new { unsafeSite = reportExists });
         }

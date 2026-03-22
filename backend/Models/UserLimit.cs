@@ -1,21 +1,25 @@
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace StudentApp.Api.Models
+namespace StudentApp.Api.Models;
+
+public class UserLimit
 {
-    public class UserLimit
-    {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
 
-        [BsonElement("userId")]
-        public string UserId { get; set; } = null!; // ළමයාගේ ID එක
+    [Required]
+    [BsonElement("userId")]
+    public string UserId { get; set; } = string.Empty;
 
-        [BsonElement("domain")]
-        public string Domain { get; set; } = null!; // උදා: facebook.com
+    [Required]
+    [BsonElement("domain")]
+    public string Domain { get; set; } = string.Empty;
 
-        [BsonElement("limitMinutes")]
-        public int LimitMinutes { get; set; } // දවසකට දෙන කාලය විනාඩි වලින්
-    }
+    [Required]
+    [Range(1, 1440)]
+    [BsonElement("limitMinutes")]
+    public int LimitMinutes { get; set; }
 }

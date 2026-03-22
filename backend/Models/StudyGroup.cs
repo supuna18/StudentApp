@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -9,22 +10,38 @@ public class StudyGroup
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
-    public string Name { get; set; } = null!;
-    public string Description { get; set; } = null!;
-    public string CreatedBy { get; set; } = null!;
-    public string JoinCode { get; set; } = null!;
+    [Required]
+    [StringLength(100, MinimumLength = 3)]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    public string Description { get; set; } = string.Empty;
+
+    [Required]
+    public string CreatedBy { get; set; } = string.Empty;
+
+    [Required]
+    public string JoinCode { get; set; } = string.Empty;
+
     public List<Member> Members { get; set; } = new();
 }
 
 public class Member
 {
-    public string Username { get; set; } = null!;
-    public string Phone { get; set; } = null!;
+    [Required]
+    public string Username { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string Phone { get; set; } = string.Empty;
 }
 
-// This helper class is needed for the Join API
 public class JoinRequest
 {
-    public string Username { get; set; } = null!;
-    public string Phone { get; set; } = null!;
+    [Required]
+    public string Username { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string Phone { get; set; } = string.Empty;
 }
