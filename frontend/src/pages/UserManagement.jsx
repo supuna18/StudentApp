@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Plus, Eye, Edit2, Trash2, Users } from 'lucide-react';
 
 const AVATAR_COLORS = ['#2255D2', '#4A70F5', '#1843B8', '#6366F1', '#059669'];
@@ -6,30 +6,61 @@ const AVATAR_COLORS = ['#2255D2', '#4A70F5', '#1843B8', '#6366F1', '#059669'];
 const roleConfig = {
   Admin:     { bg: 'bg-[#EEF2FF]', text: 'text-blue-700'    },
   Student:   { bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  Moderator: { bg: 'bg-amber-50',   text: 'text-amber-700'   },
 };
 
-const sampleUsers = [
-  { id: 1, name: 'Supun Anjana',    email: 'supun@test.com',       role: 'Admin',     status: 'Active',   joined: 'Jan 12, 2025' },
-  { id: 2, name: 'Nimal Perera',    email: 'nimal@student.com',    role: 'Student',   status: 'Active',   joined: 'Mar 5, 2025'  },
-  { id: 3, name: 'Kavindi Silva',   email: 'kavindi@student.com',  role: 'Student',   status: 'Inactive', joined: 'Feb 19, 2025' },
-  { id: 4, name: 'Ravindu Mendis',  email: 'ravindu@mod.com',      role: 'Moderator', status: 'Active',   joined: 'Apr 2, 2025'  },
-  { id: 5, name: 'Amali Fernando',  email: 'amali@student.com',    role: 'Student',   status: 'Active',   joined: 'May 7, 2025'  },
-];
-
-const getInitials = (name) => name.split(' ').map((w) => w[0]).join('').toUpperCase();
+const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map((w) => w[0]).join('').toUpperCase().substring(0, 2);
+};
 
 const UserManagement = () => {
-  const [users, setUsers]       = useState(sampleUsers);
-  const [search, setSearch]     = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:5005/api/users', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!res.ok) {
+                throw new Error('Failed to fetch users from server');
+            }
+            
+            const data = await res.json();
+            setUsers(data);
+        } catch (err) {
+            console.error("Error fetching users:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filtered = users.filter(
     (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+      (u.username || "").toLowerCase().includes(search.toLowerCase()) ||
+      (u.email || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = (id) => setUsers((prev) => prev.filter((u) => u.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+        // Implement delete API call here if needed
+        setUsers((prev) => prev.filter((u) => (u.id || u._id) !== id));
+    }
+  };
+
+  if (loading) return <div className="p-20 text-center text-blue-600 font-bold animate-pulse">Connecting to EduSyncDB...</div>;
+  if (error) return <div className="p-20 text-center text-red-500 font-bold">Error: {error}</div>;
 
   return (
     <div>
@@ -76,7 +107,7 @@ const UserManagement = () => {
         </div>
 
         {/* ── Table card ── */}
-        <div className="bg-white border border-[#E8EEFF] rounded-2xl overflow-hidden">
+        <div className="bg-white border border-[#E8EEFF] rounded-2xl overflow-hidden shadow-sm">
 
           {/* Card header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8EEFF]">
@@ -118,10 +149,10 @@ const UserManagement = () => {
               ) : (
                 filtered.map((user, i) => {
                   const role   = roleConfig[user.role] ?? roleConfig.Student;
-                  const isActive = user.status === 'Active';
+                  const isActive = true; // For now default to active as we don't have this in DB yet
                   return (
                     <tr
-                      key={user.id}
+                      key={user.id || user._id}
                       className="border-b border-[#E8EEFF] last:border-b-0 hover:bg-[#EEF2FF] transition-colors duration-150"
                     >
                       {/* User */}
@@ -131,9 +162,9 @@ const UserManagement = () => {
                             className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-extrabold text-white flex-shrink-0"
                             style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
                           >
-                            {getInitials(user.name)}
+                            {getInitials(user.username)}
                           </div>
-                          <span className="text-[13px] font-semibold text-[#0F1C4D]">{user.name}</span>
+                          <span className="text-[13px] font-semibold text-[#0F1C4D]">{user.username}</span>
                         </div>
                       </td>
 
@@ -153,12 +184,14 @@ const UserManagement = () => {
                           ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}/>
-                          {user.status}
+                          Active
                         </span>
                       </td>
 
                       {/* Joined */}
-                      <td className="px-4 py-3.5 text-[12px] text-slate-400">{user.joined}</td>
+                      <td className="px-4 py-3.5 text-[12px] text-slate-400">
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                      </td>
 
                       {/* Actions */}
                       <td className="pr-5 pl-4 py-3.5">
@@ -170,7 +203,7 @@ const UserManagement = () => {
                             <Edit2 size={13}/>
                           </button>
                           <button
-                            onClick={() => handleDelete(user.id)}
+                            onClick={() => handleDelete(user.id || user._id)}
                             className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all duration-150"
                           >
                             <Trash2 size={13}/>
@@ -184,24 +217,11 @@ const UserManagement = () => {
             </tbody>
           </table>
 
-          {/* Pagination */}
+          {/* Pagination Placeholder */}
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#E8EEFF]">
             <span className="text-[12px] text-slate-400">
-              Showing 1–{filtered.length} of {users.length.toLocaleString()} users
+              Showing {filtered.length} of {users.length.toLocaleString()} users
             </span>
-            <div className="flex items-center gap-1">
-              {['‹', '1', '2', '3', '›'].map((p, i) => (
-                <button
-                  key={i}
-                  className={`w-[30px] h-[30px] rounded-[8px] border text-[12px] font-semibold flex items-center justify-center transition-all duration-150
-                    ${p === '1'
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-[#E8EEFF] text-slate-500 hover:border-blue-400 hover:text-blue-600'}`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
