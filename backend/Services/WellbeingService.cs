@@ -41,5 +41,12 @@ namespace StudentApp.Api.Services
             // IsUpsert = true නිසා, නැති එකක් නම් අලුතින් හදනවා, තිබේ නම් Update කරනවා
             await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
         }
+
+        public async Task<List<DailyUsage>> GetUsageByUserAsync(string userId) =>
+    await _database.GetCollection<DailyUsage>("DailyUsage")
+                  .Find(u => u.UserId == userId)
+                  .ToListAsync();
+
+
     }
 }
