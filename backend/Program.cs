@@ -1,6 +1,7 @@
 using StudentApp.Api.Data;
 using StudentApp.Api.Services;
 using StudentApp.Api.Hubs;
+using StudentApp.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -8,38 +9,49 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- සර්විස් රෙජිස්ටර් කිරීම ---
+// --- Services Registration ---
+
+// SignalR (for chat)
 builder.Services.AddSignalR();
-// MongoDB Client එක Register කිරීම (EduSyncCluster Atlas එකට සම්බන්ධ වේ)
-builder.Services.AddSingleton<IMongoClient>(sp => 
+
+// MongoDB Client (Singleton - best practice)
+builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var connectionString = builder.Configuration.GetSection("StudentDatabase")["ConnectionString"];
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("MongoDB ConnectionString is missing in configuration.");
+    }
     return new MongoClient(connectionString);
 });
 
+// Core Services
 builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<EmailService>(); 
-
-builder.Services.AddSingleton<WellbeingService>(); 
-
-
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddSingleton<WellbeingService>();
 
 builder.Services.AddControllers();
 
-// CORS සැකසුම්: Browser Extension එකට API එකට කතා කිරීමට මෙයින් අවසර ලැබේ
-// [EDIT] Updated to support SignalR without breaking other teammates' functions or the Extension
+// CORS Policy (Allow all for now - restrict in production)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", b => b
-        .SetIsOriginAllowed(_ => true) // Allows any origin (including the Extension and other ports)
+        .SetIsOriginAllowed(_ => true)
         .AllowAnyMethod()
         .AllowAnyHeader()
-        .AllowCredentials()); // Required for your SignalR chat to connect
+        .AllowCredentials()); // Needed for SignalR
 });
 
-// Authentication සහ JWT සැකසුම්
-var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
+// JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT Key is missing in configuration.");
+}
+var key = Encoding.ASCII.GetBytes(jwtKey);
+
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,16 +72,21 @@ builder.Services.AddAuthentication(x =>
 
 // --------------------------------------------------------
 
-var app = builder.Build(); 
+var app = builder.Build();
 
-// CORS සක්‍රීය කිරීම (අනිවාර්යයි)
+// Global Exception Handling
+app.UseMiddleware<ExceptionMiddleware>();
+
+// Enable CORS
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// SignalR Hub
 app.MapHub<ChatHub>("/chatHub");
 
-// Docker ඇතුළේ දුවන්න මේ පේළිය
+// Run application
 app.Run("http://0.0.0.0:8080");
-

@@ -21,6 +21,7 @@ public class StudyGroupsController : ControllerBase
         _emailService = emailService;
     }
 
+
     // 1. GET ALL USER GROUPS (Managed & Joined)
     [HttpGet("user/{email}")]
     public async Task<ActionResult<List<StudyGroup>>> GetUserGroups(string email)
@@ -31,6 +32,12 @@ public class StudyGroupsController : ControllerBase
         );
         return await _groups.Find(filter).ToListAsync();
     }
+
+    // 1. GET ALL: fetch("http://localhost:5005/api/studygroups")
+    [HttpGet]
+    public async Task<ActionResult<List<StudyGroup>>> Get() =>
+        await _groups.Find(_ => true).ToListAsync();
+
 
     // 2. GET SINGLE GROUP (For Chat Page Details)
     [HttpGet("{id}")]

@@ -1,17 +1,20 @@
 using StudentApp.Api.Models;
+using StudentApp.Api.Data;
+using MongoDB.Driver;
 
 namespace StudentApp.Api.Services;
 
 public class UserService
 {
-    public List<User> GetAllUsers()
+    private readonly MongoService _mongoService;
+
+    public UserService(MongoService mongoService)
     {
-        return new List<User>
-        {
-            // Id එකට "1" වගේ string එකක් දෙන්න (මොකද අපේ Model එකේ Id එක string නිසා)
-            // 'Name' වෙනුවට 'Username' පාවිච්චි කරන්න
-            new User { Id = "1", Username = "Supun Anjana", Role = "Developer", Email = "supun@test.com" },
-            new User { Id = "2", Username = "Kasun Perera", Role = "Designer", Email = "kasun@test.com" }
-        };
+        _mongoService = mongoService;
+    }
+
+    public async Task<List<User>> GetAllUsers()
+    {
+        return await _mongoService.Users.Find(_ => true).ToListAsync();
     }
 }

@@ -6,6 +6,7 @@ const Signup = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('Student');
     const [loading, setLoading] = useState(false);
     const [focused, setFocused] = useState(''); // State to track focused input for styling
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Signup = () => {
             const res = await fetch('http://localhost:5005/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
+                body: JSON.stringify({ username, email, password, role })
             });
 
             const data = await res.json();
@@ -178,6 +179,18 @@ const Signup = () => {
                                         />
                                     </div>
                                     <p className="text-xs text-gray-400 mt-0.5">Must be at least 8 characters</p>
+                                </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-semibold text-gray-700 tracking-wide">Account Type</label>
+                                    <select
+                                        value={role}
+                                        onChange={e => setRole(e.target.value)}
+                                        className="w-full py-3 px-4 border-2 border-gray-300 rounded-xl font-sans text-sm outline-none bg-[#FAFBFF] focus:border-[#1A56DB] transition-all"
+                                    >
+                                        <option value="Student">Student</option>
+                                        <option value="Admin">Admin</option>
+                                    </select>
                                 </div>
 
                                 <button
