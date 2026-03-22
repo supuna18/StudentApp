@@ -61,4 +61,9 @@ public class AuthService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
+
+    public async Task<List<User>> GetAllUsersForManagementAsync()
+    {
+        return await _mongoService.GetAllUsersAsync();
+    }
 }

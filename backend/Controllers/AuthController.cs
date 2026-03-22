@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentApp.Api.Models;
 using StudentApp.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentApp.Api.Controllers;
 
@@ -42,6 +43,15 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password" });
 
         return Ok(new { token });
+    }
+
+    // 3. User Management Endpoint (Requested as check-db)
+    [Authorize(Roles = "Admin")]
+    [HttpGet("check-db")]
+    public async Task<IActionResult> CheckDb()
+    {
+        var users = await _authService.GetAllUsersForManagementAsync();
+        return Ok(users);
     }
 }
 
