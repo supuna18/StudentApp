@@ -37,11 +37,9 @@ const Navbar = () => {
         <Link to="/login" className={`font-bold transition-colors ${isScrolled ? "text-blue-600" : "text-white"}`}>
           Login
         </Link>
-        <Link to="/signup">
-          <button className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
-            Get Extension
-          </button>
-        </Link>
+        <button className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
+          Get Extension
+        </button>
       </div>
     </motion.nav>
   );
