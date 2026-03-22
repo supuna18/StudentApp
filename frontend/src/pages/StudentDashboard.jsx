@@ -57,7 +57,7 @@ const StudentDashboard = () => {
       <Sidebar />
 
       {/* Main */}
-      <div className="dashboard-root flex-1 ml-64 p-10 relative overflow-hidden">
+      <div className="dashboard-root flex-1 ml-64 p-10 relative">
 
         {/* Ambient orbs */}
         <div className="absolute top-[-80px] right-[-80px] w-[360px] h-[360px] rounded-full bg-blue-500/[0.07] blur-[100px] pointer-events-none -z-10" />
