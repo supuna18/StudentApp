@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -28,9 +29,36 @@ const menuSections = [
 const Sidebar = () => {
   const location = useLocation();
   const navigate  = useNavigate();
+  const [user, setUser] = useState({ name: 'Guest', role: 'Student', initials: 'G' });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        // Extract the username from the unique_name claim and the role from the role claim
+        const username = decoded.unique_name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'User';
+        const role = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Student';
+        
+        // Get initials from username
+        const initials = username
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .substring(0, 2);
+
+        setUser({ name: username, role: role, initials: initials });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
     navigate('/', { replace: true });
   };
 
@@ -108,11 +136,11 @@ const Sidebar = () => {
           {/* User card */}
           <div className="flex items-center gap-2.5 bg-[#F8FAFF] border border-[#E8EEFF] rounded-xl px-3 py-2.5 mb-2.5">
             <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0">
-              JD
+              {user.initials}
             </div>
             <div className="overflow-hidden">
-              <p className="text-[12.5px] font-700 text-[#0F1C4D] leading-tight truncate">John Doe</p>
-              <p className="text-[11px] text-slate-400">Student</p>
+              <p className="text-[12.5px] font-700 text-[#0F1C4D] leading-tight truncate">{user.name}</p>
+              <p className="text-[11px] text-slate-400">{user.role}</p>
             </div>
           </div>
 
