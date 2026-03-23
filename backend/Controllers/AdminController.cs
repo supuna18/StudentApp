@@ -58,6 +58,30 @@ public class AdminController : ControllerBase
         if (result) return Ok(new { message = "User role updated successfully", role = user.Role });
         return BadRequest(new { message = "Failed to update user role" });
     }
+
+    // --- Safety Report Management ---
+    [HttpGet("safety-reports")]
+    public async Task<IActionResult> GetAllSafetyReports()
+    {
+        var reports = await _mongoService.GetAllSafetyReportsAsync();
+        return Ok(reports);
+    }
+
+    [HttpPatch("safety-reports/{id}/approve")]
+    public async Task<IActionResult> ApproveSafetyReport(string id)
+    {
+        var result = await _mongoService.UpdateSafetyReportStatusAsync(id, "Approved");
+        if (result) return Ok(new { message = "Safety report approved!" });
+        return NotFound(new { message = "Report not found" });
+    }
+
+    [HttpDelete("safety-reports/{id}")]
+    public async Task<IActionResult> DeleteSafetyReport(string id)
+    {
+        var result = await _mongoService.DeleteSafetyReportAsync(id);
+        if (result) return Ok(new { message = "Safety report deleted!" });
+        return NotFound(new { message = "Report not found" });
+    }
 }
 
 public class UpdateRoleRequest

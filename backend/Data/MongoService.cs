@@ -71,6 +71,24 @@ public class MongoService
     public async Task<User?> GetUserByIdAsync(string id) =>
         await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
 
+    // --- Safety Report Operations ---
+    public async Task<List<SafetyReport>> GetAllSafetyReportsAsync() =>
+        await _safetyReportsCollection.Find(_ => true).ToListAsync();
+
+    public async Task<bool> UpdateSafetyReportStatusAsync(string id, string status)
+    {
+        var filter = Builders<SafetyReport>.Filter.Eq(r => r.Id, id);
+        var update = Builders<SafetyReport>.Update.Set(r => r.Status, status);
+        var result = await _safetyReportsCollection.UpdateOneAsync(filter, update);
+        return result.ModifiedCount > 0;
+    }
+
+    public async Task<bool> DeleteSafetyReportAsync(string id)
+    {
+        var result = await _safetyReportsCollection.DeleteOneAsync(r => r.Id == id);
+        return result.DeletedCount > 0;
+    }
+
     // --- Admin Dashboard Stats ---
     public async Task<object> GetAdminStatsAsync()
     {
