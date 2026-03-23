@@ -18,11 +18,8 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
+  const [viewUser, setViewUser] = useState(null);
   
-  // View Modal State
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showViewModal, setShowViewModal] = useState(false);
-
   useEffect(() => {
     const fetchUsers = async () => {
         try {
@@ -115,85 +112,6 @@ const UserManagement = () => {
 
   return (
     <div>
-      {/* View Modal */}
-      {showViewModal && selectedUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="relative h-24 bg-gradient-to-r from-blue-600 to-indigo-700">
-              <button 
-                onClick={() => setShowViewModal(false)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors"
-              >
-                <X size={18} />
-              </button>
-              <div className="absolute -bottom-10 left-8">
-                <div 
-                  className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-2xl font-black text-white"
-                  style={{ background: AVATAR_COLORS[users.indexOf(selectedUser) % AVATAR_COLORS.length] }}
-                >
-                  {getInitials(selectedUser.username)}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Content */}
-            <div className="px-8 pt-14 pb-8">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-[#0F1C4D] tracking-tight">{selectedUser.username}</h3>
-                <span className={`inline-flex items-center px-2.5 py-0.5 mt-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${roleConfig[selectedUser.role]?.bg || 'bg-emerald-50'} ${roleConfig[selectedUser.role]?.text || 'text-emerald-700'}`}>
-                  {selectedUser.role}
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-[13.5px]">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                    <Mail size={16} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</p>
-                    <p className="text-[#0F1C4D] font-medium">{selectedUser.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 text-[13.5px]">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                    <Shield size={16} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Account Status</p>
-                    <div className="flex items-center gap-1.5 text-emerald-600 font-semibold">
-                      <CheckCircle size={14} />
-                      Active
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 text-[13.5px]">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                    <Calendar size={16} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Joined Date</p>
-                    <p className="text-[#0F1C4D] font-medium">
-                      {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => setShowViewModal(false)}
-                className="w-full mt-8 py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-[13px] rounded-xl transition-colors"
-              >
-                Close Profile
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Font import */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap');
@@ -327,10 +245,7 @@ const UserManagement = () => {
                       <td className="pr-5 pl-4 py-3.5">
                         <div className="flex items-center justify-end gap-1">
                           <button 
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setShowViewModal(true);
-                            }}
+                            onClick={() => setViewUser(user)}
                             className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
                           >
                             <Eye size={13}/>
@@ -363,6 +278,61 @@ const UserManagement = () => {
             </span>
           </div>
         </div>
+
+        {/* View User Modal */}
+        {viewUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" style={{ fontFamily: 'DM Sans' }}>
+            <div className="bg-white rounded-2xl w-[400px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="px-6 py-4 border-b border-[#E8EEFF] flex items-center justify-between">
+                <h3 className="text-[15px] font-bold text-[#0F1C4D]">User Details</h3>
+                <button onClick={() => setViewUser(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                  ✕
+                </button>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div
+                    className="w-[48px] h-[48px] rounded-full flex items-center justify-center text-[16px] font-extrabold text-white"
+                    style={{ background: AVATAR_COLORS[users.findIndex(u => (u.id || u._id) === (viewUser.id || viewUser._id)) % AVATAR_COLORS.length] || '#2255D2' }}
+                  >
+                    {getInitials(viewUser.username)}
+                  </div>
+                  <div>
+                    <h4 className="text-[16px] font-bold text-[#0F1C4D]">{viewUser.username}</h4>
+                    <p className="text-[13px] text-slate-500">{viewUser.email}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Role</label>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${roleConfig[viewUser.role]?.bg || roleConfig.Student.bg} ${roleConfig[viewUser.role]?.text || roleConfig.Student.text}`}>
+                      {viewUser.role}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Status</label>
+                    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"/>
+                      Active
+                    </span>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Joined Date</label>
+                    <p className="text-[13px] font-medium text-[#0F1C4D]">
+                      {viewUser.createdAt ? new Date(viewUser.createdAt).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="px-6 py-4 bg-[#F8FAFF] border-t border-[#E8EEFF] flex justify-end">
+                <button onClick={() => setViewUser(null)} className="px-4 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[13px] font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

@@ -384,9 +384,6 @@ const AdminDashboard = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600" style={{ animation: 'pulse 2s infinite' }}/>
                 System Live
               </div>
-              <button className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-600 rounded-[10px] shadow-[0_4px_14px_rgba(34,85,210,0.25)] hover:shadow-[0_6px_20px_rgba(34,85,210,0.35)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]">
-                <Edit2 size={12}/> Edit Dashboard
-              </button>
             </div>
           </div>
 
