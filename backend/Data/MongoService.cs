@@ -16,13 +16,13 @@ public class MongoService
 
     public MongoService(IMongoClient client, IConfiguration config)
     {
-        var databaseName = config.GetSection("StudentDatabase:DatabaseName").Value ?? "EduSyncDB";
+        var databaseName = config.GetSection("StudentDatabase")["DatabaseName"] ?? "EduSyncDB";
         _database = client.GetDatabase(databaseName);
 
-        var usersCollectionName = config.GetSection("StudentDatabase:CollectionName").Value ?? "Users";
+        var usersCollectionName = config.GetSection("StudentDatabase")["CollectionName"] ?? "Users";
         _usersCollection = _database.GetCollection<User>(usersCollectionName);
 
-        var groupsCollectionName = config.GetSection("StudentDatabase:GroupsCollectionName")?.Value ?? "StudyGroups";
+        var groupsCollectionName = config.GetSection("StudentDatabase")["GroupsCollectionName"] ?? "StudyGroups";
         _studyGroupsCollection = _database.GetCollection<StudyGroup>(groupsCollectionName);
 
         var sessionsCollectionName = "StudySessions";
@@ -31,10 +31,10 @@ public class MongoService
         var chatCollectionName = "ChatMessages";
         _chatMessagesCollection = _database.GetCollection<ChatMessage>(chatCollectionName);
 
-        var reportsCollectionName = config.GetSection("StudentDatabase:ReportsCollectionName")?.Value ?? "SafetyReports";
+        var reportsCollectionName = config.GetSection("StudentDatabase")["ReportsCollectionName"] ?? "SafetyReports";
         _safetyReportsCollection = _database.GetCollection<SafetyReport>(reportsCollectionName);
 
-        var limitsCollectionName = config.GetSection("StudentDatabase:UserLimitsCollection")?.Value ?? "UserLimits";
+        var limitsCollectionName = config.GetSection("StudentDatabase")["UserLimitsCollection"] ?? "UserLimits";
         _userLimitsCollection = _database.GetCollection<UserLimit>(limitsCollectionName);
     }
 

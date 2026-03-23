@@ -22,7 +22,10 @@ services:
       - db
     environment:
       # Finalyly, we will use the MongoDB Atlas connection string for production, but you can switch to the local MongoDB connection string for development by commenting/uncommenting the lines below.
-      - ConnectionStrings__DefaultConnection=mongodb+srv://supuna793_db_user:4doop6exUXH6JKRr@edusynccluster.6vex2af.mongodb.net/EduSyncDB?retryWrites=true&w=majority
+      - StudentDatabase__ConnectionString=mongodb+srv://supuna793_db_user:4doop6exUXH6JKRr@edusynccluster.6vex2af.mongodb.net/EduSyncDB?retryWrites=true&w=majority
+      - Jwt__Key=EduSyncSuperSecretKey1234567890123456
+      - Jwt__Issuer=EduSyncBackend
+      - Jwt__Audience=EduSyncFrontend
     volumes:
       - ./backend:/app
 

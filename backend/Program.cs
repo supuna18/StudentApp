@@ -30,7 +30,7 @@ builder.Services.AddSingleton<MongoService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddSingleton<WellbeingService>();
+builder.Services.AddScoped<WellbeingService>();
 
 builder.Services.AddControllers();
 
