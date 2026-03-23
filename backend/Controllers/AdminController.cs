@@ -37,4 +37,30 @@ public class AdminController : ControllerBase
         var trends = await _mongoService.GetSystemUsageTrendsAsync();
         return Ok(trends);
     }
+
+    [HttpDelete("users/{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        var result = await _mongoService.DeleteUserAsync(id);
+        if (result) return Ok(new { message = "User deleted successfully" });
+        return NotFound(new { message = "User not found" });
+    }
+
+    [HttpPatch("users/{id}/role")]
+    public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateRoleRequest request)
+    {
+        var user = await _mongoService.GetUserByIdAsync(id);
+        if (user == null) return NotFound(new { message = "User not found" });
+
+        user.Role = request.Role;
+        var result = await _mongoService.UpdateUserAsync(id, user);
+
+        if (result) return Ok(new { message = "User role updated successfully", role = user.Role });
+        return BadRequest(new { message = "Failed to update user role" });
+    }
+}
+
+public class UpdateRoleRequest
+{
+    public string Role { get; set; } = "";
 }

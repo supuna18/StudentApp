@@ -54,8 +54,55 @@ const UserManagement = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-        // Implement delete API call here if needed
-        setUsers((prev) => prev.filter((u) => (u.id || u._id) !== id));
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`http://localhost:5005/api/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || 'Failed to delete user');
+            }
+
+            setUsers((prev) => prev.filter((u) => (u.id || u._id) !== id));
+            alert("User deleted successfully.");
+        } catch (err) {
+            console.error("Error deleting user:", err);
+            alert("Error: " + err.message);
+        }
+    }
+  };
+
+  const handleEditRole = async (user) => {
+    const newRole = user.role === 'Admin' ? 'Student' : 'Admin';
+    if (window.confirm(`Change ${user.username}'s role to ${newRole}?`)) {
+        try {
+            const token = localStorage.getItem('token');
+            const id = user.id || user._id;
+            const res = await fetch(`http://localhost:5005/api/admin/users/${id}/role`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || 'Failed to update user role');
+            }
+
+            setUsers((prev) => prev.map((u) => (u.id || u._id) === id ? { ...u, role: newRole } : u));
+            alert(`User role updated to ${newRole}.`);
+        } catch (err) {
+            console.error("Error updating user role:", err);
+            alert("Error: " + err.message);
+        }
     }
   };
 
@@ -199,7 +246,10 @@ const UserManagement = () => {
                           <button className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150">
                             <Eye size={13}/>
                           </button>
-                          <button className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150">
+                          <button 
+                            onClick={() => handleEditRole(user)}
+                            className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
+                          >
                             <Edit2 size={13}/>
                           </button>
                           <button

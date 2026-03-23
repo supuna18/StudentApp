@@ -56,6 +56,21 @@ public class MongoService
     public async Task<List<User>> GetAllUsersAsync() =>
         await _usersCollection.Find(_ => true).ToListAsync();
 
+    public async Task<bool> UpdateUserAsync(string id, User updatedUser)
+    {
+        var result = await _usersCollection.ReplaceOneAsync(u => u.Id == id, updatedUser);
+        return result.ModifiedCount > 0;
+    }
+
+    public async Task<bool> DeleteUserAsync(string id)
+    {
+        var result = await _usersCollection.DeleteOneAsync(u => u.Id == id);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<User?> GetUserByIdAsync(string id) =>
+        await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
+
     // --- Admin Dashboard Stats ---
     public async Task<object> GetAdminStatsAsync()
     {
