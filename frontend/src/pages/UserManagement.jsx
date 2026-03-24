@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Eye, Edit2, Trash2, Users, X, Mail, Shield, Calendar, CheckCircle } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit2, Trash2, Users, X, Mail, Shield, Calendar, CheckCircle, Lock, UserPlus } from 'lucide-react';
 
 const AVATAR_COLORS = ['#2255D2', '#4A70F5', '#1843B8', '#6366F1', '#059669'];
 
@@ -20,6 +20,16 @@ const UserManagement = () => {
   const [search, setSearch] = useState('');
   const [viewUser, setViewUser] = useState(null);
   
+  // Add User Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'Student'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     const fetchUsers = async () => {
         try {
@@ -107,6 +117,44 @@ const UserManagement = () => {
     }
   };
 
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5005/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to register user');
+        }
+
+        const newUser = await res.json();
+        // Assuming register returns the user object or we need to re-fetch
+        // For immediate UI update, we add it if the API returns the user object
+        // Many APIs return a success message, let's assume it returns user or we re-fetch
+        
+        setUsers(prev => [...prev, newUser.user || newUser]);
+        
+        // Reset and close
+        setIsAddModalOpen(false);
+        setFormData({ username: '', email: '', password: '', role: 'Student' });
+        alert("User added successfully!");
+    } catch (err) {
+        console.error("Error adding user:", err);
+        alert("Error: " + err.message);
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
   if (loading) return <div className="p-20 text-center text-blue-600 font-bold animate-pulse">Connecting to EduSyncDB...</div>;
   if (error) return <div className="p-20 text-center text-red-500 font-bold">Error: {error}</div>;
 
@@ -124,7 +172,7 @@ const UserManagement = () => {
         {/* ── Page header ── */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            
+            <h2 className="text-[24px] font-bold text-[#0F1C4D] tracking-tight mb-1">User Management 👥</h2>
             <p className="text-[12px] text-slate-400 mt-1">
               Manage student and admin accounts across EduSync
             </p>
@@ -149,7 +197,10 @@ const UserManagement = () => {
             </button>
 
             {/* Add user */}
-            <button className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]">
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+            >
               <Plus size={14} strokeWidth={2.5} /> Add User
             </button>
           </div>
@@ -331,6 +382,126 @@ const UserManagement = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add User Modal */}
+        {isAddModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-white/20 animate-in zoom-in-95 duration-200">
+              {/* Header */}
+              <div className="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-between text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <UserPlus size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold tracking-tight">Add New User</h3>
+                    <p className="text-xs text-white/70">Create a new account for EduSync</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleAddUser} className="p-8">
+                <div className="space-y-5">
+                  {/* Username */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Username</label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <Users size={16} />
+                      </div>
+                      <input 
+                        required
+                        type="text"
+                        placeholder="John Doe"
+                        value={formData.username}
+                        onChange={(e) => setFormData({...formData, username: e.target.value})}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Email Address</label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <Mail size={16} />
+                      </div>
+                      <input 
+                        required
+                        type="email"
+                        placeholder="john@example.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Password</label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <Lock size={16} />
+                      </div>
+                      <input 
+                        required
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Role */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Assign Role</label>
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <Shield size={16} />
+                      </div>
+                      <select 
+                        value={formData.role}
+                        onChange={(e) => setFormData({...formData, role: e.target.value})}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D] appearance-none"
+                      >
+                        <option value="Student">Student</option>
+                        <option value="Admin">Admin</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-10 flex gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[13px] rounded-2xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    disabled={isSubmitting}
+                    type="submit"
+                    className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Registering...' : 'Add User'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
