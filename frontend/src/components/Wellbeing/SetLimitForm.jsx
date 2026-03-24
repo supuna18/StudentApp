@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import UsageChart from './UsageChart';
 import UsagePieChart from './UsagePieChart';
 import LimitsChart from './LimitsChart';
+import CategoryChart from './CategoryChart';
+import ComparisonChart from './ComparisonChart';
 import { motion, AnimatePresence } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -128,67 +130,74 @@ const SetLimitForm = () => {
   };
 
   const downloadPDF = async () => {
-    const input = document.getElementById('charts-container');
-    if (!input) return;
-    
-    // Temporarily apply a specific scale and style for high quality capture
-    const originalTransform = input.style.transform;
-    input.style.transform = 'scale(1)';
-    
-    try {
-      const canvas = await html2canvas(input, { 
-        scale: 2, 
-        useCORS: true, 
-        backgroundColor: darkMode ? '#0f172a' : '#ffffff',
-        scrollY: -window.scrollY // Fixes potential scrolling offsets
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      // Calculate image dimensions to fit within the page minus header/footer height
-      const margin = 10;
-      const imgWidth = pdfWidth - (margin * 2);
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // --- Draw Header ---
-      pdf.setFillColor(30, 58, 138); // blue-900 (EDUSYNC Primary)
-      pdf.rect(0, 0, pdfWidth, 25, 'F');
-      
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(22);
-      pdf.text("EDUSYNC", 15, 17);
-      
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(12);
-      // Right align the report title
-      pdf.text("Digital Wellbeing Report", pdfWidth - 15, 16, { align: 'right' });
-      
-      // --- Add Content Image ---
-      // We start adding image below the header (y = 35)
-      pdf.addImage(imgData, 'PNG', margin, 35, imgWidth, imgHeight);
-      
-      // --- Draw Footer ---
-      pdf.setFillColor(241, 245, 249); // slate-100
-      pdf.rect(0, pageHeight - 15, pdfWidth, 15, 'F');
-      
-      pdf.setTextColor(100, 116, 139); // slate-500
-      pdf.setFontSize(10);
-      const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      pdf.text(`Generated on: ${dateStr}`, 15, pageHeight - 6);
-      pdf.text("www.edusync.com", pdfWidth - 15, pageHeight - 6, { align: 'right' });
+    // Only capture the Usage charts section for a clean, focused report
+    const input = document.getElementById('pdf-section-usage');
+    if (!input) { addToast("Usage data not found!", "error"); return; }
 
-      pdf.save('EduSync-Wellbeing-Report.pdf');
+    addToast("Generating PDF... please wait ⏳", "success");
+
+    try {
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: darkMode ? '#0f172a' : '#ffffff',
+        scrollY: -window.scrollY
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+
+      // Landscape A4: 297 x 210 mm
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+
+      const headerH = 22, footerH = 12, margin = 10;
+      const availW = pdfW - margin * 2;
+      const availH = pdfH - headerH - footerH - margin;
+
+      // Fit image preserving aspect ratio
+      const ratio = canvas.height / canvas.width;
+      let imgW = availW, imgH = imgW * ratio;
+      if (imgH > availH) { imgH = availH; imgW = imgH / ratio; }
+      const xOff = margin + (availW - imgW) / 2;
+
+      const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // ── Header (navy blue) ──────────────────────────────
+      pdf.setFillColor(30, 58, 138);
+      pdf.rect(0, 0, pdfW, headerH, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(18);
+      pdf.text("EDUSYNC", 12, 15);
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
+      pdf.text("Digital Wellbeing — Actual Usage Report", pdfW - 12, 15, { align: 'right' });
+
+      // ── Subtitle bar (light blue) ───────────────────────
+      pdf.setFillColor(219, 234, 254); // blue-100
+      pdf.rect(0, headerH, pdfW, 8, 'F');
+      pdf.setTextColor(30, 64, 175);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(8);
+      pdf.text(`Report Date: ${dateStr}   |   User: user123   |   Period: Today`, 12, headerH + 5.5);
+
+      // ── Usage chart image ───────────────────────────────
+      pdf.addImage(imgData, 'PNG', xOff, headerH + 10, imgW, imgH);
+
+      // ── Footer ──────────────────────────────────────────
+      pdf.setFillColor(241, 245, 249);
+      pdf.rect(0, pdfH - footerH, pdfW, footerH, 'F');
+      pdf.setTextColor(100, 116, 139);
+      pdf.setFontSize(7);
+      pdf.text("Confidential — For personal use only", 12, pdfH - 4);
+      pdf.text("www.edusync.com", pdfW - 12, pdfH - 4, { align: 'right' });
+
+      pdf.save('EduSync-Usage-Report.pdf');
+      addToast("PDF downloaded! 📄", "success");
     } catch (error) {
-      console.error("Could not generate PDF", error);
+      console.error("PDF error:", error);
       addToast("Error generating PDF!", "error");
-    } finally {
-      input.style.transform = originalTransform;
     }
   };
+
 
   return (
     <>
@@ -401,7 +410,7 @@ const SetLimitForm = () => {
           <h3 className="text-2xl font-bold tracking-tight mb-6 opacity-80">
             Configured Limits <span data-html2canvas-ignore="true" className="text-blue-600 opacity-60 text-sm font-medium">(Form Data)</span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div id="pdf-section-limits" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             <LimitsChart />
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 p-8 rounded-[3rem] flex items-center justify-center border border-blue-100 dark:border-slate-600 shadow-xl">
                <div className="text-center p-6">
@@ -412,12 +421,14 @@ const SetLimitForm = () => {
             </div>
           </div>
 
-          <h2 className="text-3xl font-black tracking-tight mb-8">
-            Actual Usage <span data-html2canvas-ignore="true" className="text-emerald-600 opacity-60 text-xl font-medium">(Extension Data)</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div id="pdf-section-usage" className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <UsageChart />
             <UsagePieChart />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <div id="pdf-section-comparison"><ComparisonChart /></div>
+            <div id="pdf-section-category"><CategoryChart /></div>
           </div>
         </motion.div>
 

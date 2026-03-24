@@ -33,6 +33,14 @@ namespace StudentApp.Api.Services
             await _userLimitsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
         }
 
+        // Delete a specific limit by its MongoDB _id
+        public async Task DeleteLimitAsync(string id)
+        {
+            var rawCollection = _database.GetCollection<MongoDB.Bson.BsonDocument>("UserLimits");
+            var filter = Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("_id", MongoDB.Bson.ObjectId.Parse(id));
+            await rawCollection.DeleteOneAsync(filter);
+        }
+
         // 2. ළමයාගේ Limits ලිස්ට් එක ලබාගන්න (Extension එකට අවශ්‍යයි)
         public async Task<List<UserLimit>> GetLimitsByUserAsync(string userId)
         {

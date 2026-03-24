@@ -49,6 +49,18 @@ public class WellbeingController : ControllerBase
         }
     }
 
+    [HttpDelete("limits/{id}")]
+    public async Task<IActionResult> DeleteLimit(string id)
+    {
+        try {
+            await _wellbeingService.DeleteLimitAsync(id);
+            return Ok(new { message = "Limit deleted! 🗑️" });
+        }
+        catch (Exception ex) {
+            return BadRequest(new { message = "Error deleting limit", error = ex.Message });
+        }
+    }
+
     [HttpPost("usage")]
     public async Task<IActionResult> SaveUsage([FromBody] DailyUsage usage)
     {
