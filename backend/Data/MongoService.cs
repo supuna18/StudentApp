@@ -13,6 +13,9 @@ public class MongoService
     private readonly IMongoCollection<ChatMessage> _chatMessagesCollection;
     private readonly IMongoCollection<SafetyReport> _safetyReportsCollection;
     private readonly IMongoCollection<UserLimit> _userLimitsCollection;
+    private readonly IMongoCollection<SystemLog> _systemLogsCollection;
+
+    private static readonly DateTime _serverStartTime = DateTime.UtcNow;
 
     public MongoService(IMongoClient client, IConfiguration config)
     {
@@ -36,6 +39,8 @@ public class MongoService
 
         var limitsCollectionName = config.GetSection("StudentDatabase")["UserLimitsCollection"] ?? "UserLimits";
         _userLimitsCollection = _database.GetCollection<UserLimit>(limitsCollectionName);
+
+        _systemLogsCollection = _database.GetCollection<SystemLog>("SystemLogs");
     }
 
     // --- Collections ---
@@ -45,6 +50,7 @@ public class MongoService
     public IMongoCollection<ChatMessage> ChatHistory => _chatMessagesCollection;
     public IMongoCollection<SafetyReport> SafetyReports => _safetyReportsCollection;
     public IMongoCollection<UserLimit> UserLimits => _userLimitsCollection;
+    public IMongoCollection<SystemLog> SystemLogs => _systemLogsCollection;
 
     // --- User Operations ---
     public async Task CreateUserAsync(User newUser) =>
@@ -87,6 +93,35 @@ public class MongoService
     {
         var result = await _safetyReportsCollection.DeleteOneAsync(r => r.Id == id);
         return result.DeletedCount > 0;
+    }
+
+    // --- System Health ---
+    public async Task<object> GetSystemHealthAsync()
+    {
+        bool dbResponsive = false;
+        try
+        {
+            await _database.RunCommandAsync((Command<BsonDocument>)"{ping:1}");
+            dbResponsive = true;
+        }
+        catch { dbResponsive = false; }
+
+        var totalUsers = await _usersCollection.CountDocumentsAsync(new BsonDocument());
+        var lastLogs = await _systemLogsCollection.Find(new BsonDocument())
+                                                 .SortByDescending(l => l.Timestamp)
+                                                 .Limit(5)
+                                                 .ToListAsync();
+
+        var uptime = DateTime.UtcNow - _serverStartTime;
+
+        return new
+        {
+            dbStatus = dbResponsive ? "Online" : "Offline",
+            serverTime = DateTime.UtcNow,
+            uptime = $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m",
+            totalUsers,
+            recentLogs = lastLogs
+        };
     }
 
     // --- Admin Dashboard Stats ---
