@@ -22,4 +22,8 @@ public class UserLimit
     [Range(1, 1440)]
     [BsonElement("limitMinutes")]
     public int LimitMinutes { get; set; }
+
+    [BsonElement("category")]
+    [BsonIgnoreIfNull]
+    public string Category { get; set; } = "Other";
 }

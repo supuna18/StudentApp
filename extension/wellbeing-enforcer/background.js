@@ -1,69 +1,56 @@
-// Default Limits (Backend එක Fail වුණොත් පාවිච්චි කිරීමට)
-let LIMITS = { "facebook.com": 1, "youtube.com": 2 }; 
-let usageData = {}; 
+let LIMITS = { "facebook.com": 1, "youtube.com": 2 };
 let userId = "user123";
 
-// 1. Backend එකෙන් සැබෑ Limits ලබා ගැනීම
-async function syncLimitsFromBackend() {
+console.log("EduSync Background Started! 🚀");
+
+// Backend එකෙන් දත්ත ගැනීම
+async function syncLimits() {
     try {
         const response = await fetch(`http://localhost:5005/api/wellbeing/limits/${userId}`);
         const result = await response.json();
-        
-        if (result && result.data && result.data.length > 0) {
+        if (result && result.data) {
             let newLimits = {};
-            result.data.forEach(item => {
-                newLimits[item.domain] = item.limitMinutes;
-            });
+            result.data.forEach(item => { newLimits[item.domain] = item.limitMinutes; });
             LIMITS = newLimits;
-            console.log("Database එකෙන් ලිමිට්ස් ලැබුණා! ✅", LIMITS);
+            console.log("✅ Database Limits Updated:", LIMITS);
         }
-    } catch (err) {
-        console.log("Backend sync failed. Default limits පාවිච්චි කරනවා.");
-    }
+    } catch (e) { console.log("⚠️ Sync failed, using defaults."); }
 }
 
-// 2. ටයිමර් එක
-setInterval(async () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-        if (tabs.length === 0 || !tabs[0].url) return;
-
-        try {
-            let url = new URL(tabs[0].url);
-            let domain = url.hostname.replace('www.', '').split('.').slice(-2).join('.');
-
-            if (LIMITS[domain]) {
-                let storageKey = `usage_${domain}`;
-                let res = await chrome.storage.local.get([storageKey]);
-                let spentSeconds = res[storageKey] || 0;
-
-                spentSeconds += 1;
-                await chrome.storage.local.set({ [storageKey]: spentSeconds });
-
-                let timeLeft = (LIMITS[domain] * 60) - spentSeconds;
-
-                if (timeLeft <= 0) {
-                    chrome.tabs.sendMessage(tabs[0].id, { action: "BLOCK_SITE", domain: domain }).catch(() => {});
-                } else {
-                    chrome.tabs.sendMessage(tabs[0].id, { action: "UPDATE_TIMER", timeLeft: timeLeft, domain: domain }).catch(() => {});
-                }
-            }
-        } catch (e) {}
-    });
-}, 1000);
-
-// 3. Messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    let domain = request.domain;
-    if (request.action === "EXTEND_TIME") {
-        LIMITS[domain] = (LIMITS[domain] || 0) + 5;
-        sendResponse({ success: true });
-    } else if (request.action === "REDUCE_TIME") {
-        if (LIMITS[domain] > 1) {
-            LIMITS[domain] -= 1;
-            sendResponse({ success: true });
+    console.log("📩 Message Received:", request.action, "from:", request.domain);
+
+    if (request.action === "GET_DATA") {
+        let dom = request.domain;
+        chrome.storage.local.get([`usage_${dom}`], (res) => {
+            sendResponse({ spent: res[`usage_${dom}`] || 0, limit: LIMITS[dom] || 0 });
+        });
+        return true;
+    }
+    if (request.action === "SAVE_USAGE") {
+        chrome.storage.local.set({ [`usage_${request.domain}`]: request.spent });
+        if (request.spent % 20 === 0) {
+            // Database එකට සේව් කරන කොටස
+            fetch('http://localhost:5005/api/wellbeing/usage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, domain: request.domain, minutesSpent: request.spent / 60, date: new Date().toISOString().split('T')[0] })
+            });
         }
+    }
+    if (request.action === "EXTEND_TIME") {
+        LIMITS[request.domain] = (LIMITS[request.domain] || 1) + 5;
+        sendResponse({ success: true, newLimit: LIMITS[request.domain] });
+    }
+    if (request.action === "REDUCE_TIME") {
+        if (LIMITS[request.domain] > 5) {
+            LIMITS[request.domain] -= 5;
+        } else {
+            LIMITS[request.domain] = 1; // Don't reduce below 1 minute
+        }
+        sendResponse({ success: true, newLimit: LIMITS[request.domain] });
     }
     return true;
 });
 
-syncLimitsFromBackend();
+syncLimits();
