@@ -124,6 +124,7 @@ const UserManagement = () => {
         {/* ── Page header ── */}
         <div className="flex items-end justify-between mb-6">
           <div>
+            
             <p className="text-[12px] text-slate-400 mt-1">
               Manage student and admin accounts across EduSync
             </p>

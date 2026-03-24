@@ -90,7 +90,7 @@ const SafetyApprovals = () => {
         {/* Header */}
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-[24px] font-bold text-[#0F1C4D] tracking-tight">Safety Approvals</h2>
+            
             <p className="text-[12.5px] text-slate-400 mt-1">Review and manage reported sites to keep students safe.</p>
           </div>
 

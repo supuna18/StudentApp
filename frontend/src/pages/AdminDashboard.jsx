@@ -220,12 +220,6 @@ const AdminDashboard = () => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-[#F0F4FF]">
-              {['Title ↕','Status ↕','Number ↕','Responsible Person ↕','Type','Actions'].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF] whitespace-nowrap first:pl-5 last:pr-5"/>
-              ))}
-              {/* inline headers */}
-            </tr>
-            <tr className="bg-[#F0F4FF]">
               <th className="pl-5 pr-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Title ↕</th>
               <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Status ↕</th>
               <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Number ↕</th>
@@ -280,6 +274,14 @@ const AdminDashboard = () => {
   );
 
   /* ── render content ── */
+  const tabIcons = {
+    'Analytics': <TrendingUp className="text-blue-500" size={20} />,
+    'User Management': <Users className="text-indigo-500" size={20} />,
+    'Safety Approvals': <ShieldAlert className="text-red-500" size={20} />,
+    'Resource Manager': <BookOpen className="text-emerald-500" size={20} />,
+    'System Health': <Activity className="text-amber-500" size={20} />,
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'Analytics':        return <AnalyticsContent />;
@@ -376,7 +378,10 @@ const AdminDashboard = () => {
           {/* Topbar */}
           <div className="bg-white border-b border-[#E8EEFF] px-8 py-4 flex items-center justify-between sticky top-0 z-40 anim-up">
             <div>
-              <h1 className="serif-heading text-[22px] text-[#0F1C4D] italic leading-tight">{activeTab} 👋</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="serif-heading text-[22px] text-[#0F1C4D] italic leading-tight">{activeTab}</h1>
+                <span className="opacity-80">{tabIcons[activeTab]}</span>
+              </div>
               <p className="text-[12px] text-slate-400 mt-0.5">Real-time monitoring and administrative controls.</p>
             </div>
             <div className="flex items-center gap-3">
