@@ -101,5 +101,72 @@ namespace StudentApp.Api.Services
 
             await _wellbeingProfileCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
         }
+
+        // 6. Admin: Platform-wide wellbeing overview stats
+        public async Task<AdminWellbeingOverview> GetAdminOverviewAsync()
+        {
+            var allUsage = await _dailyUsageCollection.Find(_ => true).ToListAsync();
+            var allLimits = await _userLimitsCollection.Find(_ => true).ToListAsync();
+            var allProfiles = await _wellbeingProfileCollection.Find(_ => true).ToListAsync();
+
+            var usersTracked = allUsage.Select(u => u.UserId).Distinct().Count();
+            var totalLimits = allLimits.Count;
+            var avgDailyMinutes = allUsage.Any() ? Math.Round(allUsage.Average(u => u.MinutesSpent), 1) : 0;
+            var activeStreaks = allProfiles.Count(p => p.FocusStreak > 0);
+
+            // Top 10 domains by total minutes
+            var topDomains = allUsage
+                .GroupBy(u => u.Domain)
+                .Select(g => new DomainUsageStat { Domain = g.Key, TotalMinutes = Math.Round(g.Sum(u => u.MinutesSpent), 1) })
+                .OrderByDescending(d => d.TotalMinutes)
+                .Take(10)
+                .ToList();
+
+            // Category distribution from limits
+            var categoryDist = allLimits
+                .GroupBy(l => string.IsNullOrEmpty(l.Category) ? "Other" : l.Category)
+                .Select(g => new CategoryStat { Category = g.Key, Count = g.Count() })
+                .ToList();
+
+            return new AdminWellbeingOverview
+            {
+                UsersTracked = usersTracked,
+                TotalLimitsSet = totalLimits,
+                AvgDailyMinutes = avgDailyMinutes,
+                ActiveStreaks = activeStreaks,
+                TopDomains = topDomains,
+                CategoryDistribution = categoryDist
+            };
+        }
+
+        // 7. Admin: Per-user wellbeing summary list
+        public async Task<List<UserWellbeingSummary>> GetAdminUserSummariesAsync()
+        {
+            var allUsage = await _dailyUsageCollection.Find(_ => true).ToListAsync();
+            var allLimits = await _userLimitsCollection.Find(_ => true).ToListAsync();
+            var allProfiles = await _wellbeingProfileCollection.Find(_ => true).ToListAsync();
+
+            var allUserIds = allUsage.Select(u => u.UserId)
+                .Union(allLimits.Select(l => l.UserId))
+                .Union(allProfiles.Select(p => p.UserId))
+                .Distinct();
+
+            return allUserIds.Select(userId =>
+            {
+                var userUsage = allUsage.Where(u => u.UserId == userId).ToList();
+                var userLimits = allLimits.Where(l => l.UserId == userId).ToList();
+                var profile = allProfiles.FirstOrDefault(p => p.UserId == userId);
+
+                return new UserWellbeingSummary
+                {
+                    UserId = userId,
+                    LimitsCount = userLimits.Count,
+                    AvgDailyMinutes = userUsage.Any() ? Math.Round(userUsage.Average(u => u.MinutesSpent), 1) : 0,
+                    Streak = profile?.FocusStreak ?? 0,
+                    BadgesCount = profile?.UnlockedBadges?.Count ?? 0,
+                    Badges = profile?.UnlockedBadges ?? new List<string>()
+                };
+            }).OrderByDescending(u => u.Streak).ToList();
+        }
     }
 }

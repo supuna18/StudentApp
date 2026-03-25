@@ -110,6 +110,32 @@ namespace StudentApp.Api.Controllers
                 return BadRequest(new { message = "Error syncing profile", error = ex.Message });
             }
         }
+
+        // ── Admin endpoints ─────────────────────────────────────────
+
+        [HttpGet("admin/overview")]
+        public async Task<IActionResult> GetAdminOverview()
+        {
+            try {
+                var overview = await _wellbeingService.GetAdminOverviewAsync();
+                return Ok(overview);
+            }
+            catch (Exception ex) {
+                return BadRequest(new { message = "Error fetching admin overview", error = ex.Message });
+            }
+        }
+
+        [HttpGet("admin/users")]
+        public async Task<IActionResult> GetAdminUserSummaries()
+        {
+            try {
+                var summaries = await _wellbeingService.GetAdminUserSummariesAsync();
+                return Ok(summaries);
+            }
+            catch (Exception ex) {
+                return BadRequest(new { message = "Error fetching user summaries", error = ex.Message });
+            }
+        }
     }
 
     public class ProfileSyncDto {

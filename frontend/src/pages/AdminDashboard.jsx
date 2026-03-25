@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import {
   LayoutDashboard, Users, ShieldAlert, BookOpen, LogOut,
   Activity, MoreHorizontal, Filter, Search, TrendingUp,
-  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send,
+  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send, Heart,
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
@@ -14,6 +14,7 @@ import {
 import UserManagement  from './UserManagement';
 import SafetyApprovals from './SafetyApprovals';
 import ResourceManager from './ResourceManager';
+import WellbeingAdminPanel from './WellbeingAdminPanel';
 
 /* ─── constants ──────────────────────────────────────────────── */
 const PIE_COLORS  = ['#2255D2', '#4A70F5', '#93B4FF'];
@@ -57,6 +58,7 @@ const navItems = [
   { id: 'User Management',  icon: <Users           size={14} />, section: 'General' },
   { id: 'Safety Approvals', icon: <ShieldAlert     size={14} />, section: 'General' },
   { id: 'Resource Manager', icon: <BookOpen        size={14} />, section: 'General' },
+  { id: 'Digital Wellbeing',icon: <Heart           size={14} />, section: 'General' },
   { id: 'System Health',    icon: <Activity        size={14} />, section: 'Other'   },
 ];
 
@@ -282,11 +284,12 @@ const AdminDashboard = () => {
   /* ── render content ── */
   const renderContent = () => {
     switch (activeTab) {
-      case 'Analytics':        return <AnalyticsContent />;
-      case 'User Management':  return <UserManagement />;
-      case 'Safety Approvals': return <SafetyApprovals />;
-      case 'Resource Manager': return <ResourceManager />;
-      default:                 return <div className="text-slate-400 text-sm mt-10 text-center">Coming Soon…</div>;
+      case 'Analytics':         return <AnalyticsContent />;
+      case 'User Management':   return <UserManagement />;
+      case 'Safety Approvals':  return <SafetyApprovals />;
+      case 'Resource Manager':  return <ResourceManager />;
+      case 'Digital Wellbeing': return <WellbeingAdminPanel />;
+      default:                  return <div className="text-slate-400 text-sm mt-10 text-center">Coming Soon…</div>;
     }
   };
 
