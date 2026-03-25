@@ -3,21 +3,32 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using StudentApp.Api.Data;
+using System.Linq;
+using System;
 
 namespace StudentApp.Api.Services
 {
     public class WellbeingService 
     {
         private readonly IMongoCollection<UserLimit> _userLimitsCollection;
+        private readonly IMongoCollection<DailyUsage> _dailyUsageCollection;
+        private readonly IMongoCollection<WellbeingProfile> _wellbeingProfileCollection;
         private readonly IMongoDatabase _database;
 
         public WellbeingService(IConfiguration config)
         {
-            var client = new MongoClient(config.GetSection("StudentDatabase")["ConnectionString"]);
-            _database = client.GetDatabase(config.GetSection("StudentDatabase")["DatabaseName"]);
+            var connectionString = config.GetSection("StudentDatabase")["ConnectionString"];
+            var databaseName = config.GetSection("StudentDatabase")["DatabaseName"] ?? "EduSyncDB";
             
-            // UserLimits Collection එක ගන්නවා
-            _userLimitsCollection = _database.GetCollection<UserLimit>("UserLimits");
+            var client = new MongoClient(connectionString);
+            _database = client.GetDatabase(databaseName);
+            
+            var limitsCollectionName = config.GetSection("StudentDatabase")["UserLimitsCollection"] ?? "UserLimits";
+
+            _userLimitsCollection = _database.GetCollection<UserLimit>(limitsCollectionName);
+            _dailyUsageCollection = _database.GetCollection<DailyUsage>("DailyUsage");
+            _wellbeingProfileCollection = _database.GetCollection<WellbeingProfile>("WellbeingProfiles");
         }
 
         // 1. අලුත් Limit එකක් MongoDB එකට දාන්න හෝ තිබේ නම් Update කරන්න (Upsert)
@@ -44,7 +55,6 @@ namespace StudentApp.Api.Services
         // 2. ළමයාගේ Limits ලිස්ට් එක ලබාගන්න (Extension එකට අවශ්‍යයි)
         public async Task<List<UserLimit>> GetLimitsByUserAsync(string userId)
         {
-            // Use raw BsonDocument to avoid issues with fields added after initial schema
             var rawCollection = _database.GetCollection<MongoDB.Bson.BsonDocument>("UserLimits");
             var filter = Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("userId", userId);
             var rawDocs = await rawCollection.Find(filter).ToListAsync();
@@ -62,23 +72,34 @@ namespace StudentApp.Api.Services
         // 3. Extension එකෙන් එන සැබෑ භාවිතය (Usage) සේව් කරන්න හෝ Update කරන්න (Upsert)
         public async Task UpdateUsageAsync(DailyUsage usage)
         {
-            var collection = _database.GetCollection<DailyUsage>("DailyUsage");
-            
-            // අද දිනට අදාල User සහ Domain එක දැනටමත් තියෙනවාද බලන්න Filter එකක් හදනවා
             var filter = Builders<DailyUsage>.Filter.Eq(u => u.UserId, usage.UserId) & 
                          Builders<DailyUsage>.Filter.Eq(u => u.Domain, usage.Domain) &
                          Builders<DailyUsage>.Filter.Eq(u => u.Date, usage.Date);
 
-            // තියෙනවා නම් MinutesSpent එක විතරක් Update කරනවා
             var update = Builders<DailyUsage>.Update.Set(u => u.MinutesSpent, usage.MinutesSpent);
             
-            // IsUpsert = true නිසා, නැති එකක් නම් අලුතින් හදනවා, තිබේ නම් Update කරනවා
-            await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
+            await _dailyUsageCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
         }
 
         public async Task<List<DailyUsage>> GetUsageByUserAsync(string userId) =>
-            await _database.GetCollection<DailyUsage>("DailyUsage")
-                          .Find(u => u.UserId == userId)
-                          .ToListAsync();
+            await _dailyUsageCollection.Find(u => u.UserId == userId).ToListAsync();
+
+        // 4. Wellbeing Profile (Streak/Badges) ලබාගන්න
+        public async Task<WellbeingProfile?> GetProfileAsync(string userId)
+        {
+            return await _wellbeingProfileCollection.Find(u => u.UserId == userId).FirstOrDefaultAsync();
+        }
+
+        // 5. Wellbeing Profile (Streak/Badges) Sync කරන්න
+        public async Task SyncProfileAsync(string userId, int streak, List<string> badges)
+        {
+            var filter = Builders<WellbeingProfile>.Filter.Eq(u => u.UserId, userId);
+            var update = Builders<WellbeingProfile>.Update
+                .Set(u => u.FocusStreak, streak)
+                .Set(u => u.UnlockedBadges, badges)
+                .Set(u => u.LastFocusDate, DateTime.UtcNow);
+
+            await _wellbeingProfileCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
+        }
     }
 }

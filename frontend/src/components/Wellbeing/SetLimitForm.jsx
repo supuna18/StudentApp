@@ -15,6 +15,9 @@ const SetLimitForm = () => {
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [unlockedBadges, setUnlockedBadges] = useState([]);
+  const [selectedBadge, setSelectedBadge] = useState(null);
 
   const addToast = (message, type = 'success') => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -24,12 +27,69 @@ const SetLimitForm = () => {
     }, 4000);
   };
 
-  // Persist dark mode preference
+  const syncProfile = async (newStreak, newBadges) => {
+    try {
+      await fetch('http://localhost:5005/api/wellbeing/profile/user123/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ streak: newStreak, badges: newBadges })
+      });
+    } catch (err) { console.error("Profile sync error:", err); }
+  };
+
+  // Persist dark mode preference and init profile
   useEffect(() => {
     const saved = localStorage.getItem('darkMode');
-    if (saved) {
-      setDarkMode(JSON.parse(saved));
-    }
+    if (saved) setDarkMode(JSON.parse(saved));
+
+    const initProfile = async () => {
+      try {
+        console.log("Fetching Wellbeing Profile for user123...");
+        const response = await fetch('http://localhost:5005/api/wellbeing/profile/user123');
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Profile data received:", data);
+          
+          const today = new Date().toDateString();
+          const lastDate = data.lastFocusDate ? new Date(data.lastFocusDate).toDateString() : null;
+          let currentStreak = data.streak || 0;
+          let currentBadges = data.badges || [];
+
+          // If it's a new day or first time, increment streak and update badges
+          if (!lastDate || lastDate !== today) {
+            console.log("New focus day detected. Incrementing streak...");
+            currentStreak += 1;
+            
+            // Re-calculate badges based on new streak
+            const milestones = [
+              { streak: 1, icon: '🌱' },
+              { streak: 3, icon: '⚔️' },
+              { streak: 7, icon: '🧘' },
+              { streak: 15, icon: '👑' },
+              { streak: 30, icon: '💎' }
+            ];
+            
+            const newBadges = milestones
+              .filter(m => currentStreak >= m.streak)
+              .map(m => m.icon);
+            
+            currentBadges = [...new Set([...currentBadges, ...newBadges])];
+            console.log("Syncing updated streak/badges to MongoDB:", { currentStreak, currentBadges });
+            syncProfile(currentStreak, currentBadges);
+          }
+          
+          console.log("Setting final streak state:", currentStreak);
+          setStreak(currentStreak);
+          setUnlockedBadges(currentBadges);
+        } else {
+            console.warn("Backend profile fetch failed, status:", response.status);
+        }
+      } catch (err) {
+        console.error("Critical Profile sync error:", err);
+      }
+    };
+
+    initProfile();
   }, []);
 
   useEffect(() => {
@@ -69,6 +129,14 @@ const SetLimitForm = () => {
     { label: '2h', value: 120 },
     { label: '3h', value: 180 },
   ];
+
+  const BADGE_INFO = {
+    '🌱': { name: 'Focus Rookie', desc: 'Started your digital wellbeing journey. Well done!', req: '1 Day Streak' },
+    '⚔️': { name: 'Disciplined', desc: 'Consistency is key. You are building a great habit!', req: '3 Day Streak' },
+    '🧘': { name: 'Focus Guru', desc: 'Master of your own time. Your concentration is superhuman!', req: '7 Day Streak' },
+    '👑': { name: 'Productivity King', desc: 'An inspiration to all students. Unstoppable focus.', req: '15 Day Streak' },
+    '💎': { name: 'Digital Diamond', desc: 'Rarest level of discipline achieved. Perfection.', req: '30 Day Streak' },
+  };
 
   const cleanDomain = (url) => {
     // Regex to extract domain from any URL
@@ -239,20 +307,178 @@ const SetLimitForm = () => {
         darkMode ? 'bg-slate-900 text-white' : 'bg-transparent text-slate-900'
       }`}>
         
-        {/* 1. Header Section */}
+        {/* 1. Cinematic Header Section */}
         <motion.div 
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="max-w-6xl mx-auto mb-10 text-left"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative max-w-6xl mx-auto mb-12 rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white/20"
         >
-          <h1 className="text-6xl font-black tracking-tight mb-4 drop-shadow-sm">
-            Digital <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500">Wellbeing</span> 🧘‍♂️
-          </h1>
-          <p className="text-xl font-medium opacity-70">
-            Stay focused on your studies by limiting time on distracting websites.
-          </p>
+          {/* Video Background */}
+          <div className="absolute inset-0 z-0">
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src="/tiktokio.com1774438248_Px0e3tjdNvahbUHqfIhS.mp4" type="video/mp4" />
+            </video>
+            <div className={`absolute inset-0 ${darkMode ? 'bg-slate-900/60 backdrop-blur-[2px]' : 'bg-blue-900/40 backdrop-blur-[1px]'}`}></div>
+          </div>
+          
+          {/* ✨ Animated Bokeh Particles Overlay */}
+          <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  x: [0, Math.random() * 100 - 50, 0],
+                  y: [0, Math.random() * 100 - 50, 0],
+                  scale: [1, 1.2, 1],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{
+                  duration: 15 + Math.random() * 10,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute rounded-full blur-[100px]"
+                style={{
+                  width: `${Math.random() * 400 + 200}px`,
+                  height: `${Math.random() * 400 + 200}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  background: i % 2 === 0 ? 'rgba(59, 130, 246, 0.5)' : 'rgba(139, 92, 246, 0.4)',
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="relative z-10 p-12 md:p-20 text-white">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-black uppercase tracking-widest mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                Focus Mode Active
+              </div>
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 drop-shadow-2xl">
+                Digital <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-indigo-200">Wellbeing</span>
+              </h1>
+              <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl drop-shadow-lg leading-relaxed">
+                Transform your digital habits. Stay disciplined, stay focused, and achieve your study goals with EduSync.
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
+
+        {/* ✨ Achievements & Streak Section */}
+        <div className="max-w-6xl mx-auto mb-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -5 }}
+            className={`md:col-span-1 p-6 rounded-[2.5rem] flex flex-col items-center justify-center border shadow-xl ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white/80 border-white/50'} backdrop-blur-xl relative overflow-hidden group`}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="text-5xl mb-2 animate-bounce drop-shadow-lg">🔥</div>
+            <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-orange-500 to-red-600">{streak}</div>
+            <div className="text-xs font-black uppercase tracking-widest opacity-40 mt-1">Day Streak</div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className={`md:col-span-3 p-6 rounded-[2.5rem] border shadow-xl flex items-center gap-6 overflow-hidden ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white/80 border-white/50'} backdrop-blur-xl`}
+          >
+            <div className="flex-shrink-0 text-xs font-black uppercase tracking-widest opacity-30 [writing-mode:vertical-lr] rotate-180">Badges</div>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {['🌱', '⚔️', '🧘', '👑', '💎'].map((icon, i) => {
+                const isUnlocked = i < unlockedBadges.length;
+                return (
+                  <motion.button
+                    key={i}
+                    onClick={() => isUnlocked && setSelectedBadge(icon)}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    whileHover={isUnlocked ? { scale: 1.1, rotate: 5 } : {}}
+                    className={`h-20 w-20 rounded-2xl flex items-center justify-center text-3xl border-2 transition-all relative outline-none ${isUnlocked ? 'bg-gradient-to-br from-blue-500/20 to-indigo-600/20 border-blue-400/50 shadow-lg shadow-blue-500/10 cursor-pointer' : 'bg-slate-100/50 dark:bg-slate-800/50 border-dashed border-slate-300 dark:border-slate-700 opacity-20 grayscale cursor-not-allowed'}`}
+                  >
+                    {isUnlocked && <div className="absolute inset-0 bg-white/10 rounded-2xl animate-pulse"></div>}
+                    <span className={isUnlocked ? 'drop-shadow-md' : ''}>{icon}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+            <div className="hidden md:block ml-auto text-right pr-4">
+               <div className="text-xs font-black uppercase tracking-widest opacity-40 mb-1">Next Goal</div>
+               <div className="text-lg font-bold text-blue-500 italic font-serif">"Stay Disciplined"</div>
+            </div>
+          </motion.div>
+        </div>
+
+      {/* 🏆 Achievement Detail Modal */}
+      <AnimatePresence>
+        {selectedBadge && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md"
+            onClick={() => setSelectedBadge(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={`max-w-md w-full p-10 rounded-[3rem] shadow-2xl border-4 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-blue-100 text-slate-900'} relative overflow-hidden`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Decorative background glow */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/20 rounded-full blur-[100px]"></div>
+              
+              <button 
+                onClick={() => setSelectedBadge(null)}
+                className="absolute top-6 right-6 text-2xl opacity-40 hover:opacity-100 transition-opacity"
+              >✕</button>
+
+              <div className="text-center relative z-10">
+                <motion.div 
+                   animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+                   transition={{ duration: 2, repeat: Infinity }}
+                   className="text-8xl mb-6 drop-shadow-2xl"
+                >
+                  {selectedBadge}
+                </motion.div>
+                <h2 className="text-4xl font-black mb-2 tracking-tight">{BADGE_INFO[selectedBadge]?.name}</h2>
+                <div className="inline-block px-4 py-1 rounded-full bg-blue-500/10 text-blue-500 text-sm font-black tracking-widest uppercase mb-6 border border-blue-500/20">
+                  Requirement: {BADGE_INFO[selectedBadge]?.req}
+                </div>
+                <p className="text-xl font-medium opacity-70 leading-relaxed mb-8 italic">
+                  "{BADGE_INFO[selectedBadge]?.desc}"
+                </p>
+                <button 
+                  onClick={() => setSelectedBadge(null)}
+                  className="w-full py-5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-lg shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
+                >
+                  Keep Focusing 🚀
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
         {/* 2. Main Content Grid (Tips + Form) */}
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -412,11 +638,11 @@ const SetLimitForm = () => {
           </h3>
           <div id="pdf-section-limits" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             <LimitsChart />
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 p-8 rounded-[3rem] flex items-center justify-center border border-blue-100 dark:border-slate-600 shadow-xl">
+            <div className={`p-8 rounded-[3rem] flex items-center justify-center border shadow-xl transition-all duration-500 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100'}`}>
                <div className="text-center p-6">
                  <div className="text-6xl mb-6 drop-shadow-lg">🎯</div>
-                 <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-3">Your Focus Goals</h3>
-                 <p className="text-lg font-medium text-slate-500 dark:text-slate-300">These limits act as your daily targets to reduce distractions and stay on track.</p>
+                 <h3 className={`text-2xl font-black mb-3 ${darkMode ? 'text-white' : 'text-slate-800'}`}>Your Focus Goals</h3>
+                 <p className={`text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-500'}`}>These limits act as your daily targets to reduce distractions and stay on track.</p>
                </div>
             </div>
           </div>

@@ -7,6 +7,10 @@ let timerActive = false;
 
 // Background එකෙන් දත්ත ඉල්ලීම.
 chrome.runtime.sendMessage({ action: "GET_DATA", domain: domain }, (res) => {
+    if (chrome.runtime.lastError) {
+        console.error("❌ Extension communication error:", chrome.runtime.lastError);
+        return;
+    }
     console.log("📩 Data received from background:", res);
     if (res && res.limit > 0) {
         spent = res.spent;
@@ -58,14 +62,14 @@ function createTimerUI() {
     document.body.appendChild(div);
 
     document.getElementById("edusync-p").onclick = () => {
-        chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain }, (res) => {
-            if (res.success) { limit = res.newLimit * 60; updateDisplay(); }
+        chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
+            if (res && res.success) { limit = res.newLimit * 60; updateDisplay(); }
         });
     };
     
     document.getElementById("edusync-m").onclick = () => {
         chrome.runtime.sendMessage({ action: "REDUCE_TIME", domain: domain }, (res) => {
-            if (res.success) { 
+            if (res && res.success) { 
                 limit = res.newLimit * 60; 
                 updateDisplay(); 
                 if (spent >= limit) blockSite();
@@ -75,7 +79,13 @@ function createTimerUI() {
 }
 
 function blockSite() {
-    document.documentElement.innerHTML = `
+    if (document.getElementById("edusync-block-overlay")) return;
+    
+    console.log(`🔒 Site Blocked! Current Usage: ${Math.floor(spent/60)}m, Limit: ${Math.floor(limit/60)}m`);
+
+    const overlay = document.createElement("div");
+    overlay.id = "edusync-block-overlay";
+    overlay.innerHTML = `
         <div style="background:#0f172a;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;">
             <h1 style="font-size:3rem;margin-bottom:20px;">TIME UP! ⏳</h1>
             <p style="margin-bottom:30px;font-size:1.2rem;color:#cbd5e1;">You've reached your limit for this site.</p>
@@ -85,10 +95,29 @@ function blockSite() {
             </div>
         </div>
     `;
+    Object.assign(overlay.style, {
+        position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
+        zIndex: "2147483647", backgroundColor: "#0f172a", display: "block"
+    });
+    
+    if (document.body) {
+        document.body.style.overflow = "hidden";
+        document.body.appendChild(overlay);
+    }
 
     document.getElementById("edusync-add-5").onclick = () => {
-        chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain }, (res) => {
-            if (res.success) { location.reload(); }
+        console.log("🖱️ 'Add 5 Minutes' button clicked!");
+        chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
+            console.log("📩 Extension response received:", res);
+            if (chrome.runtime.lastError) {
+                console.error("❌ Message failed:", chrome.runtime.lastError);
+                return;
+            }
+            if (res && res.success) { 
+                console.log(`✅ Limit extended to ${res.newLimit}m! Reloading...`);
+                if (document.body) document.body.style.overflow = "auto";
+                location.reload(); 
+            }
         });
     };
 

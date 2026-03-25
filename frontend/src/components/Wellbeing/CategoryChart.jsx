@@ -53,9 +53,9 @@ const CategoryChart = () => {
   return (
     <div className="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
       <h3 className="text-xl font-black text-slate-800 dark:text-white mb-6">Usage by Category 📊</h3>
-      <div className="h-[300px] w-full">
+      <div className="h-[300px] w-full min-h-[300px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
             <PieChart>
               <Pie
                 data={data}

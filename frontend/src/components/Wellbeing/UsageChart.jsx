@@ -12,10 +12,10 @@ const UsageChart = () => {
         const result = await response.json();
         
         // Backend එකෙන් එන දත්ත Recharts වලට ගැලපෙන විදියට සකස් කිරීම
-        const formattedData = result.data.map(item => ({
-          name: item.domain.split('.')[0], // facebook.com -> facebook
-          mins: Math.round(item.minutesSpent),
-          color: item.domain.includes('youtube') ? '#ef4444' : '#3b82f6'
+        const formattedData = (result.data || []).map(item => ({
+          name: item.domain ? item.domain.split('.')[0] : 'unknown', // safely handle potential null domains
+          mins: Math.round(item.minutesSpent || 0),
+          color: (item.domain && item.domain.includes('youtube')) ? '#ef4444' : '#3b82f6'
         }));
         
         setData(formattedData);
@@ -30,9 +30,9 @@ const UsageChart = () => {
   return (
     <div className="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
       <h3 className="text-xl font-black text-slate-800 dark:text-white mb-6">Real-time Usage (Mins) 📊</h3>
-      <div className="h-[300px] w-full">
+      <div className="h-[300px] w-full min-h-[300px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} />

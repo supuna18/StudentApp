@@ -39,7 +39,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
     if (request.action === "EXTEND_TIME") {
-        LIMITS[request.domain] = (LIMITS[request.domain] || 1) + 5;
+        console.log("➕ Extending time for domain:", request.domain);
+        let spentMinutes = Math.ceil((request.spent || 0) / 60);
+        let currentLimit = LIMITS[request.domain] || 0;
+        
+        // If they are already over the limit, add 5 minutes to their current usage
+        // otherwise just add 5 minutes to the limit.
+        LIMITS[request.domain] = Math.max(currentLimit, spentMinutes) + 5;
+        
         sendResponse({ success: true, newLimit: LIMITS[request.domain] });
     }
     if (request.action === "REDUCE_TIME") {
