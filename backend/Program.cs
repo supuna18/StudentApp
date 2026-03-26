@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MongoDB.Driver;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,8 +72,6 @@ builder.Services.AddAuthentication(x =>
 });
 
 // --------------------------------------------------------
-
-using Microsoft.Extensions.FileProviders;
 
 var app = builder.Build();
 

@@ -29,11 +29,8 @@ public class MongoService
         var groupsCollectionName = config.GetSection("StudentDatabase")["GroupsCollectionName"] ?? "StudyGroups";
         _studyGroupsCollection = _database.GetCollection<StudyGroup>(groupsCollectionName);
 
-        var sessionsCollectionName = "StudySessions";
-        _studySessionsCollection = _database.GetCollection<StudySession>(sessionsCollectionName);
-
-        var chatCollectionName = "ChatMessages";
-        _chatMessagesCollection = _database.GetCollection<ChatMessage>(chatCollectionName);
+        _studySessionsCollection = _database.GetCollection<StudySession>("StudySessions");
+        _chatMessagesCollection = _database.GetCollection<ChatMessage>("ChatMessages");
 
         var reportsCollectionName = config.GetSection("StudentDatabase")["ReportsCollectionName"] ?? "SafetyReports";
         _safetyReportsCollection = _database.GetCollection<SafetyReport>(reportsCollectionName);
@@ -78,6 +75,7 @@ public class MongoService
         return result.DeletedCount > 0;
     }
 
+    // ✅ FIXED (ONLY ONE METHOD)
     public async Task<User?> GetUserByIdAsync(string id) =>
         await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
 
@@ -132,9 +130,7 @@ public class MongoService
     public async Task<object> GetAdminStatsAsync()
     {
         var totalStudents = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student");
-
         var activeBlocks = await _userLimitsCollection.CountDocumentsAsync(new BsonDocument());
-
         var pendingReports = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Pending");
 
         return new
