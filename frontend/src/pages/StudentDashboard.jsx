@@ -2,11 +2,12 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Sidebar from "../components/Sidebar";
 import ReportSite from '../components/Safety/ReportSite';
 import MindfulnessZone from '../components/Safety/MindfulnessZone';
+import StudentResourceManager from './StudentResourceManager';
 
 import SetLimitForm from '../components/Wellbeing/SetLimitForm';  
-import MusicPlayerPage from './MusicPlayerPage'; // --- නව පේජ් එක මෙතනට IMPORT කළා ---
+import MusicPlayerPage from './MusicPlayerPage'; 
 
-import { Bell, Users, ShieldCheck, Heart, Clock, LayoutDashboard } from 'lucide-react';
+import { Bell, Users, ShieldCheck, Heart, Clock, LayoutDashboard, Share2 } from 'lucide-react';
 
 const stats = [
   { label: "Focus Time",     value: "4h 32m",  sub: "↑ 18% vs yesterday", subColor: "text-emerald-500" },
@@ -37,6 +38,17 @@ const modules = [
     arrowColor: "text-emerald-600",
     member: "Member 2",
     to: "wellness",
+  },
+  {
+    title: "Share Resources",
+    desc: "Upload and share helpful notes, PDF, and articles with other students in the community.",
+    icon: <Share2 size={20} strokeWidth={2} />,
+    iconBg: "bg-indigo-50", iconColor: "text-indigo-600",
+    badge: "Community", badgeBg: "bg-indigo-50", badgeColor: "text-indigo-700",
+    topBar: "from-indigo-400",
+    arrowColor: "text-indigo-600",
+    member: "Member 4",
+    to: "resources",
   },
 ];
 
@@ -176,6 +188,7 @@ const StudentDashboard = () => {
           {/* Member 2 routes */}
           <Route path="safety"    element={<div className="max-w-3xl mx-auto py-6"><ReportSite /></div>} />
           <Route path="wellness"  element={<div className="max-w-2xl mx-auto py-6"><MindfulnessZone /></div>} />
+          <Route path="resources" element={<StudentResourceManager />} />
 
           <Route path="set-limit" element={<SetLimitForm />} />
 

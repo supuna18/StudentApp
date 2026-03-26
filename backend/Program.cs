@@ -72,6 +72,8 @@ builder.Services.AddAuthentication(x =>
 
 // --------------------------------------------------------
 
+using Microsoft.Extensions.FileProviders;
+
 var app = builder.Build();
 
 // Global Exception Handling
@@ -79,6 +81,16 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 // Enable CORS
 app.UseCors("AllowAll");
+
+// Serve Static Files for Uploads
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/Uploads"
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

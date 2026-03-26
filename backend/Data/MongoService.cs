@@ -14,6 +14,7 @@ public class MongoService
     private readonly IMongoCollection<SafetyReport> _safetyReportsCollection;
     private readonly IMongoCollection<UserLimit> _userLimitsCollection;
     private readonly IMongoCollection<SystemLog> _systemLogsCollection;
+    private readonly IMongoCollection<Resource> _resourcesCollection;
 
     private static readonly DateTime _serverStartTime = DateTime.UtcNow;
 
@@ -41,6 +42,9 @@ public class MongoService
         _userLimitsCollection = _database.GetCollection<UserLimit>(limitsCollectionName);
 
         _systemLogsCollection = _database.GetCollection<SystemLog>("SystemLogs");
+
+        var resourcesCollectionName = config.GetSection("StudentDatabase")["ResourcesCollectionName"] ?? "Resources";
+        _resourcesCollection = _database.GetCollection<Resource>(resourcesCollectionName);
     }
 
     // --- Collections ---
@@ -149,5 +153,27 @@ public class MongoService
             .Sort(new BsonDocument("count", -1))
             .Limit(5)
             .ToListAsync();
+    }
+
+    // --- Resource Operations ---
+    public async Task<List<Resource>> GetAllResourcesAsync() =>
+        await _resourcesCollection.Find(_ => true).ToListAsync();
+
+    public async Task CreateResourceAsync(Resource resource) =>
+        await _resourcesCollection.InsertOneAsync(resource);
+
+    public async Task<bool> DeleteResourceAsync(string id)
+    {
+        var result = await _resourcesCollection.DeleteOneAsync(r => r.Id == id);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<Resource?> GetResourceByIdAsync(string id) =>
+        await _resourcesCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+
+    public async Task<bool> UpdateResourceAsync(string id, Resource updatedResource)
+    {
+        var result = await _resourcesCollection.ReplaceOneAsync(r => r.Id == id, updatedResource);
+        return result.ModifiedCount > 0;
     }
 }
