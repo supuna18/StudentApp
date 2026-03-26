@@ -14,7 +14,7 @@ chrome.storage.local.get(['userId'], (result) => {
     }
 });
 
-// Backend එකෙන් දත්ත ගැනීම
+// Backend එකෙන් දත්ත ගැනීම.
 async function syncLimits() {
     if (!userId) {
         console.warn("🚫 syncLimits aborted: No userId.");
@@ -76,19 +76,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         const storageKey = `usage_${userId}_${request.domain}`;
         chrome.storage.local.set({ [storageKey]: request.spent });
-        
+
         if (request.spent % 20 === 0) {
             fetch('http://localhost:5005/api/wellbeing/usage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    userId: userId, 
-                    domain: request.domain, 
-                    minutesSpent: request.spent / 60, 
-                    date: new Date().toISOString().split('T')[0] 
+                body: JSON.stringify({
+                    userId: userId,
+                    domain: request.domain,
+                    minutesSpent: request.spent / 60,
+                    date: new Date().toISOString().split('T')[0]
                 })
             }).then(() => console.log(`☁️ Sync: ${request.domain} usage saved to DB.`))
-              .catch(e => console.error("❌ DB Sync failed:", e));
+                .catch(e => console.error("❌ DB Sync failed:", e));
         }
         sendResponse({ success: true });
         return true;
@@ -113,4 +113,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     }
     return true;
-});
+});
