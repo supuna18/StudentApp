@@ -12,7 +12,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 width: 100vw; height: 100vh; 
                 background-color: #0f172a; 
                 color: white; 
-                z-index: 999999; 
+                z-index: 9999999; 
                 display: flex; 
                 flex-direction: column; 
                 align-items: center; 
@@ -23,7 +23,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 <img src="https://cdn-icons-png.flaticon.com/512/752/752674.png" style="width: 150px; margin-bottom: 20px;">
                 <h1 style="font-size: 50px; margin: 10px;">Access Blocked</h1>
                 <p style="font-size: 22px;">EduSync Guardian has blocked <strong>${request.url}</strong> for your safety.</p>
-                <button onclick="window.history.back()" style="
+                
+                <button onclick="window.location.href='http://localhost:5173/student-dashboard/safety'" style="
                     margin-top: 20px;
                     padding: 15px 30px; 
                     font-size: 18px; 
@@ -33,7 +34,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     border: none; 
                     border-radius: 8px;
                     font-weight: bold;
-                ">Go Back to Safety</button>
+                    transition: background 0.3s;
+                " onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                    Go Back to Safety
+                </button>
             </div>
         `;
     }

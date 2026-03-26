@@ -54,17 +54,17 @@ const MindfulnessTools = () => {
       </div>
 
       {/* Focus Game (ORIGINAL CODE KEPT AS REQUESTED) */}
-      <div className="bg-white p-8 rounded-[40px] shadow-xl border border-indigo-50">
+      <div className="bg-white p-8 rounded-[40px] shadow-xl border border-purple-50">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-indigo-900">🧩 Focus Game</h2>
-          <button onClick={shuffleCards} className="p-2 bg-indigo-50 text-indigo-500 rounded-full hover:rotate-180 transition-all duration-500">
+          <h2 className="text-2xl font-black text-purple-900">🧩 Focus Game</h2>
+          <button onClick={shuffleCards} className="p-2 bg-purple-50 text-purple-500 rounded-full hover:rotate-180 transition-all duration-500">
             <RefreshCw size={20} />
           </button>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {cards.map((emoji, index) => (
             <div key={index} onClick={() => handleCardClick(index)}
-              className={`h-16 flex items-center justify-center text-2xl rounded-xl cursor-pointer transition-all duration-300 transform ${flipped.includes(index) || matched.includes(index) ? 'bg-indigo-500 rotate-0' : 'bg-indigo-100 rotate-180 text-transparent'}`}>
+              className={`h-16 flex items-center justify-center text-2xl rounded-xl cursor-pointer transition-all duration-300 transform ${flipped.includes(index) || matched.includes(index) ? 'bg-purple-600 rotate-0' : 'bg-purple-100 rotate-180 text-transparent'}`}>
               {(flipped.includes(index) || matched.includes(index)) ? emoji : '❓'}
             </div>
           ))}
