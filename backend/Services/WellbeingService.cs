@@ -14,6 +14,7 @@ namespace StudentApp.Api.Services
         private readonly IMongoCollection<UserLimit> _userLimitsCollection;
         private readonly IMongoCollection<DailyUsage> _dailyUsageCollection;
         private readonly IMongoCollection<WellbeingProfile> _wellbeingProfileCollection;
+        private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoDatabase _database;
 
         public WellbeingService(IConfiguration config)
@@ -29,6 +30,7 @@ namespace StudentApp.Api.Services
             _userLimitsCollection = _database.GetCollection<UserLimit>(limitsCollectionName);
             _dailyUsageCollection = _database.GetCollection<DailyUsage>("DailyUsage");
             _wellbeingProfileCollection = _database.GetCollection<WellbeingProfile>("WellbeingProfiles");
+            _usersCollection = _database.GetCollection<User>("Users");
         }
 
         // 1. අලුත් Limit එකක් MongoDB එකට දාන්න හෝ තිබේ නම් Update කරන්න (Upsert)
@@ -145,6 +147,7 @@ namespace StudentApp.Api.Services
             var allUsage = await _dailyUsageCollection.Find(_ => true).ToListAsync();
             var allLimits = await _userLimitsCollection.Find(_ => true).ToListAsync();
             var allProfiles = await _wellbeingProfileCollection.Find(_ => true).ToListAsync();
+            var allUsers = await _usersCollection.Find(_ => true).ToListAsync();
 
             var allUserIds = allUsage.Select(u => u.UserId)
                 .Union(allLimits.Select(l => l.UserId))
@@ -156,10 +159,13 @@ namespace StudentApp.Api.Services
                 var userUsage = allUsage.Where(u => u.UserId == userId).ToList();
                 var userLimits = allLimits.Where(l => l.UserId == userId).ToList();
                 var profile = allProfiles.FirstOrDefault(p => p.UserId == userId);
+                var userAccount = allUsers.FirstOrDefault(u => u.Id == userId);
 
                 return new UserWellbeingSummary
                 {
                     UserId = userId,
+                    Username = userAccount?.Username ?? "Unknown",
+                    Email = userAccount?.Email ?? "N/A",
                     LimitsCount = userLimits.Count,
                     AvgDailyMinutes = userUsage.Any() ? Math.Round(userUsage.Average(u => u.MinutesSpent), 1) : 0,
                     Streak = profile?.FocusStreak ?? 0,

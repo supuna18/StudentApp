@@ -1,265 +1,256 @@
-import { useState, useEffect } from 'react';
-import {
-  Heart, Users, Shield, TrendingUp, MoreHorizontal,
-  RefreshCw, Activity,
-} from 'lucide-react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+import React, { useState, useEffect } from 'react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
+import { 
+  Users, Activity, Clock, Shield, Search, RefreshCcw, 
+  Download, Filter, TrendingUp, MoreVertical, LayoutGrid,
+  Mail, ExternalLink, ShieldCheck
+} from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
-/* ─── colour palette (matches AdminDashboard) ─────────────────── */
-const BLUE      = '#2255D2';
-const LIGHT     = '#4A70F5';
-const PALE      = '#93B4FF';
-const NAVY      = '#0F1C4D';
-const PIE_COLORS = ['#2255D2', '#4A70F5', '#059669', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
-/* ─── custom tooltip ──────────────────────────────────────────── */
-const ChartTooltip = ({ active, payload, label }) =>
-  active && payload?.length ? (
-    <div className="bg-[#0F1C4D] text-white rounded-lg px-3 py-2 text-[11.5px] shadow-lg">
-      {label && <div className="font-bold mb-1">{label}</div>}
-      {payload.map((p, i) => (
-        <div key={i}>{p.name}: {p.value}</div>
-      ))}
-    </div>
-  ) : null;
-
-/* ─── empty state ─────────────────────────────────────────────── */
-const EmptyState = ({ icon, msg }) => (
-  <div className="flex flex-col items-center justify-center h-32 text-slate-300 gap-2">
-    <span className="text-3xl">{icon}</span>
-    <p className="text-[12px]">{msg}</p>
-  </div>
-);
-
-/* ─── main component ──────────────────────────────────────────── */
 const WellbeingAdminPanel = () => {
-  const BASE = 'http://localhost:5005/api/wellbeing';
+  const [stats, setStats] = useState({ totalStudents: 0, totalLimits: 0, avgUsage: 0, activeStreaks: 0 });
+  const [categoryData, setCategoryData] = useState([]);
+  const [studentSummary, setStudentSummary] = useState([]);
+  const [usageTrend, setUsageTrend] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [overview, setOverview] = useState(null);
-  const [users, setUsers]       = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchData = async () => {
-    setRefreshing(true);
-    setError(null);
+  const fetchAdminData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const statsRes = await fetch('http://localhost:5005/api/wellbeing/admin/overview');
+      const summariesRes = await fetch('http://localhost:5005/api/wellbeing/admin/users');
+      
+      const statsData = await statsRes.json();
+      const summariesData = await summariesRes.json();
 
-      const [ov, us] = await Promise.all([
-        fetch(`${BASE}/admin/overview`, { headers }).then(r => r.json()),
-        fetch(`${BASE}/admin/users`,    { headers }).then(r => r.json()),
-      ]);
-      setOverview(ov);
-      setUsers(Array.isArray(us) ? us : []);
-    } catch (err) {
-      setError('Backend-ta connect karana ganna bael vuna. Server eka run karanna.');
-    } finally {
+      setStats({
+        totalStudents: statsData.usersTracked || 0,
+        totalLimits: statsData.totalLimitsSet || 0,
+        avgUsage: statsData.avgDailyMinutes || 0,
+        activeStreaks: statsData.activeStreaks || 0
+      });
+
+      setCategoryData(statsData.categoryDistribution || []);
+      setStudentSummary(summariesData || []);
+      
+      // Real or Mocked Trend
+      setUsageTrend(statsData.topDomains?.map(d => ({ name: d.domain, mins: d.totalMinutes })) || []);
+      
       setLoading(false);
-      setRefreshing(false);
+    } catch (err) {
+      console.error("Admin data fetch error:", err);
+      setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
 
-  /* ── stat cards ── */
-  const statCards = overview ? [
-    { val: overview.usersTracked,    lbl: 'Students Tracked',  icon: <Users size={16}/>,    color: 'text-blue-600',   bg: 'bg-blue-50'   },
-    { val: overview.totalLimitsSet,  lbl: 'Total Limits Set',  icon: <Shield size={16}/>,   color: 'text-violet-600', bg: 'bg-violet-50' },
-    { val: `${overview.avgDailyMinutes} min`, lbl: 'Avg Daily Usage', icon: <Activity size={16}/>, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { val: overview.activeStreaks,   lbl: 'Active Streaks',    icon: <TrendingUp size={16}/>, color: 'text-orange-600', bg: 'bg-orange-50' },
-  ] : [];
+  const downloadReport = async () => {
+    const input = document.getElementById('wellbeing-admin-report');
+    if (!input) return;
+    try {
+      const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgW = 190;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      pdf.setFontSize(20);
+      pdf.text("EDUSYNC WELLBEING INTELLIGENCE", 15, 20);
+      pdf.addImage(imgData, 'PNG', 10, 30, imgW, imgH);
+      pdf.save(`Wellbeing_Admin_Summary_${Date.now()}.pdf`);
+    } catch (err) { console.error(err); }
+  };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin"/>
-        <p className="text-[13px] text-slate-400">Loading wellbeing data…</p>
-      </div>
-    );
-  }
+  const filteredStudents = studentSummary.filter(s => 
+    s.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-        <p className="text-red-600 font-semibold text-[13px] mb-3">⚠️ {error}</p>
-        <button
-          onClick={fetchData}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg text-[12px] font-600 hover:bg-red-700 transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center p-20">
+      <Activity className="text-blue-500 animate-spin mr-3" />
+      <span className="font-bold text-slate-500">Loading Wellbeing Intelligence...</span>
+    </div>
+  );
 
   return (
-    <div className="space-y-5">
-
-      {/* ── Header row ── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[14px] font-700 text-[#0F1C4D]">Digital Wellbeing Overview</h2>
-          <p className="text-[11.5px] text-slate-400 mt-0.5">Platform-wide screen time limits &amp; usage analytics</p>
-        </div>
-        <button
-          onClick={fetchData}
-          disabled={refreshing}
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] text-[11.5px] font-600 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-all duration-150 disabled:opacity-50"
-        >
-          <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''}/>
-          Refresh
-        </button>
-      </div>
-
-      {/* ── Stat Cards ── */}
-      <div className="grid grid-cols-4 border border-[#E8EEFF] rounded-2xl bg-white overflow-hidden">
-        {statCards.map(({ val, lbl, icon, color, bg }, i) => (
-          <div
-            key={i}
-            className={`px-6 py-5 hover:bg-[#EEF2FF] transition-colors duration-200 ${i < 3 ? 'border-r border-[#E8EEFF]' : ''}`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${bg} ${color}`}>
-                {icon}
-              </span>
-              <button className="text-slate-400 hover:text-blue-600 transition-colors">
-                <MoreHorizontal size={14}/>
-              </button>
-            </div>
-            <div className="serif-heading text-[34px] text-[#0F1C4D] leading-none tracking-tight mb-1.5 italic"
-                 style={{ fontFamily: "'DM Serif Display', serif" }}>
-              {val}
-            </div>
-            <div className="text-[11.5px] text-slate-400">{lbl}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Charts Row ── */}
-      <div className="grid grid-cols-[1fr_240px] gap-4">
-
-        {/* Bar: Top Domains */}
-        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[13px] font-700 text-[#0F1C4D]">Top Domains by Usage</span>
-            <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
-          </div>
-          {overview?.topDomains?.length ? (
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={overview.topDomains} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-                <XAxis dataKey="domain" tick={{ fontSize: 9, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
-                <YAxis tick={{ fontSize: 9, fill: '#94A3B8' }} axisLine={false} tickLine={false} unit="m"/>
-                <Tooltip content={<ChartTooltip/>}/>
-                <Bar dataKey="totalMinutes" fill={BLUE} radius={[4,4,0,0]} name="Minutes"/>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <EmptyState icon="📊" msg="No usage data yet"/>
-          )}
-        </div>
-
-        {/* Pie: Category Distribution */}
-        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[13px] font-700 text-[#0F1C4D]">Category Breakdown</span>
-            <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
-          </div>
-          {overview?.categoryDistribution?.length ? (
-            <>
-              <ResponsiveContainer width="100%" height={130}>
-                <PieChart>
-                  <Pie
-                    data={overview.categoryDistribution}
-                    dataKey="count"
-                    nameKey="category"
-                    cx="50%" cy="50%"
-                    innerRadius={35} outerRadius={58}
-                    paddingAngle={3}
-                  >
-                    {overview.categoryDistribution.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>
-                    ))}
-                  </Pie>
-                  <Tooltip content={<ChartTooltip/>}/>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 justify-center">
-                {overview.categoryDistribution.map((d, i) => (
-                  <div key={i} className="flex items-center gap-1 text-[10px] text-slate-500">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}/>
-                    {d.category}
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <EmptyState icon="🥧" msg="No categories yet"/>
-          )}
-        </div>
-      </div>
-
-      {/* ── Per-User Table ── */}
-      <div className="bg-white border border-[#E8EEFF] rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8EEFF]">
+    <div className="p-4 md:p-8 bg-slate-50 min-h-screen font-sans text-slate-900">
+      <div id="wellbeing-admin-report">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <p className="text-[13.5px] font-700 text-[#0F1C4D]">Student Wellbeing Summary</p>
-            <p className="text-[11.5px] text-slate-400 mt-0.5">Per-student screen time, limits &amp; focus streaks</p>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Wellbeing Console</h1>
+            <p className="text-slate-500 font-medium">Platform-wide productivity and digital health analytics.</p>
           </div>
-          <span className="text-[11px] font-600 text-slate-400">{users.length} student{users.length !== 1 ? 's' : ''}</span>
+          <div className="flex gap-3">
+            <button onClick={fetchAdminData} className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-all shadow-sm">
+              <RefreshCcw size={18} className="text-slate-600" />
+            </button>
+            <button onClick={downloadReport} className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+              <Download size={18} />
+              Generate Report
+            </button>
+          </div>
         </div>
 
-        {users.length === 0 ? (
-          <div className="py-16">
-            <EmptyState icon="🧘" msg="No student wellbeing data found"/>
-          </div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-[#F0F4FF]">
-                {['Student ID', 'Limits', 'Avg Daily Usage', 'Streak', 'Badges'].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF] first:pl-5 last:pr-5">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u, i) => (
-                <tr key={i} className="hover:bg-[#EEF2FF] transition-colors duration-150 border-b border-[#E8EEFF] last:border-b-0">
-                  <td className="pl-5 pr-4 py-3.5 text-[12px] font-600 text-[#0F1C4D] font-mono">{u.userId}</td>
-                  <td className="px-4 py-3.5">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-700 bg-blue-50 text-blue-700">
-                      {u.limitsCount} limit{u.limitsCount !== 1 ? 's' : ''}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-[12px] text-slate-500">
-                    {u.avgDailyMinutes} <span className="text-[10px] text-slate-400">min</span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-700 ${u.streak > 0 ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-400'}`}>
-                      🔥 {u.streak} day{u.streak !== 1 ? 's' : ''}
-                    </span>
-                  </td>
-                  <td className="pr-5 px-4 py-3.5">
-                    {u.badges?.length > 0
-                      ? <span className="text-[16px] tracking-wide">{u.badges.join(' ')}</span>
-                      : <span className="text-[11px] text-slate-300">No badges yet</span>
-                    }
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
+            { label: 'Tracked Students', val: stats.totalStudents, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+            { label: 'Configured Limits', val: stats.totalLimits, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+            { label: 'Avg usage (Mins)', val: stats.avgUsage, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
+            { label: 'Active Streaks', val: stats.activeStreaks, icon: Activity, color: 'text-rose-600', bg: 'bg-rose-100' }
+          ].map((s, i) => (
+            <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow">
+              <div className={`${s.bg} p-4 rounded-2xl ${s.color}`}>
+                <s.icon size={24} />
+              </div>
+              <div>
+                <p className="text-2xl font-black text-slate-800">{s.val}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{s.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Usage Trend */}
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
+              <TrendingUp size={20} className="text-blue-500" />
+              High-Traffic Nodes
+            </h3>
+            <div className="h-[300px] w-full">
+              {usageTrend.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={usageTrend}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                    <Tooltip cursor={{fill: '#f8fafc'}} />
+                    <Bar dataKey="mins" fill="#3b82f6" radius={[6, 6, 6, 6]} barSize={30} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : <div className="h-full flex items-center justify-center text-slate-300">No trend data available.</div>}
+            </div>
+          </div>
+
+          {/* Category Distribution */}
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
+              <LayoutGrid size={20} className="text-emerald-500" />
+              Resource Allocation
+            </h3>
+            <div className="h-[300px] w-full flex items-center justify-center">
+              {categoryData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={8} dataKey="count">
+                      {categoryData.map((e, i) => <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} cornerRadius={8} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : <div className="text-slate-300">No category distribution found.</div>}
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 mt-4">
+              {categoryData.slice(0, 4).map((c, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{background: COLORS[i % COLORS.length]}} />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{c.category}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Student Management Table */}
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h3 className="text-xl font-bold text-slate-800">Student Behavioral Summary</h3>
+              <p className="text-sm text-slate-400">Total of {filteredStudents.length} active monitors linked.</p>
+            </div>
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+              <input type="text" placeholder="Search students..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-400 focus:bg-white transition-all text-sm font-medium" />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50/50">
+                <tr className="text-left text-slate-400 uppercase text-[10px] font-black tracking-[0.2em]">
+                  <th className="px-8 py-5">Profile</th>
+                  <th className="px-8 py-5">Limits</th>
+                  <th className="px-8 py-5">Daily Usage</th>
+                  <th className="px-8 py-5">Streak</th>
+                  <th className="px-8 py-5">Badges</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((s, i) => (
+                    <tr key={i} className="hover:bg-blue-50/30 transition-all group">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-xs uppercase">
+                            {s.username.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors uppercase tracking-tight text-sm">{s.username}</div>
+                            <div className="text-[10px] text-slate-400 flex items-center gap-1"><Mail size={10}/> {s.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500">
+                          {s.limitsCount} Configured
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden max-w-[80px]">
+                            <div className="bg-blue-500 h-full" style={{width: `${Math.min(s.avgDailyMinutes, 100)}%`}} />
+                          </div>
+                          <span className="text-xs font-black text-slate-700">{s.avgDailyMinutes}m</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 font-black text-blue-600 text-sm italic">
+                        🔥 {s.streak} Days
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex gap-1">
+                          {s.badges && s.badges.length > 0 ? (
+                            s.badges.slice(0, 3).map((b, idx) => (
+                              <span key={idx} className="text-lg" title={b}>{b}</span>
+                            ))
+                          ) : <span className="text-slate-300 italic text-[10px]">No badges</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="px-8 py-20 text-center text-slate-300 font-bold italic">No matching telemetry report found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

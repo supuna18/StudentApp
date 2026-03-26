@@ -1,80 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { getUserId } from '../../utils/wellbeingUtils';
 
 const ComparisonChart = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
+      const userId = getUserId();
+      if (!userId) return;
       try {
         const [limitsRes, usageRes] = await Promise.all([
-          fetch('http://localhost:5005/api/wellbeing/limits/user123'),
-          fetch('http://localhost:5005/api/wellbeing/usage/user123')
+          fetch(`http://localhost:5005/api/wellbeing/limits/${userId}`),
+          fetch(`http://localhost:5005/api/wellbeing/usage/${userId}`)
         ]);
+        
+        const limits = (await limitsRes.json()).data || [];
+        const usage = (await usageRes.json()).data || [];
 
-        if (!limitsRes.ok || !usageRes.ok) return;
-
-        const limitsJson = await limitsRes.json();
-        const usageJson = await usageRes.json();
-
-        const limits = limitsJson?.data ?? [];
-        const usage = usageJson?.data ?? [];
-
-        // Build a map of most recent usage per domain
-        const usageMap = {};
-        usage.forEach(u => {
-          const key = u.domain;
-          if (!usageMap[key] || new Date(u.date) > new Date(usageMap[key].date)) {
-            usageMap[key] = u;
-          }
+        const merged = limits.map(lim => {
+          const use = usage.find(u => u.domain === lim.domain);
+          return {
+            name: lim.domain.split('.')[0],
+            limit: lim.limitMinutes,
+            used: Math.round(use ? use.minutesSpent : 0)
+          };
         });
-
-        const formatted = limits.map(limit => ({
-          name: limit.domain.split('.')[0],
-          Limit: limit.limitMinutes,
-          Used: usageMap[limit.domain]?.minutesSpent ?? 0,
-          safe: (usageMap[limit.domain]?.minutesSpent ?? 0) <= limit.limitMinutes
-        }));
-
-        setData(formatted);
-      } catch (err) {
-        console.error("ComparisonChart error:", err);
-      }
+        
+        setData(merged);
+      } catch (error) { console.error("Error fetching comparison data:", error); }
     };
     fetchData();
   }, []);
 
-  const CustomBar = (props) => {
-    const { x, y, width, height, safe } = props;
-    return <rect x={x} y={y} width={width} height={height} fill={safe ? '#10b981' : '#ef4444'} radius={8} />;
-  };
-
   return (
-    <div className="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
-      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Limit vs Usage ⚖️</h3>
-      <p className="text-sm text-slate-400 mb-6">🟢 Under limit &nbsp; 🔴 Over limit</p>
-      <div className="h-[300px] w-full">
+    <div className="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700 h-full">
+      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-6">Limit vs Actual Usage ⚖️</h3>
+      <div className="h-[300px] w-full min-h-[300px]">
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} barGap={4}>
+            <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} />
-              <YAxis axisLine={false} tickLine={false} unit="m" />
-              <Tooltip formatter={(v) => `${v} mins`} />
-              <Legend />
-              <Bar dataKey="Limit" fill="#3b82f6" radius={[8, 8, 0, 0]} barSize={30} />
-              <Bar dataKey="Used" radius={[8, 8, 0, 0]} barSize={30}
-                shape={(props) => {
-                  const { x, y, width, height, value, index } = props;
-                  const isOver = data[index] && data[index].Used > data[index].Limit;
-                  return <rect x={x} y={y} width={width} height={height} fill={isOver ? '#ef4444' : '#10b981'} rx={8} />;
-                }}
-              />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+              <Tooltip />
+              <Legend verticalAlign="top" align="right" iconType="circle" />
+              <Bar dataKey="limit" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="used" fill="#ef4444" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        ) : (
-          <p className="text-center text-slate-400 mt-24">No data yet — set a limit and use that site!</p>
-        )}
+        ) : <p className="text-center text-slate-400 mt-20">No comparison data found.</p>}
       </div>
     </div>
   );

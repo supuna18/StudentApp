@@ -5,31 +5,100 @@ let limit = 0;
 let domain = window.location.hostname.replace(/^(www\.|web\.|m\.)/, ''); 
 let timerActive = false;
 
+// --- Web App Sync Logic ---
+const isEduSyncApp = window.location.host.includes("localhost:5173") || 
+                     document.title.toLowerCase().includes("edusync");
+
+if (isEduSyncApp) {
+    console.log("🔗 EduSync Web App Detected. Syncing session...");
+    
+    function syncAuth() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                // Safer base64url decode
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                const payload = JSON.parse(jsonPayload);
+                // Microsoft .NET uses long URI claim names
+                const userId = payload.nameid || 
+                               payload.sub || 
+                               payload.id || 
+                               payload.unique_name ||
+                               payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                
+                if (userId) {
+                    console.log("✅ Authenticated User Found:", userId);
+                    if (chrome.runtime && chrome.runtime.id) {
+                        chrome.runtime.sendMessage({ action: "LOGIN_SUCCESS", userId: userId });
+                    }
+                }
+            } catch (e) { 
+                console.error("❌ Auth Parse Error", e); 
+                // Fallback to simpler atob
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const userId = payload.nameid || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                    if (userId && chrome.runtime && chrome.runtime.id) {
+                        chrome.runtime.sendMessage({ action: "LOGIN_SUCCESS", userId: userId });
+                    }
+                } catch(inner) {}
+            }
+        } else {
+            console.log("🚪 No token found in localStorage.");
+            if (chrome.runtime && chrome.runtime.id) {
+                chrome.runtime.sendMessage({ action: "LOGOUT" });
+            }
+        }
+    }
+
+    syncAuth();
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'token') {
+            console.log("🔄 Auth token changed in storage.");
+            syncAuth();
+        }
+    });
+    setInterval(syncAuth, 10000); // Check every 10 seconds
+}
+
 // Background එකෙන් දත්ත ඉල්ලීම.
-chrome.runtime.sendMessage({ action: "GET_DATA", domain: domain }, (res) => {
-    if (chrome.runtime.lastError) {
-        console.error("❌ Extension communication error:", chrome.runtime.lastError);
-        return;
-    }
-    console.log("📩 Data received from background:", res);
-    if (res && res.limit > 0) {
-        spent = res.spent;
-        limit = res.limit * 60;
-        if (spent >= limit) blockSite();
-        else { createTimerUI(); startCounting(); }
-    } else {
-        console.log("⚠️ No limits set for this domain.");
-    }
-});
+if (domain !== "localhost" && !isEduSyncApp) { 
+    chrome.runtime.sendMessage({ action: "GET_DATA", domain: domain }, (res) => {
+        if (chrome.runtime.lastError) {
+            console.error("❌ Extension communication error:", chrome.runtime.lastError);
+            return;
+        }
+        if (res && res.limit > 0) {
+            spent = res.spent;
+            limit = res.limit * 60;
+            console.log(`📊 Tracking started for ${domain}. Limit: ${res.limit}m, Spent: ${Math.floor(res.spent/60)}m`);
+            if (spent >= limit) blockSite();
+            else { createTimerUI(); startCounting(); }
+        }
+    });
+}
 
 function startCounting() {
     if (timerActive) return;
     timerActive = true;
-    setInterval(() => {
+    const interval = setInterval(() => {
         spent++;
         createTimerUI();
         updateDisplay();
-        if (spent % 10 === 0) chrome.runtime.sendMessage({ action: "SAVE_USAGE", domain: domain, spent: spent });
+        if (spent % 10 === 0) {
+            chrome.runtime.sendMessage({ action: "SAVE_USAGE", domain: domain, spent: spent }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.warn("⚠️ Background disconnected, stopping timer.");
+                    clearInterval(interval);
+                    timerActive = false;
+                }
+            });
+        }
         if (spent >= limit) blockSite();
     }, 1000);
 }
@@ -106,15 +175,8 @@ function blockSite() {
     }
 
     document.getElementById("edusync-add-5").onclick = () => {
-        console.log("🖱️ 'Add 5 Minutes' button clicked!");
         chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
-            console.log("📩 Extension response received:", res);
-            if (chrome.runtime.lastError) {
-                console.error("❌ Message failed:", chrome.runtime.lastError);
-                return;
-            }
             if (res && res.success) { 
-                console.log(`✅ Limit extended to ${res.newLimit}m! Reloading...`);
                 if (document.body) document.body.style.overflow = "auto";
                 location.reload(); 
             }

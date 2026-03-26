@@ -1,82 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { getUserId } from '../../utils/wellbeingUtils';
 
-const COLORS = {
-  'Social Media': '#3b82f6',
-  'Entertainment': '#f59e0b',
-  'Education': '#10b981',
-  'Productivity': '#8b5cf6',
-  'Gaming': '#ef4444',
-  'Other': '#6b7280'
-};
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
 const CategoryChart = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUsage = async () => {
+      const userId = getUserId();
+      if (!userId) return;
       try {
-        const [limitsRes, usageRes] = await Promise.all([
-          fetch('http://localhost:5005/api/wellbeing/limits/user123'),
-          fetch('http://localhost:5005/api/wellbeing/usage/user123')
-        ]);
-
-        if (!limitsRes.ok || !usageRes.ok) return;
-
-        const limitsJson = await limitsRes.json();
-        const usageJson = await usageRes.json();
-
-        const limits = limitsJson?.data ?? [];
-        const usage = usageJson?.data ?? [];
-
-        // Group usage by category using limits to map domain→category
-        const domainCategoryMap = {};
-        limits.forEach(l => { domainCategoryMap[l.domain] = l.category || 'Other'; });
-
-        const categoryTotals = {};
-        usage.forEach(u => {
-          const cat = domainCategoryMap[u.domain] || 'Other';
-          categoryTotals[cat] = (categoryTotals[cat] || 0) + (u.minutesSpent || 0);
+        const response = await fetch(`http://localhost:5005/api/wellbeing/usage/${userId}`);
+        const result = await response.json();
+        
+        const categories = {};
+        (result.data || []).forEach(item => {
+          const cat = item.category || 'Other';
+          categories[cat] = (categories[cat] || 0) + (item.minutesSpent || 0);
         });
 
-        const formatted = Object.entries(categoryTotals).map(([name, value]) => ({ name, value }));
-        setData(formatted);
-      } catch (err) {
-        console.error("CategoryChart error:", err);
-      }
+        const formattedData = Object.keys(categories).map(cat => ({
+          name: cat,
+          mins: Math.round(categories[cat])
+        }));
+        
+        setData(formattedData);
+      } catch (error) { console.error("Error fetching category data:", error); }
     };
-    fetchData();
+    fetchUsage();
   }, []);
 
-  const renderLabel = ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`;
-
   return (
-    <div className="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700">
-      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-6">Usage by Category 📊</h3>
+    <div className="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700 h-full">
+      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-6">Category Usage (Mins) 📂</h3>
       <div className="h-[300px] w-full min-h-[300px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                dataKey="value"
-                label={renderLabel}
-                labelLine={false}
-              >
-                {data.map((entry) => (
-                  <Cell key={entry.name} fill={COLORS[entry.name] || '#6b7280'} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(v) => `${v} mins`} />
-              <Legend />
-            </PieChart>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
+              <Tooltip />
+              <Bar dataKey="mins" radius={[10, 10, 10, 10]} barSize={40}>
+                {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
-        ) : (
-          <p className="text-center text-slate-400 mt-24">No usage data yet.</p>
-        )}
+        ) : <p className="text-center text-slate-400 mt-20">No category data.</p>}
       </div>
     </div>
   );
