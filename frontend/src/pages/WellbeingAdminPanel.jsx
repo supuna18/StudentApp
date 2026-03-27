@@ -86,18 +86,42 @@ const WellbeingAdminPanel = () => {
       <div id="wellbeing-admin-report">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Wellbeing Console</h1>
-            <p className="text-slate-500 font-medium">Platform-wide productivity and digital health analytics.</p>
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-blue-500/5 flex items-center justify-center text-blue-600">
+              <ShieldCheck size={32} strokeWidth={2.5} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 rounded-md bg-blue-600 text-[9px] font-black text-white uppercase tracking-tighter">Admin Console</span>
+                <div className="flex items-center gap-1.5 ml-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Intelligence Live</span>
+                </div>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
+                Wellbeing <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">Intelligence</span>
+              </h1>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <button onClick={fetchAdminData} className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-all shadow-sm">
-              <RefreshCcw size={18} className="text-slate-600" />
+
+          <div className="flex items-center gap-3 w-full lg:w-auto">
+            <button 
+              onClick={fetchAdminData} 
+              className="p-3.5 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-90"
+              title="Refresh Data"
+            >
+              <RefreshCcw size={20} className="text-slate-600" />
             </button>
-            <button onClick={downloadReport} className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95">
-              <Download size={18} />
-              Generate Report
+            <button 
+              onClick={downloadReport} 
+              className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+            >
+              <Download size={20} />
+              <span>Generate Report</span>
             </button>
           </div>
         </div>
