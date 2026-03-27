@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { User, Lock, Bell, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Lock, Bell, Trash2, AlertTriangle, Pencil, Check, X } from 'lucide-react';
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const getInitials = (name = '') =>
@@ -22,9 +22,12 @@ const navItems = [
 
 /* ── component ───────────────────────────────────────────────── */
 const ProfileManagement = () => {
-  const [user, setUser]         = useState(null);
+  const [user, setUser]           = useState(null);
   const [activeNav, setActiveNav] = useState('account');
-  const navigate                = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm]   = useState({ username: '', email: '' });
+  const [saving, setSaving]       = useState(false);
+  const navigate                  = useNavigate();
 
   /* ── fetch profile ── */
   useEffect(() => {
@@ -49,6 +52,44 @@ const ProfileManagement = () => {
       navigate('/login', { replace: true });
     }
   }, [navigate]);
+
+  /* ── start editing ── */
+  const handleEdit = () => {
+    setEditForm({ username: user.username || '', email: user.email || '' });
+    setIsEditing(true);
+  };
+
+  /* ── cancel editing ── */
+  const handleCancel = () => setIsEditing(false);
+
+  /* ── save profile ── */
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5005/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editForm),
+      });
+      if (res.ok) {
+        setUser((prev) => ({ ...prev, ...editForm }));
+        localStorage.setItem('username', editForm.username);
+        setIsEditing(false);
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to update profile.');
+      }
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   /* ── delete account ── */
   const handleDelete = () => {
@@ -150,16 +191,41 @@ const ProfileManagement = () => {
 
               {/* Card header */}
               <div className="px-6 pt-5 pb-0">
-                <div className="flex items-center gap-2.5 mb-1">
-                  <div className="w-[34px] h-[34px] rounded-[10px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
-                    <User size={16} className="text-blue-600" strokeWidth={2} />
-                  </div>
-                  <div>
+                <div className="flex items-center justify-between gap-2.5 mb-1">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-[34px] h-[34px] rounded-[10px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
+                      <User size={16} className="text-blue-600" strokeWidth={2} />
+                    </div>
                     <p className="text-[14px] font-bold text-[#0F1C4D]">Account Information</p>
                   </div>
+                  {/* Edit / Save / Cancel buttons */}
+                  {!isEditing ? (
+                    <button
+                      onClick={handleEdit}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] border border-[#E8EEFF] bg-white hover:bg-[#EEF2FF] hover:border-blue-300 text-[12px] font-semibold text-slate-500 hover:text-blue-600 transition-all duration-150"
+                    >
+                      <Pencil size={12} strokeWidth={2.5} /> Edit
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleCancel}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] border border-[#E8EEFF] bg-white hover:bg-slate-50 text-[12px] font-semibold text-slate-500 transition-all duration-150"
+                      >
+                        <X size={12} strokeWidth={2.5} /> Cancel
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[12px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-60"
+                      >
+                        <Check size={12} strokeWidth={2.5} /> {saving ? 'Saving…' : 'Save Changes'}
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <p className="text-[12px] text-slate-400 mt-1 mb-5">
-                  Your personal details — these are read-only and managed by EduSync.
+                  {isEditing ? 'Edit your username and email address below.' : 'Your personal details — click Edit to make changes.'}
                 </p>
               </div>
 
@@ -172,9 +238,13 @@ const ProfileManagement = () => {
                     <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Username</label>
                     <input
                       type="text"
-                      value={user.username || ''}
-                      readOnly
-                      className="w-full px-3.5 py-2.5 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-slate-500 bg-[#F8FAFF] outline-none cursor-default"
+                      value={isEditing ? editForm.username : (user.username || '')}
+                      readOnly={!isEditing}
+                      onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
+                      className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150
+                        ${isEditing
+                          ? 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text'
+                          : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
                       style={{ fontFamily: 'DM Sans' }}
                     />
                     <span className="text-[10.5px] text-slate-400">Your unique EduSync identifier</span>
@@ -183,9 +253,13 @@ const ProfileManagement = () => {
                     <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Email Address</label>
                     <input
                       type="email"
-                      value={user.email || ''}
-                      readOnly
-                      className="w-full px-3.5 py-2.5 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-slate-500 bg-[#F8FAFF] outline-none cursor-default"
+                      value={isEditing ? editForm.email : (user.email || '')}
+                      readOnly={!isEditing}
+                      onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                      className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150
+                        ${isEditing
+                          ? 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text'
+                          : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
                       style={{ fontFamily: 'DM Sans' }}
                     />
                     <span className="text-[10.5px] text-slate-400">Used for login and notifications</span>
