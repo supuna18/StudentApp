@@ -50,4 +50,41 @@ EduSync Team",
         mailMessage.To.Add(toEmail);
         await client.SendMailAsync(mailMessage);
     }
+
+    public async Task SendPasswordResetOtpEmailAsync(string toEmail, string otp)
+    {
+        var fromEmail = _config["EmailSettings:FromEmail"];
+        var appPassword = _config["EmailSettings:AppPassword"];
+
+        if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(appPassword))
+        {
+            throw new Exception("Email settings are missing in appsettings.json");
+        }
+
+        var client = new SmtpClient("smtp.gmail.com", 587)
+        {
+            EnableSsl = true,
+            Credentials = new NetworkCredential(fromEmail, appPassword)
+        };
+
+        var mailMessage = new MailMessage
+        {
+            From = new MailAddress(fromEmail),
+            Subject = "EduSync: Password Reset OTP",
+            Body = $@"Hello! 
+
+You requested to change your password on EduSync. 
+
+Your One-Time Password (OTP) for password reset is: {otp}
+
+This OTP is valid for 10 minutes. If you did not request this change, please ignore this email and ensure your account is secure.
+
+Happy Learning,
+EduSync Team",
+            IsBodyHtml = false
+        };
+
+        mailMessage.To.Add(toEmail);
+        await client.SendMailAsync(mailMessage);
+    }
 }
