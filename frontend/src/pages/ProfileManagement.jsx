@@ -26,6 +26,7 @@ const ProfileManagement = () => {
   const [activeNav, setActiveNav] = useState('account');
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm]   = useState({ username: '', email: '' });
+  const [formErrors, setFormErrors] = useState({});
   const [saving, setSaving]       = useState(false);
   const navigate                  = useNavigate();
 
@@ -53,17 +54,51 @@ const ProfileManagement = () => {
     }
   }, [navigate]);
 
+  /* ── validate form ── */
+  const validateForm = () => {
+    const errs = {};
+
+    // Validate username
+    if (!editForm.username.trim()) {
+      errs.username = 'Username is required.';
+    } else if (editForm.username.length > 20) {
+      errs.username = 'Username must be less than 20 characters.';
+    } else if (/[^a-zA-Z\s]/.test(editForm.username)) {
+      errs.username = 'Username must contain only letters and spaces.';
+    }
+
+    // Validate email
+    if (!editForm.email.trim()) {
+      errs.email = 'Email is required.';
+    } else if (editForm.email.length > 50) {
+      errs.email = 'Email must be less than 50 characters.';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(editForm.email)) {
+        errs.email = 'Please enter a valid email address.';
+      }
+    }
+    
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   /* ── start editing ── */
   const handleEdit = () => {
     setEditForm({ username: user.username || '', email: user.email || '' });
+    setFormErrors({});
     setIsEditing(true);
   };
 
   /* ── cancel editing ── */
-  const handleCancel = () => setIsEditing(false);
+  const handleCancel = () => {
+    setIsEditing(false);
+    setFormErrors({});
+  };
 
   /* ── save profile ── */
   const handleSave = async () => {
+    if (!validateForm()) return;
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
@@ -81,7 +116,13 @@ const ProfileManagement = () => {
         setIsEditing(false);
       } else {
         const data = await res.json();
-        alert(data.message || 'Failed to update profile.');
+        if (data.message && data.message.toLowerCase().includes('email')) {
+          setFormErrors({ email: data.message });
+        } else if (data.message && data.message.toLowerCase().includes('username')) {
+          setFormErrors({ username: data.message });
+        } else {
+          alert(data.message || 'Failed to update profile.');
+        }
       }
     } catch (err) {
       console.error('Error saving profile:', err);
@@ -240,14 +281,21 @@ const ProfileManagement = () => {
                       type="text"
                       value={isEditing ? editForm.username : (user.username || '')}
                       readOnly={!isEditing}
-                      onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
+                      onChange={(e) => {
+                        setEditForm((f) => ({ ...f, username: e.target.value }));
+                        if (formErrors.username) setFormErrors((errs) => ({ ...errs, username: '' }));
+                      }}
                       className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150
                         ${isEditing
-                          ? 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text'
+                          ? (formErrors.username ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100 cursor-text' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text')
                           : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
                       style={{ fontFamily: 'DM Sans' }}
                     />
-                    <span className="text-[10.5px] text-slate-400">Your unique EduSync identifier</span>
+                    {formErrors.username ? (
+                      <span className="text-[10.5px] text-red-500 font-medium">{formErrors.username}</span>
+                    ) : (
+                      <span className="text-[10.5px] text-slate-400">Your unique EduSync identifier</span>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Email Address</label>
@@ -255,14 +303,21 @@ const ProfileManagement = () => {
                       type="email"
                       value={isEditing ? editForm.email : (user.email || '')}
                       readOnly={!isEditing}
-                      onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                      onChange={(e) => {
+                        setEditForm((f) => ({ ...f, email: e.target.value }));
+                        if (formErrors.email) setFormErrors((errs) => ({ ...errs, email: '' }));
+                      }}
                       className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150
                         ${isEditing
-                          ? 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text'
+                          ? (formErrors.email ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100 cursor-text' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text')
                           : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
                       style={{ fontFamily: 'DM Sans' }}
                     />
-                    <span className="text-[10.5px] text-slate-400">Used for login and notifications</span>
+                    {formErrors.email ? (
+                      <span className="text-[10.5px] text-red-500 font-medium">{formErrors.email}</span>
+                    ) : (
+                      <span className="text-[10.5px] text-slate-400">Used for login and notifications</span>
+                    )}
                   </div>
                 </div>
               </div>
