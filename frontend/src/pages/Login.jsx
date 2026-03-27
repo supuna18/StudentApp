@@ -94,11 +94,11 @@ const Login = () => {
         .serif-heading { font-family: 'DM Serif Display', serif; }
       `}</style>
 
-      {/* ── Page background: plain EduSync blue ── */}
-      <div className="login-root min-h-screen w-full flex items-center justify-center p-7 bg-[#2255D2]">
+      {/* ── Page background: full-screen, no padding gaps ── */}
+      <div className="login-root w-screen h-screen flex items-center justify-center bg-[#2255D2] overflow-hidden">
 
         {/* ── Card shell ── */}
-        <div className="w-full max-w-[980px] h-[calc(100vh-56px)] max-h-[620px] bg-white rounded-[20px] shadow-[0_32px_80px_rgba(15,28,77,0.22)] flex overflow-hidden">
+        <div className="w-full max-w-[980px] h-full max-h-[600px] mx-6 bg-white rounded-[20px] shadow-[0_32px_80px_rgba(15,28,77,0.22)] flex overflow-hidden">
 
           {/* ══════════ LEFT PANEL ══════════ */}
           <div className="relative w-[46%] flex-shrink-0 flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
