@@ -4,6 +4,22 @@ let spent = 0;
 let limit = 0;
 let domain = window.location.hostname.replace(/^(www\.|web\.|m\.)/, ''); 
 let timerActive = false;
+let lastSentUserId = null; // Professional QA: Prevents redundant sync messages
+
+// Safe message delivery to background
+function safeSendMessage(message, callback) {
+    if (!chrome.runtime?.id) {
+        console.warn("⚠️ EduSync: Extension context invalidated. Please refresh the page.");
+        return;
+    }
+    chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+            console.warn("⚠️ Sync deferred: Background script unreachable.");
+            return;
+        }
+        if (callback) callback(response);
+    });
+}
 
 // --- Web App Sync Logic ---
 const isEduSyncApp = window.location.host.includes("localhost:5173") || 
@@ -31,11 +47,10 @@ if (isEduSyncApp) {
                                payload.unique_name ||
                                payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
                 
-                if (userId) {
-                    console.log("✅ Authenticated User Found:", userId);
-                    if (chrome.runtime && chrome.runtime.id) {
-                        chrome.runtime.sendMessage({ action: "LOGIN_SUCCESS", userId: userId });
-                    }
+                if (userId && userId !== lastSentUserId) {
+                    console.log("✅ Authenticated User Sync:", userId);
+                    lastSentUserId = userId;
+                    safeSendMessage({ action: "LOGIN_SUCCESS", userId: userId });
                 }
             } catch (e) { 
                 console.error("❌ Auth Parse Error", e); 
@@ -43,16 +58,16 @@ if (isEduSyncApp) {
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     const userId = payload.nameid || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-                    if (userId && chrome.runtime && chrome.runtime.id) {
-                        chrome.runtime.sendMessage({ action: "LOGIN_SUCCESS", userId: userId });
+                    if (userId && userId !== lastSentUserId) {
+                        lastSentUserId = userId;
+                        safeSendMessage({ action: "LOGIN_SUCCESS", userId: userId });
                     }
                 } catch(inner) {}
             }
-        } else {
-            console.log("🚪 No token found in localStorage.");
-            if (chrome.runtime && chrome.runtime.id) {
-                chrome.runtime.sendMessage({ action: "LOGOUT" });
-            }
+        } else if (lastSentUserId !== null) {
+            console.log("🚪 No token found. Clearing session.");
+            lastSentUserId = null;
+            safeSendMessage({ action: "LOGOUT" });
         }
     }
 
@@ -68,11 +83,7 @@ if (isEduSyncApp) {
 
 // Background එකෙන් දත්ත ඉල්ලීම.
 if (domain !== "localhost" && !isEduSyncApp) { 
-    chrome.runtime.sendMessage({ action: "GET_DATA", domain: domain }, (res) => {
-        if (chrome.runtime.lastError) {
-            console.error("❌ Extension communication error:", chrome.runtime.lastError);
-            return;
-        }
+    safeSendMessage({ action: "GET_DATA", domain: domain }, (res) => {
         if (res && res.limit > 0) {
             spent = res.spent;
             limit = res.limit * 60;
@@ -91,13 +102,7 @@ function startCounting() {
         createTimerUI();
         updateDisplay();
         if (spent % 10 === 0) {
-            chrome.runtime.sendMessage({ action: "SAVE_USAGE", domain: domain, spent: spent }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.warn("⚠️ Background disconnected, stopping timer.");
-                    clearInterval(interval);
-                    timerActive = false;
-                }
-            });
+            safeSendMessage({ action: "SAVE_USAGE", domain: domain, spent: spent });
         }
         if (spent >= limit) blockSite();
     }, 1000);
@@ -123,21 +128,22 @@ function createTimerUI() {
         <button id="edusync-p" style="all:unset; cursor:pointer; color:white; font-weight:bold; font-size:18px; padding:0 10px;">+</button>
     `;
     Object.assign(div.style, {
-        position: "fixed", top: "50px", right: "50px", padding: "12px 25px",
-        background: "#1e293b", color: "white", borderRadius: "50px",
-        zIndex: "2147483647", boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-        display: "flex", alignItems: "center", fontFamily: "sans-serif", visibility: "visible"
+        position: "fixed", top: "40px", right: "40px", padding: "10px 20px",
+        background: "rgba(30, 41, 59, 0.85)", backdropFilter: "blur(12px)", 
+        color: "white", borderRadius: "100px", border: "1px solid rgba(255,255,255,0.1)",
+        zIndex: "2147483647", boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+        display: "flex", alignItems: "center", fontFamily: "monospace", transition: "all 0.3s ease"
     });
     document.body.appendChild(div);
 
     document.getElementById("edusync-p").onclick = () => {
-        chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
+        safeSendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
             if (res && res.success) { limit = res.newLimit * 60; updateDisplay(); }
         });
     };
     
     document.getElementById("edusync-m").onclick = () => {
-        chrome.runtime.sendMessage({ action: "REDUCE_TIME", domain: domain }, (res) => {
+        safeSendMessage({ action: "REDUCE_TIME", domain: domain }, (res) => {
             if (res && res.success) { 
                 limit = res.newLimit * 60; 
                 updateDisplay(); 
@@ -175,7 +181,7 @@ function blockSite() {
     }
 
     document.getElementById("edusync-add-5").onclick = () => {
-        chrome.runtime.sendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
+        safeSendMessage({ action: "EXTEND_TIME", domain: domain, spent: spent }, (res) => {
             if (res && res.success) { 
                 if (document.body) document.body.style.overflow = "auto";
                 location.reload(); 

@@ -17,6 +17,10 @@ public class UsersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        return Ok(await _userService.GetAllUsers());
+        try {
+            return Ok(await _userService.GetAllUsers());
+        } catch (Exception ex) {
+            return BadRequest(new { message = "Error fetching users", error = ex.Message });
+        }
     }
 }

@@ -1,5 +1,6 @@
-let LIMITS = { "facebook.com": 1, "youtube.com": 2 };
 let userId = null;
+let syncRetryCount = 0;
+const MAX_SYNC_RETRIES = 3;
 
 console.log("EduSync Background Started! 🚀");
 
@@ -21,16 +22,40 @@ async function syncLimits() {
         return;
     }
     try {
-        console.log(`fetching limits for user: ${userId}...`);
-        const response = await fetch(`http://localhost:5005/api/wellbeing/limits/${userId}`);
+        console.log(`📡 Fetching limits for user: ${userId} (Attempt ${syncRetryCount + 1})...`);
+        const response = await fetch(`http://127.0.0.1:5005/api/wellbeing/limits/${userId}`);
+        
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        
         const result = await response.json();
         if (result && result.data) {
             let newLimits = {};
             result.data.forEach(item => { newLimits[item.domain] = item.limitMinutes; });
             LIMITS = newLimits;
+            syncRetryCount = 0; // Reset on success
             console.log("✅ Database Limits Updated:", LIMITS);
         }
-    } catch (e) { console.error("❌ Sync failed:", e); }
+    } catch (e) { 
+        console.error("❌ Sync failed:", e.message); 
+        if (syncRetryCount < MAX_SYNC_RETRIES) {
+            syncRetryCount++;
+            console.log(`🔄 Retrying sync in ${syncRetryCount * 5}s...`);
+            setTimeout(syncLimits, syncRetryCount * 5000);
+        }
+    }
+}
+
+// Backend එකට අලුත් Limit එක යැවීම.
+async function saveLimitToDB(domain, limitMinutes) {
+    if (!userId) return;
+    try {
+        await fetch('http://127.0.0.1:5005/api/wellbeing/limits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, domain: domain, limitMinutes: limitMinutes, category: "Modified via Extension" })
+        });
+        console.log(`✅ Sync: Limit for ${domain} updated in DB.`);
+    } catch (e) { console.error("❌ DB Limit Sync failed:", e); }
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -78,7 +103,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.local.set({ [storageKey]: request.spent });
 
         if (request.spent % 20 === 0) {
-            fetch('http://localhost:5005/api/wellbeing/usage', {
+            fetch('http://127.0.0.1:5005/api/wellbeing/usage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -98,18 +123,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log("➕ Extending time for domain:", request.domain);
         let spentMinutes = Math.ceil((request.spent || 0) / 60);
         let currentLimit = LIMITS[request.domain] || 0;
-        LIMITS[request.domain] = Math.max(currentLimit, spentMinutes) + 5;
-        sendResponse({ success: true, newLimit: LIMITS[request.domain] });
+        let newLimit = Math.max(currentLimit, spentMinutes) + 5;
+        LIMITS[request.domain] = newLimit;
+        saveLimitToDB(request.domain, newLimit);
+        sendResponse({ success: true, newLimit: newLimit });
         return true;
     }
 
     if (request.action === "REDUCE_TIME") {
+        let newLimit = 1;
         if (LIMITS[request.domain] > 5) {
-            LIMITS[request.domain] -= 5;
-        } else {
-            LIMITS[request.domain] = 1;
-        }
-        sendResponse({ success: true, newLimit: LIMITS[request.domain] });
+            newLimit = LIMITS[request.domain] - 5;
+        } 
+        LIMITS[request.domain] = newLimit;
+        saveLimitToDB(request.domain, newLimit);
+        sendResponse({ success: true, newLimit: newLimit });
         return true;
     }
     return true;

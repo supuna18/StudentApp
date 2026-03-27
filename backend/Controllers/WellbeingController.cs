@@ -121,7 +121,7 @@ namespace StudentApp.Api.Controllers
                 return Ok(overview);
             }
             catch (Exception ex) {
-                return BadRequest(new { message = "Error fetching admin overview", error = ex.Message });
+                return BadRequest(new { message = "Error fetching admin overview", error = ex.Message, stack = ex.StackTrace });
             }
         }
 
@@ -133,7 +133,7 @@ namespace StudentApp.Api.Controllers
                 return Ok(summaries);
             }
             catch (Exception ex) {
-                return BadRequest(new { message = "Error fetching user summaries", error = ex.Message });
+                return BadRequest(new { message = "Error fetching user summaries", error = ex.Message, stack = ex.StackTrace });
             }
         }
     }

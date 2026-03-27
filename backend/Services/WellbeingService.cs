@@ -1,5 +1,6 @@
 using StudentApp.Api.Models;
 using MongoDB.Driver;
+using MongoDB.Bson;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,24 +17,63 @@ namespace StudentApp.Api.Services
         private readonly IMongoCollection<WellbeingProfile> _wellbeingProfileCollection;
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoDatabase _database;
+        private readonly string _usersCollectionName;
 
-        public WellbeingService(IConfiguration config)
+        public WellbeingService(IMongoClient client, IConfiguration config)
         {
-            var connectionString = config.GetSection("StudentDatabase")["ConnectionString"];
             var databaseName = config.GetSection("StudentDatabase")["DatabaseName"] ?? "EduSyncDB";
-            
-            var client = new MongoClient(connectionString);
             _database = client.GetDatabase(databaseName);
             
             var limitsCollectionName = config.GetSection("StudentDatabase")["UserLimitsCollection"] ?? "UserLimits";
+            _usersCollectionName = config.GetSection("StudentDatabase")["CollectionName"] ?? "Users";
 
             _userLimitsCollection = _database.GetCollection<UserLimit>(limitsCollectionName);
             _dailyUsageCollection = _database.GetCollection<DailyUsage>("DailyUsage");
             _wellbeingProfileCollection = _database.GetCollection<WellbeingProfile>("WellbeingProfiles");
-            _usersCollection = _database.GetCollection<User>("Users");
+            _usersCollection = _database.GetCollection<User>(_usersCollectionName);
         }
 
-        // 1. අලුත් Limit එකක් MongoDB එකට දාන්න හෝ තිබේ නම් Update කරන්න (Upsert)
+        // ─── Helpers ────────────────────────────────────────────────
+        private static string BsonGetStr(BsonDocument doc, string camelKey, string pascalKey = null)
+        {
+            if (doc == null) return null;
+            if (doc.Contains(camelKey) && doc[camelKey].BsonType == BsonType.String) return doc[camelKey].AsString;
+            if (pascalKey != null && doc.Contains(pascalKey) && doc[pascalKey].BsonType == BsonType.String) return doc[pascalKey].AsString;
+            return null;
+        }
+
+        private static string BsonGetUserId(BsonDocument doc)
+        {
+            return BsonGetStr(doc, "userId", "UserId") ?? "";
+        }
+
+        private static double BsonGetDouble(BsonDocument doc, string camelKey, string pascalKey = null)
+        {
+            if (doc == null) return 0;
+            if (doc.Contains(camelKey) && doc[camelKey].IsNumeric) return doc[camelKey].ToDouble();
+            if (pascalKey != null && doc.Contains(pascalKey) && doc[pascalKey].IsNumeric) return doc[pascalKey].ToDouble();
+            return 0;
+        }
+
+        private static int BsonGetInt(BsonDocument doc, string camelKey, string pascalKey = null)
+        {
+            if (doc == null) return 0;
+            if (doc.Contains(camelKey) && doc[camelKey].IsNumeric) return doc[camelKey].ToInt32();
+            if (pascalKey != null && doc.Contains(pascalKey) && doc[pascalKey].IsNumeric) return doc[pascalKey].ToInt32();
+            return 0;
+        }
+
+        private static List<string> BsonGetStringArray(BsonDocument doc, string camelKey, string pascalKey = null)
+        {
+            BsonArray arr = null;
+            if (doc != null && doc.Contains(camelKey) && doc[camelKey].IsBsonArray) arr = doc[camelKey].AsBsonArray;
+            else if (doc != null && pascalKey != null && doc.Contains(pascalKey) && doc[pascalKey].IsBsonArray) arr = doc[pascalKey].AsBsonArray;
+            if (arr == null) return new List<string>();
+            return arr.Select(b => b.ToString()).Where(s => s != null).ToList();
+        }
+
+        // ─── Core Endpoints ─────────────────────────────────────────
+
         public async Task UpsertLimitAsync(UserLimit limit)
         {
             var filter = Builders<UserLimit>.Filter.Eq(x => x.UserId, limit.UserId) & 
@@ -46,19 +86,17 @@ namespace StudentApp.Api.Services
             await _userLimitsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
         }
 
-        // Delete a specific limit by its MongoDB _id
         public async Task DeleteLimitAsync(string id)
         {
-            var rawCollection = _database.GetCollection<MongoDB.Bson.BsonDocument>("UserLimits");
-            var filter = Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("_id", MongoDB.Bson.ObjectId.Parse(id));
+            var rawCollection = _database.GetCollection<BsonDocument>("UserLimits");
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", ObjectId.Parse(id));
             await rawCollection.DeleteOneAsync(filter);
         }
 
-        // 2. ළමයාගේ Limits ලිස්ට් එක ලබාගන්න (Extension එකට අවශ්‍යයි)
         public async Task<List<UserLimit>> GetLimitsByUserAsync(string userId)
         {
-            var rawCollection = _database.GetCollection<MongoDB.Bson.BsonDocument>("UserLimits");
-            var filter = Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("userId", userId);
+            var rawCollection = _database.GetCollection<BsonDocument>("UserLimits");
+            var filter = Builders<BsonDocument>.Filter.Eq("userId", userId);
             var rawDocs = await rawCollection.Find(filter).ToListAsync();
 
             return rawDocs.Select(doc => new UserLimit
@@ -71,7 +109,6 @@ namespace StudentApp.Api.Services
             }).ToList();
         }
 
-        // 3. Extension එකෙන් එන සැබෑ භාවිතය (Usage) සේව් කරන්න හෝ Update කරන්න (Upsert)
         public async Task UpdateUsageAsync(DailyUsage usage)
         {
             var filter = Builders<DailyUsage>.Filter.Eq(u => u.UserId, usage.UserId) & 
@@ -86,13 +123,11 @@ namespace StudentApp.Api.Services
         public async Task<List<DailyUsage>> GetUsageByUserAsync(string userId) =>
             await _dailyUsageCollection.Find(u => u.UserId == userId).ToListAsync();
 
-        // 4. Wellbeing Profile (Streak/Badges) ලබාගන්න
         public async Task<WellbeingProfile?> GetProfileAsync(string userId)
         {
             return await _wellbeingProfileCollection.Find(u => u.UserId == userId).FirstOrDefaultAsync();
         }
 
-        // 5. Wellbeing Profile (Streak/Badges) Sync කරන්න
         public async Task SyncProfileAsync(string userId, int streak, List<string> badges)
         {
             var filter = Builders<WellbeingProfile>.Filter.Eq(u => u.UserId, userId);
@@ -104,75 +139,97 @@ namespace StudentApp.Api.Services
             await _wellbeingProfileCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
         }
 
-        // 6. Admin: Platform-wide wellbeing overview stats
+        // ─── Admin Endpoints ─────────────────────────────────────────
+
         public async Task<AdminWellbeingOverview> GetAdminOverviewAsync()
         {
-            var allUsage = await _dailyUsageCollection.Find(_ => true).ToListAsync();
-            var allLimits = await _userLimitsCollection.Find(_ => true).ToListAsync();
-            var allProfiles = await _wellbeingProfileCollection.Find(_ => true).ToListAsync();
-
-            var usersTracked = allUsage.Select(u => u.UserId).Distinct().Count();
-            var totalLimits = allLimits.Count;
-            var avgDailyMinutes = allUsage.Any() ? Math.Round(allUsage.Average(u => u.MinutesSpent), 1) : 0;
-            var activeStreaks = allProfiles.Count(p => p.FocusStreak > 0);
-
-            // Top 10 domains by total minutes
-            var topDomains = allUsage
-                .GroupBy(u => u.Domain)
-                .Select(g => new DomainUsageStat { Domain = g.Key, TotalMinutes = Math.Round(g.Sum(u => u.MinutesSpent), 1) })
-                .OrderByDescending(d => d.TotalMinutes)
-                .Take(10)
-                .ToList();
-
-            // Category distribution from limits
-            var categoryDist = allLimits
-                .GroupBy(l => string.IsNullOrEmpty(l.Category) ? "Other" : l.Category)
-                .Select(g => new CategoryStat { Category = g.Key, Count = g.Count() })
-                .ToList();
-
-            return new AdminWellbeingOverview
+            try
             {
-                UsersTracked = usersTracked,
-                TotalLimitsSet = totalLimits,
-                AvgDailyMinutes = avgDailyMinutes,
-                ActiveStreaks = activeStreaks,
-                TopDomains = topDomains,
-                CategoryDistribution = categoryDist
-            };
+                var allUsage = await _database.GetCollection<BsonDocument>("DailyUsage").Find(_ => true).ToListAsync();
+                var allLimits = await _database.GetCollection<BsonDocument>("UserLimits").Find(_ => true).ToListAsync();
+                var allProfiles = await _database.GetCollection<BsonDocument>("WellbeingProfiles").Find(_ => true).ToListAsync();
+
+                var usersTracked = allUsage.Select(u => BsonGetUserId(u)).Where(id => !string.IsNullOrEmpty(id)).Distinct().Count();
+                var totalLimits = allLimits.Count;
+                var avgDailyMinutes = allUsage.Any() ? Math.Round(allUsage.Average(u => BsonGetDouble(u, "minutesSpent", "MinutesSpent")), 1) : 0;
+                var activeStreaks = allProfiles.Count(p => BsonGetInt(p, "focusStreak", "FocusStreak") > 0);
+
+                var topDomains = allUsage
+                    .GroupBy(u => BsonGetStr(u, "domain", "Domain") ?? "unknown")
+                    .Select(g => new DomainUsageStat { 
+                        Domain = g.Key, 
+                        TotalMinutes = Math.Round(g.Sum(u => BsonGetDouble(u, "minutesSpent", "MinutesSpent")), 1)
+                    })
+                    .OrderByDescending(d => d.TotalMinutes)
+                    .Take(10)
+                    .ToList();
+
+                var categoryDist = allLimits
+                    .GroupBy(l => BsonGetStr(l, "category", "Category") ?? "Other")
+                    .Select(g => new CategoryStat { Category = g.Key, Count = g.Count() })
+                    .ToList();
+
+                return new AdminWellbeingOverview
+                {
+                    UsersTracked = usersTracked,
+                    TotalLimitsSet = totalLimits,
+                    AvgDailyMinutes = avgDailyMinutes,
+                    ActiveStreaks = activeStreaks,
+                    TopDomains = topDomains,
+                    CategoryDistribution = categoryDist
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CRITICAL] Wellbeing Overview Failure: {ex.Message}");
+                throw;
+            }
         }
 
-        // 7. Admin: Per-user wellbeing summary list
         public async Task<List<UserWellbeingSummary>> GetAdminUserSummariesAsync()
         {
-            var allUsage = await _dailyUsageCollection.Find(_ => true).ToListAsync();
-            var allLimits = await _userLimitsCollection.Find(_ => true).ToListAsync();
-            var allProfiles = await _wellbeingProfileCollection.Find(_ => true).ToListAsync();
-            var allUsers = await _usersCollection.Find(_ => true).ToListAsync();
-
-            var allUserIds = allUsage.Select(u => u.UserId)
-                .Union(allLimits.Select(l => l.UserId))
-                .Union(allProfiles.Select(p => p.UserId))
-                .Distinct();
-
-            return allUserIds.Select(userId =>
+            try
             {
-                var userUsage = allUsage.Where(u => u.UserId == userId).ToList();
-                var userLimits = allLimits.Where(l => l.UserId == userId).ToList();
-                var profile = allProfiles.FirstOrDefault(p => p.UserId == userId);
-                var userAccount = allUsers.FirstOrDefault(u => u.Id == userId);
+                var allUsage = await _database.GetCollection<BsonDocument>("DailyUsage").Find(_ => true).ToListAsync();
+                var allLimits = await _database.GetCollection<BsonDocument>("UserLimits").Find(_ => true).ToListAsync();
+                var allProfiles = await _database.GetCollection<BsonDocument>("WellbeingProfiles").Find(_ => true).ToListAsync();
+                var usersRaw = await _database.GetCollection<BsonDocument>(_usersCollectionName).Find(_ => true).ToListAsync();
 
-                return new UserWellbeingSummary
+                var allUserIds = allUsage.Select(u => BsonGetUserId(u))
+                    .Union(allLimits.Select(l => BsonGetUserId(l)))
+                    .Union(allProfiles.Select(p => BsonGetUserId(p)))
+                    .Where(id => !string.IsNullOrEmpty(id))
+                    .Distinct()
+                    .ToList();
+
+                var summaries = new List<UserWellbeingSummary>();
+                foreach (var userId in allUserIds)
                 {
-                    UserId = userId,
-                    Username = userAccount?.Username ?? "Unknown",
-                    Email = userAccount?.Email ?? "N/A",
-                    LimitsCount = userLimits.Count,
-                    AvgDailyMinutes = userUsage.Any() ? Math.Round(userUsage.Average(u => u.MinutesSpent), 1) : 0,
-                    Streak = profile?.FocusStreak ?? 0,
-                    BadgesCount = profile?.UnlockedBadges?.Count ?? 0,
-                    Badges = profile?.UnlockedBadges ?? new List<string>()
-                };
-            }).OrderByDescending(u => u.Streak).ToList();
+                    var userUsage = allUsage.Where(u => BsonGetUserId(u) == userId).ToList();
+                    var userLimits = allLimits.Where(l => BsonGetUserId(l) == userId).ToList();
+                    var profile = allProfiles.FirstOrDefault(p => BsonGetUserId(p) == userId);
+                    var userDoc = usersRaw.FirstOrDefault(d => d.Contains("_id") && d["_id"].ToString() == userId);
+
+                    summaries.Add(new UserWellbeingSummary
+                    {
+                        UserId = userId,
+                        Username = BsonGetStr(userDoc, "username", "Username") ?? "Unknown Student",
+                        Email = BsonGetStr(userDoc, "email", "Email") ?? "No Email",
+                        LimitsCount = userLimits.Count,
+                        AvgDailyMinutes = userUsage.Any() ? Math.Round(userUsage.Average(u => BsonGetDouble(u, "minutesSpent", "MinutesSpent")), 1) : 0,
+                        Streak = BsonGetInt(profile, "focusStreak", "FocusStreak"),
+                        BadgesCount = BsonGetStringArray(profile, "unlockedBadges", "UnlockedBadges").Count,
+                        Badges = BsonGetStringArray(profile, "unlockedBadges", "UnlockedBadges")
+                    });
+                }
+
+                return summaries.OrderByDescending(u => u.Streak).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CRITICAL] Wellbeing Summary Table Failure: {ex.Message}");
+                throw;
+            }
         }
     }
 }

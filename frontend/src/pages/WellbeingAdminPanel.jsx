@@ -36,8 +36,8 @@ const WellbeingAdminPanel = () => {
         activeStreaks: statsData.activeStreaks || 0
       });
 
-      setCategoryData(statsData.categoryDistribution || []);
-      setStudentSummary(summariesData || []);
+      setCategoryData(Array.isArray(statsData.categoryDistribution) ? statsData.categoryDistribution : []);
+      setStudentSummary(Array.isArray(summariesData) ? summariesData : []);
       
       // Real or Mocked Trend
       setUsageTrend(statsData.topDomains?.map(d => ({ name: d.domain, mins: d.totalMinutes })) || []);
@@ -69,10 +69,10 @@ const WellbeingAdminPanel = () => {
     } catch (err) { console.error(err); }
   };
 
-  const filteredStudents = studentSummary.filter(s => 
-    s.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = Array.isArray(studentSummary) ? studentSummary.filter(s => 
+    (s.username || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (s.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   if (loading) return (
     <div className="flex items-center justify-center p-20">

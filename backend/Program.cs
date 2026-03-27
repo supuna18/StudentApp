@@ -89,8 +89,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Diagnostic Heart-beat
+app.MapGet("/api/pulse", () => "Server is ALIVE 🚀");
+
 // SignalR Hub
 app.MapHub<ChatHub>("/chatHub");
 
 // Run application
-app.Run("http://0.0.0.0:8080");
+app.Run("http://0.0.0.0:5005");
