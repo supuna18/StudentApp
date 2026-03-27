@@ -23,6 +23,7 @@ public class UsersController : ControllerBase
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {
+
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
@@ -36,6 +37,7 @@ public class UsersController : ControllerBase
             user.Role,
             user.CreatedAt 
         });
+
     }
 
     [HttpPut("profile")]
