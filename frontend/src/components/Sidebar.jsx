@@ -7,6 +7,7 @@ import {
   Heart,
   Clock,
   LogOut,
+  User,
 } from 'lucide-react';
 
 const menuSections = [
@@ -14,6 +15,7 @@ const menuSections = [
     label: 'Menu',
     items: [
       { name: 'Dashboard Home', path: '/student-dashboard',           icon: <LayoutDashboard size={15} strokeWidth={2} /> },
+      { name: 'My Profile',      path: '/student-dashboard/profile',    icon: <User size={15} strokeWidth={2} /> },
     ],
   },
   {

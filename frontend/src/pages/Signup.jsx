@@ -43,10 +43,10 @@ const Signup = () => {
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
                 html, body, #root {
-                    height: 100%;
+                    min-height: 100%;
                     margin: 0;
                     padding: 0;
-                    overflow: hidden; /* Prevent body scrolling */
+                    overflow-x: hidden; /* Allow vertical scrolling */
                     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
                     -webkit-font-smoothing: antialiased;
                     -moz-osx-font-smoothing: grayscale;
@@ -57,12 +57,12 @@ const Signup = () => {
                 }
             `}</style>
 
-            <div className="min-h-screen w-full bg-[#F0F6FF] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+            <div className="min-h-screen w-full bg-[#F0F6FF] flex items-start sm:items-center justify-center p-6 py-10 sm:py-6 relative overflow-hidden font-sans">
                 {/* Decorative background blobs */}
                 <div className="absolute top-[-120px] right-[-120px] w-[480px] h-[480px] rounded-full bg-radial-gradient-circle from-[rgba(26,86,219,0.12)] to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-[-140px] left-[-100px] w-[500px] h-[500px] rounded-full bg-radial-gradient-circle from-[rgba(26,86,219,0.08)] to-transparent pointer-events-none"></div>
 
-                <div className="flex w-full max-w-6xl h-auto md:min-h-[580px] rounded-3xl overflow-hidden shadow-2xl relative z-10">
+                <div className="flex flex-col md:flex-row w-full max-w-6xl h-auto md:min-h-[580px] rounded-3xl overflow-hidden shadow-2xl relative z-10">
                     {/* Left panel */}
                     <div className="flex-none w-full md:w-[42%] bg-gradient-to-br from-[#1240A8] via-[#1A56DB] to-[#3B82F6] p-8 md:p-11 flex flex-col justify-between relative overflow-hidden">
                         <div className="flex items-center gap-2.5">

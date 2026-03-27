@@ -28,5 +28,9 @@ public class User
     public List<string> FavoriteGenres { get; set; } = new List<string>();
     public string PreferredMood { get; set; } = string.Empty;
 
+    // --- OTP for Password Reset ---
+    public string? PasswordResetOTP { get; set; }
+    public DateTime? OTPExpiry { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
