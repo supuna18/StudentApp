@@ -21,18 +21,30 @@ public class ChatHub : Hub
 
     public async Task SendMessage(string groupId, string user, string message, string? fileData = null, string? fileName = null, string? fileType = null)
     {
-        var chatMsg = new ChatMessage
+        try
         {
-            GroupId = groupId,
-            SenderEmail = user,
-            Message = message,
-            FileData = fileData,
-            FileName = fileName,
-            FileType = fileType,
-            Timestamp = DateTime.UtcNow
-        };
+            var chatMsg = new ChatMessage
+            {
+                GroupId = groupId,
+                SenderEmail = user,
+                Message = message,
+                FileData = fileData,
+                FileName = fileName,
+                FileType = fileType,
+                Timestamp = DateTime.UtcNow
+            };
 
-        await _chats.InsertOneAsync(chatMsg);
-        await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp, fileData, fileName, fileType);
+            if (_chats == null) throw new Exception("Database collection not initialized.");
+
+            await _chats.InsertOneAsync(chatMsg);
+            
+            // Broadcast to group
+            await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp, fileData, fileName, fileType);
+        }
+        catch (Exception ex)
+        {
+            // This will be visible in the client console if EnableDetailedErrors is on
+            throw new HubException($"SendMessage failed: {ex.Message}");
+        }
     }
 }

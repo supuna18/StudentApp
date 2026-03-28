@@ -12,8 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Services Registration ---
 
-// SignalR (for chat)
-builder.Services.AddSignalR();
+// Kestrel Configuration for large attachments
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 30 * 1024 * 1024; // 30MB
+});
+
+// SignalR (for chat) - Higher message size & stable timeouts
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10MB
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+});
 
 // MongoDB Client (Singleton - best practice)
 builder.Services.AddSingleton<IMongoClient>(sp =>

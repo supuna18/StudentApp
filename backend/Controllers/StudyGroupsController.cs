@@ -30,6 +30,14 @@ public class StudyGroupsController : ControllerBase
         );
         return await _groups.Find(filter).ToListAsync();
     }
+    
+    [HttpGet("chat/history/{groupId}")]
+    public async Task<ActionResult<List<ChatMessage>>> GetHistory(string groupId)
+    {
+        return await _chats.Find(c => c.GroupId == groupId)
+                           .SortBy(c => c.Timestamp)
+                           .ToListAsync();
+    }
 
     // --- JOIN METHOD (FIXED) ---
     [HttpPost("join")]
