@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Eye, Edit2, Trash2, Users, X, Mail, Shield, Calendar, CheckCircle, Lock, UserPlus } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit2, Trash2, Users, X, Mail, Shield, Calendar, CheckCircle, Lock, UserPlus, AlertCircle } from 'lucide-react';
 
 const AVATAR_COLORS = ['#2255D2', '#4A70F5', '#1843B8', '#6366F1', '#059669'];
 
@@ -28,34 +28,65 @@ const UserManagement = () => {
     password: '',
     role: 'Student'
   });
+  const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5005/api/admin/users', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!res.ok) {
-                throw new Error('Failed to fetch users from server');
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5005/api/admin/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-            
-            const data = await res.json();
-            setUsers(data);
-        } catch (err) {
-            console.error("Error fetching users:", err);
-            setError(err.message);
-        } finally {
-            setLoading(false);
+        });
+        
+        if (!res.ok) {
+            throw new Error('Failed to fetch users from server');
         }
-    };
+        
+        const data = await res.json();
+        setUsers(data);
+    } catch (err) {
+        console.error("Error fetching users:", err);
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
   }, []);
+
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[A-Za-z\s]+$/;
+
+    if (!formData.username.trim()) {
+      errors.username = "Full name is required";
+    } else if (formData.username.trim().length < 3) {
+      errors.username = "Name must be at least 3 characters";
+    } else if (!nameRegex.test(formData.username.trim())) {
+      errors.username = "Full name can only contain alphabetic characters";
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = "Email address is required";
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (!formData.password) {
+      errors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const filtered = users.filter(
     (u) =>
@@ -119,6 +150,8 @@ const UserManagement = () => {
 
   const handleAddUser = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
     try {
         const token = localStorage.getItem('token');
@@ -131,32 +164,30 @@ const UserManagement = () => {
             body: JSON.stringify(formData)
         });
 
+        const data = await res.json();
+
         if (!res.ok) {
-            const data = await res.json();
             throw new Error(data.message || 'Failed to register user');
         }
 
-        const newUser = await res.json();
-        // Assuming register returns the user object or we need to re-fetch
-        // For immediate UI update, we add it if the API returns the user object
-        // Many APIs return a success message, let's assume it returns user or we re-fetch
-        
-        setUsers(prev => [...prev, newUser.user || newUser]);
+        // Successfully registered, re-fetch list to get full user object with metadata
+        await fetchUsers();
         
         // Reset and close
         setIsAddModalOpen(false);
         setFormData({ username: '', email: '', password: '', role: 'Student' });
+        setFormErrors({});
         alert("User added successfully!");
     } catch (err) {
         console.error("Error adding user:", err);
-        alert("Error: " + err.message);
+        setFormErrors({ server: err.message });
     } finally {
         setIsSubmitting(false);
     }
   };
 
-  if (loading) return <div className="p-20 text-center text-blue-600 font-bold animate-pulse">Connecting to EduSyncDB...</div>;
-  if (error) return <div className="p-20 text-center text-red-500 font-bold">Error: {error}</div>;
+  if (loading && users.length === 0) return <div className="p-20 text-center text-blue-600 font-bold animate-pulse">Connecting to EduSyncDB...</div>;
+  if (error && users.length === 0) return <div className="p-20 text-center text-red-500 font-bold">Error: {error}</div>;
 
   return (
     <div>
@@ -172,7 +203,7 @@ const UserManagement = () => {
         {/* ── Page header ── */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            
+            <h2 className="serif-heading text-[24px] text-[#0F1C4D] italic leading-tight">User Management</h2>
             <p className="text-[12px] text-slate-400 mt-1">
               Manage student and admin accounts across EduSync
             </p>
@@ -198,7 +229,10 @@ const UserManagement = () => {
 
             {/* Add user */}
             <button 
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setIsAddModalOpen(true);
+                setFormErrors({});
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
             >
               <Plus size={14} strokeWidth={2.5} /> Add User
@@ -249,7 +283,7 @@ const UserManagement = () => {
               ) : (
                 filtered.map((user, i) => {
                   const role   = roleConfig[user.role] ?? roleConfig.Student;
-                  const isActive = true; // For now default to active as we don't have this in DB yet
+                  const isActive = true; // For now default to active
                   return (
                     <tr
                       key={user.id || user._id}
@@ -333,7 +367,7 @@ const UserManagement = () => {
 
         {/* View User Modal */}
         {viewUser && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" style={{ fontFamily: 'DM Sans' }}>
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm" style={{ fontFamily: 'DM Sans' }}>
             <div className="bg-white rounded-2xl w-[400px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
               <div className="px-6 py-4 border-b border-[#E8EEFF] flex items-center justify-between">
                 <h3 className="text-[15px] font-bold text-[#0F1C4D]">User Details</h3>
@@ -402,7 +436,10 @@ const UserManagement = () => {
                   </div>
                 </div>
                 <button 
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setFormErrors({});
+                  }}
                   className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-colors"
                 >
                   <X size={18} />
@@ -411,59 +448,89 @@ const UserManagement = () => {
 
               {/* Form */}
               <form onSubmit={handleAddUser} className="p-8">
+                {formErrors.server && (
+                  <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-600 text-[12px] font-medium animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle size={14} />
+                    {formErrors.server}
+                  </div>
+                )}
+
                 <div className="space-y-5">
                   {/* Username */}
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Username</label>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Full Name</label>
                     <div className="relative group">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.username ? 'text-red-400' : 'text-slate-400 group-focus-within:text-blue-500'}`}>
                         <Users size={16} />
                       </div>
                       <input 
-                        required
                         type="text"
                         placeholder="John Doe"
                         value={formData.username}
-                        onChange={(e) => setFormData({...formData, username: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D]"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (/[^A-Za-z\s]/.test(val)) {
+                            setFormErrors({...formErrors, username: "Full name can only contain alphabetic characters"});
+                            return;
+                          }
+                          setFormData({...formData, username: val});
+                          if (formErrors.username) setFormErrors({...formErrors, username: null});
+                        }}
+                        className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-sm text-[#0F1C4D] 
+                          ${formErrors.username 
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
+                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/10'}`}
                       />
                     </div>
+                    {formErrors.username && <p className="text-[10px] text-red-500 font-bold ml-1 mt-1 animate-in fade-in slide-in-from-top-1">{formErrors.username}</p>}
                   </div>
 
                   {/* Email */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Email Address</label>
                     <div className="relative group">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.email ? 'text-red-400' : 'text-slate-400 group-focus-within:text-blue-500'}`}>
                         <Mail size={16} />
                       </div>
                       <input 
-                        required
                         type="email"
                         placeholder="john@example.com"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D]"
+                        onChange={(e) => {
+                          setFormData({...formData, email: e.target.value});
+                          if (formErrors.email) setFormErrors({...formErrors, email: null});
+                        }}
+                        className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-sm text-[#0F1C4D]
+                          ${formErrors.email 
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
+                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/10'}`}
                       />
                     </div>
+                    {formErrors.email && <p className="text-[10px] text-red-500 font-bold ml-1 mt-1 animate-in fade-in slide-in-from-top-1">{formErrors.email}</p>}
                   </div>
 
                   {/* Password */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Password</label>
                     <div className="relative group">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.password ? 'text-red-400' : 'text-slate-400 group-focus-within:text-blue-500'}`}>
                         <Lock size={16} />
                       </div>
                       <input 
-                        required
                         type="password"
                         placeholder="••••••••"
                         value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D]"
+                        onChange={(e) => {
+                          setFormData({...formData, password: e.target.value});
+                          if (formErrors.password) setFormErrors({...formErrors, password: null});
+                        }}
+                        className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-sm text-[#0F1C4D]
+                          ${formErrors.password 
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
+                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/10'}`}
                       />
                     </div>
+                    {formErrors.password && <p className="text-[10px] text-red-500 font-bold ml-1 mt-1 animate-in fade-in slide-in-from-top-1">{formErrors.password}</p>}
                   </div>
 
                   {/* Role */}
@@ -476,11 +543,14 @@ const UserManagement = () => {
                       <select 
                         value={formData.role}
                         onChange={(e) => setFormData({...formData, role: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D] appearance-none"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D] appearance-none cursor-pointer"
                       >
                         <option value="Student">Student</option>
                         <option value="Admin">Admin</option>
                       </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                        <Filter size={14} />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -488,7 +558,10 @@ const UserManagement = () => {
                 <div className="mt-10 flex gap-3">
                   <button 
                     type="button"
-                    onClick={() => setIsAddModalOpen(false)}
+                    onClick={() => {
+                      setIsAddModalOpen(false);
+                      setFormErrors({});
+                    }}
                     className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[13px] rounded-2xl transition-colors"
                   >
                     Cancel
