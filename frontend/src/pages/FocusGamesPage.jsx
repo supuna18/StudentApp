@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Brain, Zap, Target, RefreshCw, Trophy, Clock, MousePointer2, Sparkles, ChevronLeft, Play, BarChart2 } from 'lucide-react';
+import { Brain, Zap, Target, RefreshCw, Trophy, Clock, MousePointer2, Sparkles, ChevronLeft, Play, BarChart2, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 // --- ANIMATION VARIANTS ---
 const pageVariants = {
@@ -54,10 +55,55 @@ const FocusGamesPage = () => {
   // --- CELEBRATION MODAL STATE ---
   const [showWinAlert, setShowWinAlert] = useState(false);
   const [winMessage, setWinMessage] = useState("");
+  const [statsData, setStatsData] = useState([]);
+  const [copySuccess, setCopySuccess] = useState(false);
 
-  const triggerWin = useCallback((msg) => {
+  const handleShare = async () => {
+    const text = `🧠 I just crushed a Focus Session on EduSync!\n🏆 Result: ${winMessage}\nPlay now to train your brain! 🚀`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'EduSync Focus Hub', text: text });
+      } catch (err) {
+        console.log('Share canceled', err);
+      }
+    } else {
+      navigator.clipboard.writeText(text);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
+  };
+
+  const loadStats = useCallback(() => {
+    const data = JSON.parse(localStorage.getItem('focusGamesStats') || "{}");
+    const today = new Date().toISOString().split('T')[0];
+    if (!data[today]) data[today] = { memory: 0, reaction: 0, aim: 0 };
+    
+    setStatsData([
+      { name: 'Memory', plays: data[today].memory || 0, color: '#8b5cf6' },
+      { name: 'Reaction', plays: data[today].reaction || 0, color: '#3b82f6' },
+      { name: 'Aim', plays: data[today].aim || 0, color: '#10b981' }
+    ]);
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+    const handleUpdate = () => loadStats();
+    window.addEventListener('focusGamesUpdated', handleUpdate);
+    return () => window.removeEventListener('focusGamesUpdated', handleUpdate);
+  }, [loadStats]);
+
+  const triggerWin = useCallback((msg, gameId) => {
     setWinMessage(msg);
     setShowWinAlert(true);
+
+    if (gameId) {
+      const today = new Date().toISOString().split('T')[0];
+      const data = JSON.parse(localStorage.getItem('focusGamesStats') || "{}");
+      if (!data[today]) data[today] = { memory: 0, reaction: 0, aim: 0 };
+      data[today][gameId] = (data[today][gameId] || 0) + 1;
+      localStorage.setItem('focusGamesStats', JSON.stringify(data));
+      window.dispatchEvent(new Event('focusGamesUpdated'));
+    }
 
     const duration = 2.5 * 1000;
     const animationEnd = Date.now() + duration;
@@ -78,19 +124,19 @@ const FocusGamesPage = () => {
   // --- WIN WATCHERS ---
   useEffect(() => {
     if (cards.length > 0 && matched.length === cards.length && !memoryRunning) {
-      triggerWin(`Linked in ${memoryTimer}s with ${moves} moves!`);
+      triggerWin(`Linked in ${memoryTimer}s with ${moves} moves!`, 'memory');
     }
   }, [matched.length, cards.length, memoryRunning, memoryTimer, moves, triggerWin]);
 
   useEffect(() => {
     if (reactionStatus === 'finished' && reactionHistory.length > 0) {
-      triggerWin(`Awesome speed! Your reaction time was ${reactionHistory[0]}ms.`);
+      triggerWin(`Awesome speed! Your reaction time was ${reactionHistory[0]}ms.`, 'reaction');
     }
   }, [reactionStatus, reactionHistory, triggerWin]);
 
   useEffect(() => {
     if (aimTimeLeft === 0 && !aimActive && aimClicks > 0) {
-      triggerWin(`Great aim! You scored ${aimScore} hits with ${Math.round((aimScore / aimClicks) * 100)}% accuracy.`);
+      triggerWin(`Great aim! You scored ${aimScore} hits with ${Math.round((aimScore / aimClicks) * 100)}% accuracy.`, 'aim');
       setAimClicks(0); // reset to prevent multiple triggers
     }
   }, [aimTimeLeft, aimActive, aimScore, aimClicks, triggerWin]);
@@ -237,6 +283,35 @@ const FocusGamesPage = () => {
             </div>
           </motion.button>
         ))}
+      </div>
+
+      <div className="bg-white/80 backdrop-blur-2xl p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-lg shadow-slate-200/40 border border-white mt-12 mb-8 relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-indigo-500 via-purple-500 to-amber-500" />
+         <div className="flex items-center gap-3 mb-6">
+           <BarChart2 size={24} className="text-indigo-600" />
+           <div>
+             <h3 className="text-lg md:text-xl font-black text-slate-800">Daily Play Analytics</h3>
+             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest">Today's Completed Sessions</p>
+           </div>
+         </div>
+         <div className="h-[250px] w-full">
+           <ResponsiveContainer width="100%" height="100%">
+             <BarChart data={statsData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+               <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+               <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+               <Tooltip 
+                  cursor={{fill: '#f8fafc'}}
+                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                  itemStyle={{ fontWeight: '900', color: '#1e293b' }}
+               />
+               <Bar dataKey="plays" radius={[8, 8, 8, 8]} barSize={40}>
+                 {statsData.map((entry, index) => (
+                   <Cell key={`cell-${index}`} fill={entry.color} />
+                 ))}
+               </Bar>
+             </BarChart>
+           </ResponsiveContainer>
+         </div>
       </div>
     </motion.div>
   );
@@ -418,12 +493,20 @@ const FocusGamesPage = () => {
               </div>
               <h2 className="text-3xl font-black text-slate-800 mb-2 uppercase tracking-tight">Good Job!</h2>
               <p className="text-slate-500 font-bold mb-8 px-4 leading-relaxed">{winMessage}</p>
-              <button
-                onClick={() => setShowWinAlert(false)}
-                className="w-full py-4 bg-indigo-600 outline-none text-white rounded-2xl font-black tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all text-sm uppercase"
-              >
-                CONTINUE
-              </button>
+              <div className="w-full flex flex-col gap-3">
+                <button
+                  onClick={handleShare}
+                  className="w-full flex items-center justify-center gap-2 py-4 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-black tracking-widest hover:bg-indigo-100 active:scale-95 transition-all text-sm uppercase"
+                >
+                  <Share2 size={18} /> {copySuccess ? 'Copied to Clipboard!' : 'Share Result'}
+                </button>
+                <button
+                  onClick={() => setShowWinAlert(false)}
+                  className="w-full py-4 bg-indigo-600 outline-none text-white rounded-2xl font-black tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all text-sm uppercase"
+                >
+                  CONTINUE
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
