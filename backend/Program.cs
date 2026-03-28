@@ -12,8 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Services Registration ---
 
-// SignalR (for chat)
-builder.Services.AddSignalR();
+// Kestrel Configuration for large attachments
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 30 * 1024 * 1024; // 30MB
+});
+
+// SignalR (for chat) - Higher message size & stable timeouts
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10MB
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+});
 
 // MongoDB Client (Singleton - best practice)
 builder.Services.AddSingleton<IMongoClient>(sp =>
@@ -33,7 +45,11 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WellbeingService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 // CORS Policy (Allow all for now - restrict in production)
 builder.Services.AddCors(options =>
@@ -96,8 +112,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Diagnostic Heart-beat
+app.MapGet("/api/pulse", () => "Server is ALIVE 🚀");
+
 // SignalR Hub
 app.MapHub<ChatHub>("/chatHub");
 
 // Run application
-app.Run("http://0.0.0.0:8080");
+app.Run("http://0.0.0.0:5005");

@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  User, 
+  Mail, 
+  Lock, 
+  ShieldCheck, 
+  ArrowRight, 
+  Check, 
+  Loader2,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 
 const Signup = () => {
     const [username, setUsername] = useState('');
@@ -8,11 +19,34 @@ const Signup = () => {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('Student');
     const [loading, setLoading] = useState(false);
-    const [focused, setFocused] = useState(''); // State to track focused input for styling
+    const [showPass, setShowPass] = useState(false);
+    
+    // Validation states
+    const [errors, setErrors] = useState({});
+    
     const navigate = useNavigate();
+
+    const validate = () => {
+        const newErrors = {};
+        if (!username.trim()) newErrors.username = 'Full name is required';
+        if (!email.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = 'Please enter a valid email address';
+        }
+        if (!password) {
+            newErrors.password = 'Password is required';
+        } else if (password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSignup = async (e) => {
         e.preventDefault();
+        if (!validate()) return;
+        
         setLoading(true);
         try {
             const res = await fetch('http://localhost:5005/api/auth/register', {
@@ -24,204 +58,251 @@ const Signup = () => {
             const data = await res.json();
 
             if (res.ok) {
-                alert("Account created successfully! Please login.");
+                // Success animation or toast could be added here
                 navigate('/login');
             } else {
-                alert(data.message || "Signup Failed!");
+                setErrors({ server: data.message || "Signup Failed!" });
             }
         } catch (err) {
             console.error("Signup Error:", err);
-            alert("An error occurred during signup. Please try again.");
+            setErrors({ server: "Connection error. Please try again." });
         } finally {
             setLoading(false);
         }
     };
 
+    const features = [
+        'Personalized learning paths',
+        'Live instructor sessions',
+        'Track your progress',
+    ];
+
+    const stats = [
+        { val: '50', suffix: 'K+', label: 'Students' },
+        { val: '200', suffix: '+', label: 'Courses' },
+        { val: '98', suffix: '%', label: 'Satisfaction' },
+    ];
+
+    const containerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.6, ease: "easeOut" }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, x: -10 },
+        visible: i => ({
+            opacity: 1,
+            x: 0,
+            transition: { delay: 0.1 * i, duration: 0.4 }
+        })
+    };
+
     return (
         <>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-                html, body, #root {
-                    min-height: 100%;
-                    margin: 0;
-                    padding: 0;
-                    overflow-x: hidden; /* Allow vertical scrolling */
-                    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-                    -webkit-font-smoothing: antialiased;
-                    -moz-osx-font-smoothing: grayscale;
-                }
-
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
+                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap');
+                .signup-root { font-family: 'DM Sans', sans-serif; }
+                .serif-heading { font-family: 'DM Serif Display', serif; }
             `}</style>
 
-            <div className="min-h-screen w-full bg-[#F0F6FF] flex items-start sm:items-center justify-center p-6 py-10 sm:py-6 relative overflow-hidden font-sans">
-                {/* Decorative background blobs */}
-                <div className="absolute top-[-120px] right-[-120px] w-[480px] h-[480px] rounded-full bg-radial-gradient-circle from-[rgba(26,86,219,0.12)] to-transparent pointer-events-none"></div>
-                <div className="absolute bottom-[-140px] left-[-100px] w-[500px] h-[500px] rounded-full bg-radial-gradient-circle from-[rgba(26,86,219,0.08)] to-transparent pointer-events-none"></div>
+            <div className="signup-root w-screen h-screen flex items-center justify-center bg-[#2255D2] overflow-hidden">
+                <motion.div 
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="w-full max-w-[980px] h-full max-h-[600px] mx-6 bg-white rounded-[20px] shadow-[0_32px_80px_rgba(15,28,77,0.22)] flex overflow-hidden"
+                >
+                    {/* ══════════ LEFT PANEL ══════════ */}
+                    <div className="relative w-[46%] hidden lg:flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
+                        {/* Ambient orbs */}
+                        <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-blue-500/[0.08] blur-[80px] pointer-events-none" />
+                        <div className="absolute bottom-[-40px] left-[-40px] w-[200px] h-[200px] rounded-full bg-blue-400/[0.07] blur-[60px] pointer-events-none" />
 
-                <div className="flex flex-col md:flex-row w-full max-w-6xl h-auto md:min-h-[580px] rounded-3xl overflow-hidden shadow-2xl relative z-10">
-                    {/* Left panel */}
-                    <div className="flex-none w-full md:w-[42%] bg-gradient-to-br from-[#1240A8] via-[#1A56DB] to-[#3B82F6] p-8 md:p-11 flex flex-col justify-between relative overflow-hidden">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-11 h-11 rounded-xl bg-white bg-opacity-15 flex items-center justify-center backdrop-blur-sm">
-                                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="text-white">
-                                    <rect width="28" height="28" rx="8" fill="currentColor" fillOpacity="0.2"/>
-                                    <path d="M7 14L12 19L21 9" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                        {/* Brand */}
+                        <div className="flex items-center gap-2.5 mb-auto relative z-10">
+                            <div className="w-[30px] h-[30px] bg-blue-600 rounded-[8px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.28)] flex-shrink-0">
+                                <ShieldCheck size={16} className="text-white" strokeWidth={2.5} />
                             </div>
-                            <span className="text-white text-2xl font-bold tracking-tight">EduSync</span>
+                            <span className="serif-heading text-[16px] text-[#0F1C4D] italic">EduSync</span>
                         </div>
 
-                        <div className="flex-1 flex flex-col justify-center py-6">
-                            <h1 className="text-white text-3xl md:text-4xl font-bold leading-tight tracking-tight mb-4">
-                                Start your<br />learning journey<br />today.
-                            </h1>
-                            <p className="text-white text-opacity-75 text-sm leading-relaxed mb-7">
+                        {/* Hero text */}
+                        <div className="relative z-10 mb-7">
+                            <h2 className="serif-heading text-[38px] text-[#0F1C4D] leading-[1.12] font-normal">
+                                Start your<br />
+                                <em className="text-blue-600 not-italic italic">learning journey</em><br />
+                                today.
+                            </h2>
+                            <p className="text-[13px] text-slate-400 mt-3 leading-[1.65] max-w-[280px]">
                                 Join thousands of students already achieving their goals with EduSync.
                             </p>
-
-                            <div className="flex flex-col gap-3 mb-8">
-                                {['Personalized learning paths', 'Live instructor sessions', 'Track your progress'].map((f, i) => (
-                                    <div key={i} className="flex items-center gap-2.5">
-                                        <div className="w-2 h-2 rounded-full bg-white bg-opacity-60 flex-shrink-0"></div>
-                                        <span className="text-white text-opacity-85 text-sm">{f}</span>
-                                    </div>
-                                ))}
-                            </div>
                         </div>
 
-                        <div className="flex items-center bg-white bg-opacity-10 rounded-2xl px-5 py-4 backdrop-blur-md">
-                            <div className="flex-1 flex flex-col items-center gap-0.5">
-                                <span className="text-white text-lg font-bold tracking-tight">50K+</span>
-                                <span className="text-white text-opacity-65 text-xs uppercase tracking-wider">Students</span>
-                            </div>
-                            <div className="w-px h-8 bg-white bg-opacity-20 mx-2"></div>
-                            <div className="flex-1 flex flex-col items-center gap-0.5">
-                                <span className="text-white text-lg font-bold tracking-tight">200+</span>
-                                <span className="text-white text-opacity-65 text-xs uppercase tracking-wider">Courses</span>
-                            </div>
-                            <div className="w-px h-8 bg-white bg-opacity-20 mx-2"></div>
-                            <div className="flex-1 flex flex-col items-center gap-0.5">
-                                <span className="text-white text-lg font-bold tracking-tight">98%</span>
-                                <span className="text-white text-opacity-65 text-xs uppercase tracking-wider">Satisfaction</span>
-                            </div>
+                        {/* Feature list */}
+                        <div className="flex flex-col gap-2.5 relative z-10 mb-7">
+                            {features.map((f, i) => (
+                                <motion.div 
+                                    key={f} 
+                                    custom={i}
+                                    variants={itemVariants}
+                                    className="flex items-center gap-2.5 text-[12.5px] font-medium text-[#4A5570]"
+                                >
+                                    <div className="w-[22px] h-[22px] rounded-[7px] bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                                        <Check size={11} className="text-blue-600" strokeWidth={3} />
+                                    </div>
+                                    {f}
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Stats strip */}
+                        <div className="flex items-center border-t border-[#E8EEFF] pt-5 relative z-10">
+                            {stats.map((s, i) => (
+                                <div key={i} className={`flex-1 text-center ${i > 0 ? 'border-l border-[#E8EEFF]' : ''}`}>
+                                    <div className="text-[18px] font-extrabold text-[#0F1C4D] tracking-tight leading-none">
+                                        {s.val}<span className="text-blue-600">{s.suffix}</span>
+                                    </div>
+                                    <div className="text-[9.5px] font-bold tracking-[1.5px] uppercase text-slate-400 mt-1">{s.label}</div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Right panel — form */}
-                    <div className="flex-1 bg-white flex items-center justify-center p-8 md:p-12">
-                        <div className="w-full max-w-md">
-                            <div className="mb-8">
-                                <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-1.5">Create Account</h2>
-                                <p className="text-sm text-gray-600">Fill in your details to get started</p>
+                    {/* ══════════ RIGHT PANEL ══════════ */}
+                    <div className="flex-1 flex flex-col overflow-hidden bg-white">
+                        {/* Top Nav */}
+                        <div className="flex items-center justify-end p-8 pb-4">
+                            <span className="text-[12.5px] text-slate-400 mr-3 hidden sm:inline">Already a member?</span>
+                            <Link
+                                to="/login"
+                                className="px-5 py-2 rounded-full border-[1.5px] border-[#0F1C4D] text-[11.5px] font-bold tracking-[.5px] uppercase text-[#0F1C4D] hover:bg-[#0F1C4D] hover:text-white transition-all duration-200"
+                            >
+                                Sign In
+                            </Link>
+                        </div>
+
+                        {/* Form area */}
+                        <div className="flex-1 flex flex-col justify-center px-10 pb-10 max-w-[480px] mx-auto w-full">
+                            <div className="mb-6">
+                                <h1 className="serif-heading text-[26px] text-[#0F1C4D] italic leading-tight mb-1">Create account</h1>
+                                <p className="text-[12.5px] text-slate-400">Join thousands of students on their journey.</p>
                             </div>
 
-                            <form onSubmit={handleSignup} className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-semibold text-gray-700 tracking-wide">Full Name</label>
-                                    <div className={`flex items-center gap-2.5 border-1.5 rounded-xl px-3.5 py-0.5 bg-[#FAFBFF] transition-all duration-200 ${focused === 'username' ? 'border-[#1A56DB] shadow-[0_0_0_3px_rgba(26,86,219,0.1)] bg-white' : 'border-gray-300'}`}>
-                                        <svg className="text-gray-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                            <circle cx="12" cy="7" r="4"/>
-                                        </svg>
-                                        <input
-                                            type="text"
-                                            placeholder="John Doe"
-                                            value={username}
-                                            onChange={e => setUsername(e.target.value)}
-                                            onFocus={() => setFocused('username')}
-                                            onBlur={() => setFocused('')}
-                                            required
-                                            className="flex-1 border-none bg-transparent py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
-                                        />
+                            <form onSubmit={handleSignup} className="space-y-3.5">
+                                {errors.server && (
+                                    <div className="p-2.5 rounded-[10px] bg-red-50 text-red-500 text-[11px] font-medium border border-red-100 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                        {errors.server}
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    {/* Full Name */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[11px] font-bold text-[#0F1C4D] tracking-[.3px] uppercase">Full Name</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="John Doe"
+                                                value={username}
+                                                onChange={(e) => { setUsername(e.target.value); if(errors.username) delete errors.username; }}
+                                                className={`w-full pl-9 pr-3 py-2 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-all duration-200 placeholder:text-slate-400
+                                                    ${errors.username ? 'border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                                            />
+                                            <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        </div>
+                                        {errors.username && <p className="text-[10px] text-red-500 font-medium mt-0.5">{errors.username}</p>}
+                                    </div>
+
+                                    {/* Account Type */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[11px] font-bold text-[#0F1C4D] tracking-[.3px] uppercase">I am a</label>
+                                        <select
+                                            value={role}
+                                            onChange={(e) => setRole(e.target.value)}
+                                            className="w-full px-3 py-2 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none focus:border-blue-500 transition-all duration-200 cursor-pointer appearance-none"
+                                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundPosition: 'right 10px center', backgroundRepeat: 'no-repeat' }}
+                                        >
+                                            <option value="Student">Student</option>
+                                            <option value="Admin">Admin</option>
+                                        </select>
                                     </div>
                                 </div>
 
+                                {/* Email */}
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-semibold text-gray-700 tracking-wide">Email Address</label>
-                                    <div className={`flex items-center gap-2.5 border-1.5 rounded-xl px-3.5 py-0.5 bg-[#FAFBFF] transition-all duration-200 ${focused === 'email' ? 'border-[#1A56DB] shadow-[0_0_0_3px_rgba(26,86,219,0.1)] bg-white' : 'border-gray-300'}`}>
-                                        <svg className="text-gray-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <rect x="2" y="4" width="20" height="16" rx="2"/>
-                                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                                        </svg>
+                                    <label className="text-[11px] font-bold text-[#0F1C4D] tracking-[.3px] uppercase">Email Address</label>
+                                    <div className="relative">
                                         <input
                                             type="email"
                                             placeholder="john@example.com"
                                             value={email}
-                                            onChange={e => setEmail(e.target.value)}
-                                            onFocus={() => setFocused('email')}
-                                            onBlur={() => setFocused('')}
-                                            required
-                                            className="flex-1 border-none bg-transparent py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                                            onChange={(e) => { setEmail(e.target.value); if(errors.email) delete errors.email; }}
+                                            className={`w-full pl-9 pr-3 py-2 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-all duration-200 placeholder:text-slate-400
+                                                ${errors.email ? 'border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
                                         />
+                                        <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     </div>
+                                    {errors.email && <p className="text-[10px] text-red-500 font-medium mt-0.5">{errors.email}</p>}
                                 </div>
 
+                                {/* Password */}
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-semibold text-gray-700 tracking-wide">Password</label>
-                                    <div className={`flex items-center gap-2.5 border-1.5 rounded-xl px-3.5 py-0.5 bg-[#FAFBFF] transition-all duration-200 ${focused === 'password' ? 'border-[#1A56DB] shadow-[0_0_0_3px_rgba(26,86,219,0.1)] bg-white' : 'border-gray-300'}`}>
-                                        <svg className="text-gray-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                        </svg>
+                                    <label className="text-[11px] font-bold text-[#0F1C4D] tracking-[.3px] uppercase">Password</label>
+                                    <div className="relative">
                                         <input
-                                            type="password"
-                                            placeholder="Create a strong password"
+                                            type={showPass ? 'text' : 'password'}
+                                            placeholder="Min. 8 characters"
                                             value={password}
-                                            onChange={e => setPassword(e.target.value)}
-                                            onFocus={() => setFocused('password')}
-                                            onBlur={() => setFocused('')}
-                                            required
-                                            className="flex-1 border-none bg-transparent py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                                            onChange={(e) => { setPassword(e.target.value); if(errors.password) delete errors.password; }}
+                                            className={`w-full pl-9 pr-9 py-2 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-all duration-200 placeholder:text-slate-400
+                                                ${errors.password ? 'border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
                                         />
+                                        <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowPass(!showPass)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                                        >
+                                            {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        </button>
                                     </div>
-                                    <p className="text-xs text-gray-400 mt-0.5">Must be at least 8 characters</p>
+                                    {errors.password && <p className="text-[10px] text-red-500 font-medium mt-0.5">{errors.password}</p>}
                                 </div>
 
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-semibold text-gray-700 tracking-wide">Account Type</label>
-                                    <select
-                                        value={role}
-                                        onChange={e => setRole(e.target.value)}
-                                        className="w-full py-3 px-4 border-2 border-gray-300 rounded-xl font-sans text-sm outline-none bg-[#FAFBFF] focus:border-[#1A56DB] transition-all"
+                                <div className="pt-3">
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.3)] hover:shadow-[0_10px_28px_rgba(34,85,210,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
                                     >
-                                        <option value="Student">Student</option>
-                                        <option value="Admin">Admin</option>
-                                    </select>
+                                        {loading ? (
+                                            <>
+                                                <Loader2 size={16} className="animate-spin" />
+                                                Creating account...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Get Started <ArrowRight size={16} />
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className={`mt-4 bg-gradient-to-br from-[#1A56DB] to-[#3B82F6] text-white py-3.5 px-6 rounded-xl text-base font-semibold cursor-pointer tracking-tight shadow-md transition-all duration-200 ease-in-out hover:filter hover:brightness-105 hover:-translate-y-px active:translate-y-0 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
-                                >
-                                    {loading ? (
-                                        <span className="inline-flex items-center justify-center gap-2">
-                                            <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                                                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                                            </svg>
-                                            Creating account…
-                                        </span>
-                                    ) : 'Create Account →'}
-                                </button>
+                                
+                                <p className="text-center text-[10.5px] text-slate-400 mt-4 px-4 leading-relaxed">
+                                    By clicking "Get Started", you agree to our 
+                                    <a href="#" className="text-blue-600 font-semibold mx-1 hover:underline">Terms</a> 
+                                    and 
+                                    <a href="#" className="text-blue-600 font-semibold mx-1 hover:underline">Privacy</a>.
+                                </p>
                             </form>
-
-                            <div className="flex items-center gap-3 my-6">
-                                <span className="flex-1 h-px bg-gray-200"></span>
-                                <span className="text-sm text-gray-400 font-medium">or</span>
-                                <span className="flex-1 h-px bg-gray-200"></span>
-                            </div>
-
-                            <p className="text-center text-sm text-gray-600">
-                                Already have an account?{' '}
-                                <Link to="/login" className="text-[#1A56DB] font-semibold no-underline">Sign In</Link>
-                            </p>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </>
     );

@@ -21,6 +21,13 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Username))
+            return BadRequest(new { message = "Username is required." });
+
+        // Regex: Only letters and spaces
+        if (!System.Text.RegularExpressions.Regex.IsMatch(request.Username, @"^[a-zA-Z\s]+$"))
+            return BadRequest(new { message = "Full name can only contain alphabetic characters." });
+
         var user = new User
         {
             Username = request.Username,

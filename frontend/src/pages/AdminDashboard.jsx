@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import {
   LayoutDashboard, Users, ShieldAlert, BookOpen, LogOut,
   Activity, MoreHorizontal, Filter, Search, TrendingUp,
-  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send,
+  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send, Heart,
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
@@ -14,6 +14,7 @@ import {
 import UserManagement  from './UserManagement';
 import SafetyApprovals from './SafetyApprovals';
 import ResourceManager from './ResourceManager';
+import WellbeingAdminPanel from './WellbeingAdminPanel';
 
 /* ─── constants ──────────────────────────────────────────────── */
 const PIE_COLORS  = ['#2255D2', '#4A70F5', '#93B4FF'];
@@ -57,6 +58,7 @@ const navItems = [
   { id: 'User Management',  icon: <Users           size={14} />, section: 'General' },
   { id: 'Safety Approvals', icon: <ShieldAlert     size={14} />, section: 'General' },
   { id: 'Resource Manager', icon: <BookOpen        size={14} />, section: 'General' },
+  { id: 'Digital Wellbeing',icon: <Heart           size={14} />, section: 'General' },
   { id: 'System Health',    icon: <Activity        size={14} />, section: 'Other'   },
 ];
 
@@ -273,6 +275,92 @@ const AdminDashboard = () => {
     </div>
   );
 
+  /* ── system health content ── */
+  const SystemHealthContent = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-6">
+        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-6 flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+            <Activity className="text-emerald-500" size={32} />
+          </div>
+          <h3 className="text-lg font-700 text-[#0F1C4D] mb-1">Overall Status</h3>
+          <p className="text-sm text-slate-400 mb-4">Operational</p>
+          <div className="serif-heading text-4xl text-emerald-600 italic">{stats.systemHealth}</div>
+        </div>
+
+        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-6">
+          <h3 className="text-[13px] font-700 text-[#0F1C4D] mb-4">Service Status</h3>
+          <div className="space-y-4">
+            {[
+              { name: 'API Server', status: 'Healthy', color: 'text-emerald-500' },
+              { name: 'Database (MongoDB)', status: 'Connected', color: 'text-emerald-500' },
+              { name: 'Storage Service', status: 'Healthy', color: 'text-emerald-500' },
+              { name: 'Auth Provider', status: 'Healthy', color: 'text-emerald-500' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-[12.5px] text-slate-600">{s.name}</span>
+                <span className={`text-[11px] font-700 uppercase tracking-wider ${s.color}`}>{s.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-6">
+          <h3 className="text-[13px] font-700 text-[#0F1C4D] mb-4">Latency & Load</h3>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px] font-600 text-slate-400">
+                <span>Server Load</span>
+                <span>24%</span>
+              </div>
+              <div className="h-1.5 bg-[#F0F4FF] rounded-full overflow-hidden">
+                <div className="h-full bg-blue-500 w-[24%] rounded-full" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px] font-600 text-slate-400">
+                <span>Memory Usage</span>
+                <span>42%</span>
+              </div>
+              <div className="h-1.5 bg-[#F0F4FF] rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-500 w-[42%] rounded-full" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px] font-600 text-slate-400">
+                <span>API Latency</span>
+                <span>12ms</span>
+              </div>
+              <div className="h-1.5 bg-[#F0F4FF] rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 w-[15%] rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-[#E8EEFF] rounded-2xl p-6">
+        <h3 className="text-[13.5px] font-700 text-[#0F1C4D] mb-4">System Event Log</h3>
+        <div className="space-y-0 border-t border-[#E8EEFF]">
+          {[
+            { time: '10:45 AM', event: 'System backup completed successfully', type: 'info' },
+            { time: '09:12 AM', event: 'New security patch applied to auth module', type: 'security' },
+            { time: '08:00 AM', event: 'Daily maintenance cycle finished', type: 'info' },
+            { time: 'Yesterday', event: 'Database scaling triggered by high traffic', type: 'system' },
+          ].map((log, i) => (
+            <div key={i} className="py-3 border-b border-[#E8EEFF] last:border-b-0 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-[11px] font-600 text-slate-400 w-20">{log.time}</span>
+                <span className="text-[12.5px] text-[#0F1C4D]">{log.event}</span>
+              </div>
+              <span className="text-[10px] font-700 uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">{log.type}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   /* ── render content ── */
   const tabIcons = {
     'Analytics': <TrendingUp className="text-blue-500" size={20} />,
@@ -284,11 +372,14 @@ const AdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'Analytics':        return <AnalyticsContent />;
-      case 'User Management':  return <UserManagement />;
-      case 'Safety Approvals': return <SafetyApprovals />;
-      case 'Resource Manager': return <ResourceManager />;
-      default:                 return <div className="text-slate-400 text-sm mt-10 text-center">Coming Soon…</div>;
+
+      case 'Analytics':         return <AnalyticsContent />;
+      case 'User Management':   return <UserManagement />;
+      case 'Safety Approvals':  return <SafetyApprovals />;
+      case 'Resource Manager':  return <ResourceManager />;
+      case 'Digital Wellbeing': return <WellbeingAdminPanel />;
+      default:                  return <div className="text-slate-400 text-sm mt-10 text-center">Coming Soon…</div>;
+
     }
   };
 

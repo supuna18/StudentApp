@@ -14,6 +14,7 @@ const ChatPage = () => {
     const [selectedFile, setSelectedFile] = useState(null); // Attachment state
     const [loading, setLoading] = useState(true);
     const [connection, setConnection] = useState(null);
+    const [status, setStatus] = useState("Connecting..."); // Added status tracking
     const chatEndRef = useRef(null);
 
     const token = localStorage.getItem('token');
@@ -28,6 +29,7 @@ const ChatPage = () => {
             userEmail = (identity && !identity.includes('@')) ? `${identity.toLowerCase()}@gmail.com` : identity;
         } catch (e) { }
     }
+    if (!userEmail) userEmail = "Anonymous_User"; // Safe fallback
 
     const scrollToBottom = () => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
 
@@ -82,8 +84,10 @@ const ChatPage = () => {
     useEffect(() => {
         if (connection) {
             connection.start().then(() => {
+                setStatus("Connected"); // Live status
                 connection.invoke("JoinGroup", groupId);
-                // Real-time message listener (vith 6 parameters matching backend)
+                
+                // Real-time message listener
                 connection.on("ReceiveMessage", (user, message, time, fileData, fileName, fileType) => {
                     setMessages(prev => [...prev, { 
                         user, message, 
@@ -92,20 +96,37 @@ const ChatPage = () => {
                     }]);
                     scrollToBottom();
                 });
-            }).catch(e => console.log("SignalR error", e));
+            }).catch(e => {
+                setStatus("Connection Failed");
+                console.error("SignalR Connection Error:", e);
+            });
+
+            connection.onreconnecting(() => setStatus("Reconnecting..."));
+            connection.onreconnected(() => setStatus("Connected"));
+            connection.onclose(() => setStatus("Disconnected"));
         }
-    }, [connection]);
+    }, [connection, groupId]);
 
     const sendMessage = async (e) => {
         e.preventDefault();
-        if (connection && (newMessage.trim() || selectedFile)) {
+        
+        // Guard for connection and required IDs
+        if (connection && groupId && (newMessage.trim() || selectedFile)) {
             try {
+                console.log(`Sending message to group: ${groupId} as ${userEmail}`); // Added trace logging
+                
                 // Invoke backend SendMessage with all attachment fields
                 await connection.invoke("SendMessage", groupId, userEmail, newMessage, 
                     selectedFile?.data || null, selectedFile?.name || null, selectedFile?.type || null);
+                
                 setNewMessage("");
                 setSelectedFile(null);
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("SendMessage Invocation Error:", err); 
+                setStatus("Send Failed");
+            }
+        } else if (!groupId) {
+            console.error("Critical Error: GroupId is missing!");
         }
     };
 
@@ -119,7 +140,15 @@ const ChatPage = () => {
             <div className="flex-1 flex flex-col bg-white shadow-xl">
                 <div className="p-6 border-b border-slate-100 flex items-center gap-4 shadow-sm z-10 bg-white">
                     <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400"><ArrowLeft size={20}/></button>
-                    <div><h2 className="text-xl font-black uppercase">{group?.groupName}</h2><p className="text-[10px] font-bold text-indigo-500 uppercase flex items-center gap-1 tracking-widest"><ShieldCheck size={12}/> Academic Discussion Hub</p></div>
+                    <div>
+                        <h2 className="text-xl font-black uppercase">{group?.groupName}</h2>
+                        <div className="flex items-center gap-3">
+                            <p className="text-[10px] font-bold text-indigo-500 uppercase flex items-center gap-1 tracking-widest"><ShieldCheck size={12}/> Academic Discussion Hub</p>
+                            <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase ${status === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600 animate-pulse'}`}>
+                                ● {status}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/40 custom-scroll">

@@ -1,217 +1,252 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { Eye, EyeOff, Check } from 'lucide-react';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showPass, setShowPass] = useState(false);
-    const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const navigate = useNavigate();
+  const [email,         setEmail]         = useState('');
+  const [password,      setPassword]      = useState('');
+  const [loading,       setLoading]       = useState(false);
+  const [showPass,      setShowPass]      = useState(false);
+  const [emailError,    setEmailError]    = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const navigate = useNavigate();
 
-    // --- FIX 1: ලොග් වෙලා ඉන්න යූසර්ව පන්නන ලොජික් එක (Forward Arrow ප්‍රශ්නයට) ---
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const decoded = jwtDecode(token);
-                const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-                navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });
-            } catch (e) {
-                localStorage.removeItem('token');
-            }
-        }
-    }, [navigate]);
+  /* ── redirect already-logged-in users ── */
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded  = jwtDecode(token);
+        const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+        navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });
+      } catch {
+        localStorage.removeItem('token');
+      }
+    }
+  }, [navigate]);
 
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email) return 'Email field cannot be empty.';
-        if (!emailRegex.test(email)) return 'Please enter a valid email address.';
-        return '';
-    };
+  /* ── validation ── */
+  const validateEmail = (v) => {
+    if (!v) return 'Email field cannot be empty.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Please enter a valid email address.';
+    return '';
+  };
+  const validatePassword = (v) => {
+    if (!v) return 'Password field cannot be empty.';
+    if (v.length < 8) return 'Password must be at least 8 characters long.';
+    return '';
+  };
 
-    const validatePassword = (password) => {
-        if (!password) return 'Password field cannot be empty.';
-        if (password.length < 8) return 'Password must be at least 8 characters long.';
-        return '';
-    };
+  /* ── submit ── */
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    if (eErr || pErr) return;
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        const emailErr = validateEmail(email);
-        const passErr = validatePassword(password);
-        setEmailError(emailErr);
-        setPasswordError(passErr);
+    setLoading(true);
+    try {
+      const res  = await fetch('http://localhost:5005/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        const decoded  = jwtDecode(data.token);
+        const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+        const username = decoded.unique_name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'User';
+        localStorage.setItem('username', username);
+        localStorage.setItem('role', userRole);
+        navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });
+      } else {
+        alert(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      console.error('Login Error:', err);
+      alert('An error occurred during login. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (emailErr || passErr) return;
+  const features = [
+    'Personalized learning paths',
+    'Live instructor sessions',
+    'Track your progress',
+  ];
 
-        setLoading(true);
-        try {
-            const res = await fetch('http://localhost:5005/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('token', data.token);
-                const decoded = jwtDecode(data.token);
-                
-                // Store username and role for other components to use
-                const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-                const username = decoded.unique_name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'User';
-                
-                localStorage.setItem('username', username);
-                localStorage.setItem('role', userRole);
-                
-                // replace: true මගින් history එකෙන් ලොගින් පේජ් එක මකනවා
-                navigate(userRole === 'Admin' ? '/admin-dashboard' : '/student-dashboard', { replace: true });
-            } else {
-                alert(data.message || 'Login failed. Please check your credentials.');
-            }
-        } catch (err) {
-            console.error('Login Error:', err);
-            alert('An error occurred during login. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const stats = [
+    { val: '50', suffix: 'K+', label: 'Students'     },
+    { val: '200', suffix: '+', label: 'Courses'      },
+    { val: '98',  suffix: '%', label: 'Satisfaction' },
+  ];
 
-    return (
-        <>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Lora:ital,wght@1,600&display=swap');
-                *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-                :root {
-                    --violet: #6C5CE7; --violet-dark: #5649C0; --violet-lt: #8B7FF0;
-                    --violet-dim: rgba(108,92,231,0.12); --teal: #00CEC9; --coral: #FF7675;
-                    --white: #FFFFFF; --bg-page: #7B6FE8; --bg-card: #F8F9FF;
-                    --text: #2D3436; --text-soft: #636E72; --text-muted: #A0A8B8;
-                    --border: #E8EAF6; --border-foc: #6C5CE7; --field-bg: #FFFFFF;
-                    --sans: 'Plus Jakarta Sans', system-ui, sans-serif; --serif: 'Lora', Georgia, serif;
-                    --ease: cubic-bezier(0.22, 1, 0.36, 1);
-                }
-                html, body, #root { width: 100%; height: 100%; font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow: hidden; }
-                @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-                @keyframes floatIllo { 0%, 100% { transform: translateY(0px) rotate(0deg); } 33% { transform: translateY(-10px) rotate(0.5deg); } 66% { transform: translateY(-5px) rotate(-0.5deg); } }
-                @keyframes floatShard { 0%, 100% { transform: translateY(0) rotate(var(--r,0deg)); } 50% { transform: translateY(var(--d,-12px)) rotate(var(--r,0deg)); } }
-                @keyframes spin { to { transform: rotate(360deg); } }
-            `}</style>
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap');
+        .login-root { font-family: 'DM Sans', sans-serif; }
+        .serif-heading { font-family: 'DM Serif Display', serif; }
+      `}</style>
 
-            <div className="min-h-screen w-full flex items-center justify-center p-7 relative overflow-hidden bg-gradient-to-br from-[#8B7FF0] via-[#6C5CE7] to-[#5649C0]">
-                <div className="absolute inset-0 bg-radial-gradient-circle bg-[length:28px_28px] from-[rgba(255,255,255,0.12)] to-transparent z-0"></div>
-                
-                {/* BG blobs */}
-                <div className="absolute rounded-full filter blur-lg pointer-events-none z-0 w-[420px] h-[420px] top-[-160px] left-[-120px] bg-purple-400 opacity-55"></div>
-                <div className="absolute rounded-full filter blur-lg pointer-events-none z-0 w-[340px] h-[340px] bottom-[-120px] right-[-80px] bg-purple-700 opacity-50"></div>
+      {/* ── Page background: full-screen, no padding gaps ── */}
+      <div className="login-root w-screen h-screen flex items-center justify-center bg-[#2255D2] overflow-hidden">
 
-                <div className="relative z-10 w-full max-w-[1000px] h-[calc(100vh-56px)] rounded-2xl bg-[#F8F9FF] shadow-xl flex flex-col overflow-hidden animate-fadeUp">
-                    
-                    {/* Top bar */}
-                    <div className="sticky top-0 left-0 right-0 h-16 flex items-center justify-between px-8 z-10 bg-[rgba(248,249,255,0.95)] border-b border-[rgba(108,92,231,0.08)] backdrop-blur-sm">
-                        <div className="flex items-center gap-2.5">
-                            <div className="flex items-center gap-1">
-                                <div className="w-1.5 h-1.5 bg-[#8B7FF0] transform rotate-45 rounded-sm mr-px"></div>
-                                <div className="w-2 h-2 bg-[#6C5CE7] transform rotate-45 rounded-sm"></div>
-                                <div className="w-1.5 h-1.5 bg-[#8B7FF0] transform rotate-45 rounded-sm ml-px"></div>
-                            </div>
-                            <span className="text-sm font-extrabold tracking-wider uppercase text-[#6C5CE7]">EduSync</span>
-                        </div>
-                        <div className="flex items-center gap-3.5">
-                            <span className="text-sm font-normal text-[#636E72] hidden sm:block">Don't have an account?</span>
-                            <Link to="/signup" className="py-2 px-4 rounded-full border-2 border-[#2D3436] text-xs font-bold tracking-wide transition-all duration-200 hover:bg-[#2D3436] hover:text-white">
-                                SIGN UP
-                            </Link>
-                        </div>
-                    </div>
+        {/* ── Card shell ── */}
+        <div className="w-full max-w-[980px] h-full max-h-[600px] mx-6 bg-white rounded-[20px] shadow-[0_32px_80px_rgba(15,28,77,0.22)] flex overflow-hidden">
 
-                    <div className="flex flex-1 overflow-y-auto md:flex-row flex-col">
-                        {/* Left illustration */}
-                        <div className="w-full md:w-[46%] flex-shrink-0 flex items-center justify-center p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-white via-[#F0F1FF] to-[#EAE9FF] border-b md:border-b-0 md:border-r border-gray-200">
-                            {/* Floating shards */}
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className="absolute rounded-md animate-floatShard opacity-55" style={{ 
-                                    width: i%2===0?'18px':'12px', height: i%2===0?'18px':'12px', 
-                                    top: `${10+i*12}%`, left: `${10+i*15}%`, 
-                                    background: i%3===0?'#8B7FF0':i%3===1?'#00CEC9':'#FF7675',
-                                    '--r': `${i*20}deg`, '--d': '-12px' 
-                                }}></div>
-                            ))}
+          {/* ══════════ LEFT PANEL ══════════ */}
+          <div className="relative w-[46%] flex-shrink-0 flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
 
-                            <div className="animate-floatIllo w-full max-w-[340px] md:max-w-[250px]">
-                                <svg className="w-full h-auto" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <ellipse cx="170" cy="285" rx="110" ry="12" fill="rgba(108,92,231,0.10)" />
-                                    <rect x="60" y="50" width="180" height="140" rx="10" fill="#D9D6FF" />
-                                    <rect x="60" y="50" width="180" height="28" rx="10" fill="#B8B4F5" />
-                                    <circle cx="200" cy="115" r="28" fill="#E8E6FF" />
-                                    <rect x="188" y="168" width="52" height="62" rx="10" fill="#00CEC9" />
-                                    <circle cx="95" cy="178" r="24" fill="#00CEC9" />
-                                    <polyline points="84,178 92,186 108,168" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                                    <rect x="110" y="200" width="72" height="56" rx="8" fill="#FF7675" />
-                                    <rect x="152" y="195" width="60" height="72" rx="8" fill="white" />
-                                </svg>
-                            </div>
-                        </div>
+            {/* Ambient orbs */}
+            <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-blue-500/[0.08] blur-[80px] pointer-events-none" />
+            <div className="absolute bottom-[-40px] left-[-40px] w-[200px] h-[200px] rounded-full bg-blue-400/[0.07] blur-[60px] pointer-events-none" />
 
-                        {/* Right form */}
-                        <div className="flex-1 flex items-center justify-center p-8 md:p-12 relative">
-                            <div className="w-full max-w-sm">
-                                <h2 className="text-3xl font-extrabold text-[#2D3436] tracking-tight mb-1 leading-tight md:text-2xl italic">Welcome to EduSync!</h2>
-                                <p className="text-sm font-normal text-[#A0A8B8] mb-8 md:mb-6">Sign in to your account</p>
-
-                                <form onSubmit={handleLogin}>
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-semibold text-[#2D3436] mb-2">Email</label>
-                                        <input
-                                            type="email"
-                                            className={`w-full py-3 px-4 border-2 rounded-lg font-sans text-sm outline-none transition-all duration-200 ${emailError ? 'border-[#FF7675]' : 'border-[#E8EAF6] focus:border-[#6C5CE7]'}`}
-                                            value={email}
-                                            onChange={e => { setEmail(e.target.value); setEmailError(''); }}
-                                            required
-                                        />
-                                        {emailError && <p className="text-[#FF7675] text-xs mt-1.5">{emailError}</p>}
-                                    </div>
-
-                                    <div className="mb-5">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <label className="block text-sm font-semibold text-[#2D3436]">Password</label>
-                                            <Link to="/forgot-password" className="text-xs font-semibold text-[#6C5CE7] hover:text-[#5649C0] transition-colors relative after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#5649C0] after:transition-all hover:after:w-full">
-                                                Forgot password?
-                                            </Link>
-                                        </div>
-                                        <div className="relative">
-                                            <input
-                                                type={showPass ? 'text' : 'password'}
-                                                className={`w-full py-3 px-4 pr-11 border-2 rounded-lg font-sans text-sm outline-none transition-all duration-200 ${passwordError ? 'border-[#FF7675]' : 'border-[#E8EAF6] focus:border-[#6C5CE7]'}`}
-                                                value={password}
-                                                onChange={e => { setPassword(e.target.value); setPasswordError(''); }}
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#A0A8B8] hover:text-[#6C5CE7] transition-colors"
-                                                onClick={() => setShowPass(p => !p)}
-                                            >
-                                                {showPass ? '👁️' : '🔒'}
-                                            </button>
-                                        </div>
-                                        {passwordError && <p className="text-[#FF7675] text-xs mt-1.5">{passwordError}</p>}
-                                    </div>
-
-                                    <button type="submit" className="w-full py-3.5 border-none rounded-full bg-gradient-to-br from-[#5649C0] via-[#6C5CE7] to-[#8B7FF0] text-white font-bold tracking-tight shadow-md hover:shadow-lg transition-all duration-150 transform hover:-translate-y-0.5 mt-6 mb-7 disabled:opacity-65" disabled={loading}>
-                                        {loading ? 'Processing...' : 'Login'}
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* Brand */}
+            <div className="flex items-center gap-2.5 mb-auto relative z-10">
+              <div className="w-[30px] h-[30px] bg-blue-600 rounded-[8px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.28)] flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <span className="serif-heading text-[16px] text-[#0F1C4D] italic">EduSync</span>
             </div>
-        </>
-    );
+
+            {/* Hero text */}
+            <div className="relative z-10 mb-7">
+              <h2 className="serif-heading text-[clamp(26px,3vw,38px)] text-[#0F1C4D] leading-[1.12] font-normal">
+                Start your<br />
+                <em className="text-blue-600 not-italic italic">learning journey</em><br />
+                today.
+              </h2>
+              <p className="text-[13px] text-slate-400 mt-3 leading-[1.65] max-w-[280px]">
+                Join thousands of students already achieving their goals with EduSync.
+              </p>
+            </div>
+
+            {/* Feature list */}
+            <div className="flex flex-col gap-2.5 relative z-10 mb-7">
+              {features.map((f) => (
+                <div key={f} className="flex items-center gap-2.5 text-[12.5px] font-medium text-[#4A5570]">
+                  <div className="w-[22px] h-[22px] rounded-[7px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
+                    <Check size={11} className="text-blue-600" strokeWidth={2.5} />
+                  </div>
+                  {f}
+                </div>
+              ))}
+            </div>
+
+            {/* Stats strip */}
+            <div className="flex items-center border-t border-[#E8EEFF] pt-5 relative z-10">
+              {stats.map((s, i) => (
+                <div key={i} className={`flex-1 text-center ${i > 0 ? 'border-l border-[#E8EEFF]' : ''}`}>
+                  <div className="text-[18px] font-extrabold text-[#0F1C4D] tracking-tight leading-none">
+                    {s.val}<span className="text-blue-600">{s.suffix}</span>
+                  </div>
+                  <div className="text-[9.5px] font-bold tracking-[1.5px] uppercase text-slate-400 mt-1">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ══════════ RIGHT PANEL ══════════ */}
+          <div className="flex-1 flex flex-col px-10 py-8">
+
+            {/* Top nav */}
+            <div className="flex items-center justify-end mb-8">
+              <span className="text-[12.5px] text-slate-400 mr-3">Don't have an account?</span>
+              <Link
+                to="/signup"
+                className="px-5 py-2 rounded-full border-[1.5px] border-[#0F1C4D] text-[11.5px] font-bold tracking-[.5px] uppercase text-[#0F1C4D] hover:bg-[#0F1C4D] hover:text-white transition-all duration-200"
+              >
+                Sign Up
+              </Link>
+            </div>
+
+            {/* Form area */}
+            <div className="flex-1 flex flex-col justify-center max-w-[320px]">
+              <h1 className="serif-heading text-[26px] text-[#0F1C4D] italic leading-tight mb-1.5">Welcome back!</h1>
+              <p className="text-[12.5px] text-slate-400 mb-7">Sign in to your EduSync account</p>
+
+              <form onSubmit={handleLogin}>
+
+                {/* Email */}
+                <div className="flex flex-col gap-1.5 mb-4">
+                  <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                    className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-colors duration-150 placeholder:text-slate-400
+                      ${emailError ? 'border-red-400 focus:border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                    style={{ fontFamily: 'DM Sans' }}
+                    required
+                  />
+                  {emailError && <p className="text-[10.5px] text-red-500 mt-0.5">{emailError}</p>}
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-1.5 mb-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Password</label>
+                    <Link to="/forgot-password" className="text-[11.5px] font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
+                      className={`w-full pl-3.5 pr-10 py-2.5 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-colors duration-150 placeholder:text-slate-400
+                        ${passwordError ? 'border-red-400 focus:border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                      style={{ fontFamily: 'DM Sans' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass((p) => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                    >
+                      {showPass ? <EyeOff size={15} strokeWidth={2} /> : <Eye size={15} strokeWidth={2} />}
+                    </button>
+                  </div>
+                  {passwordError && <p className="text-[10.5px] text-red-500 mt-0.5">{passwordError}</p>}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.35)] hover:shadow-[0_10px_28px_rgba(34,85,210,0.4)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                  style={{ fontFamily: 'DM Sans' }}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+                      </svg>
+                      Signing in…
+                    </span>
+                  ) : 'Sign In →'}
+                </button>
+
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Login;
