@@ -33,7 +33,11 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WellbeingService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 // CORS Policy (Allow all for now - restrict in production)
 builder.Services.AddCors(options =>
@@ -96,8 +100,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Diagnostic Heart-beat
+app.MapGet("/api/pulse", () => "Server is ALIVE 🚀");
+
 // SignalR Hub
 app.MapHub<ChatHub>("/chatHub");
 
 // Run application
-app.Run("http://0.0.0.0:8080");
+app.Run("http://0.0.0.0:5005");

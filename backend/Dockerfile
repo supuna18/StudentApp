@@ -9,8 +9,8 @@ RUN dotnet restore
 # 3. ඉතිරි කෝඩ් ඔක්කොම කොපි කරනවා
 COPY . .
 
-# 4. Port එක විවෘත කරනවා (Container එක ඇතුළේ 8080)
-EXPOSE 8080
+# 4. Port එක විවෘත කරනවා (Container එක ඇතුළේ 5005)
+EXPOSE 5005
 
 # 5. මෙන්න මැජික් එක - කෝඩ් එක වෙනස් වෙද්දී ඔටෝ බිල්ඩ් වෙන විධානය
-CMD ["dotnet", "watch", "run", "--urls", "http://+:8080"]
+CMD ["dotnet", "watch", "run", "--urls", "http://+:5005"]

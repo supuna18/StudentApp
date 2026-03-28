@@ -4,7 +4,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         const checkUrl = tab.url;
 
 
-        fetch(`http://localhost:5005/api/safety/check-url?url=${encodeURIComponent(checkUrl)}`)
+        fetch(`http://127.0.0.1:5005/api/safety/check-url?url=${encodeURIComponent(checkUrl)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.unsafeSite) {
