@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MongoDB.Driver;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,11 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WellbeingService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 // CORS Policy (Allow all for now - restrict in production)
 builder.Services.AddCors(options =>
@@ -80,13 +85,26 @@ app.UseMiddleware<ExceptionMiddleware>();
 // Enable CORS
 app.UseCors("AllowAll");
 
+// Serve Static Files for Uploads
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/Uploads"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
+// Diagnostic Heart-beat
+app.MapGet("/api/pulse", () => "Server is ALIVE 🚀");
+
 // SignalR Hub
 app.MapHub<ChatHub>("/chatHub");
 
 // Run application
-app.Run("http://0.0.0.0:8080");
+app.Run("http://0.0.0.0:5005");

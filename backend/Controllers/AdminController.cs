@@ -82,6 +82,13 @@ public class AdminController : ControllerBase
         if (result) return Ok(new { message = "Safety report deleted!" });
         return NotFound(new { message = "Report not found" });
     }
+
+    [HttpGet("system-health")]
+    public async Task<IActionResult> GetSystemHealth()
+    {
+        var health = await _mongoService.GetSystemHealthAsync();
+        return Ok(health);
+    }
 }
 
 public class UpdateRoleRequest

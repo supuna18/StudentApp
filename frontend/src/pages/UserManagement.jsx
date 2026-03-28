@@ -34,7 +34,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5005/api/users', {
+            const res = await fetch('http://localhost:5005/api/admin/users', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

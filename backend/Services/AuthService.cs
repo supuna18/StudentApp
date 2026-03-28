@@ -66,4 +66,9 @@ public class AuthService
     {
         return await _mongoService.GetAllUsersAsync();
     }
+
+    public async Task<User?> GetUserByIdAsync(string userId)
+    {
+        return await _mongoService.GetUserByIdAsync(userId);
+    }
 }
