@@ -11,32 +11,28 @@ public class ChatHub : Hub
 
     public ChatHub(MongoService mongoService)
     {
-        // MongoService-la namba add panna ChatHistory collection-ah initialize pannurom
         _chats = mongoService.ChatHistory;
     }
 
-    // 1. Group-kulla enter aagumbodhu andha specific group logic-ah connect pannurom
     public async Task JoinGroup(string groupId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
     }
 
-    // 2. Message anuppumbodhu: DB-la save pannittu broadcast pannuvom
-    public async Task SendMessage(string groupId, string user, string message)
+    public async Task SendMessage(string groupId, string user, string message, string? fileData = null, string? fileName = null, string? fileType = null)
     {
         var chatMsg = new ChatMessage
         {
             GroupId = groupId,
             SenderEmail = user,
             Message = message,
+            FileData = fileData,
+            FileName = fileName,
+            FileType = fileType,
             Timestamp = DateTime.UtcNow
         };
 
-        // --- WHATSAPP LOGIC: SAVE TO MONGODB ---
         await _chats.InsertOneAsync(chatMsg);
-
-        // --- BROADCAST: Send to everyone in the group ---
-        // Inga namba Timestamp-ahyum sethu anuppurom, appo thaan real-time-la time kaatta mudiyum
-        await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp);
+        await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp, fileData, fileName, fileType);
     }
 }
