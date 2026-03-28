@@ -35,4 +35,4 @@ public class ChatHub : Hub
         await _chats.InsertOneAsync(chatMsg);
         await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp, fileData, fileName, fileType);
     }
-}
+}``
