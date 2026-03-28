@@ -114,11 +114,11 @@ const ExerciseCard = ({ exercise, onSelect }) => (
     <div className={`absolute top-0 left-0 w-2 h-full ${exercise.accent}`} />
     <div className="relative z-10">
       <h3 className="text-xl font-black text-slate-800 mb-1">{exercise.name}</h3>
-      <p className="text-xs font-black tracking-widest text-slate-400 uppercase mb-1">{exercise.pattern}</p>
+      <p className="text-xs font-black tracking-widest text-slate-500 uppercase mb-1">{exercise.pattern}</p>
       <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{exercise.desc}</p>
     </div>
     
-    <div className="relative z-10 flex items-center justify-between text-slate-400">
+    <div className="relative z-10 flex items-center justify-between text-slate-500">
       <span className="text-[10px] font-black uppercase tracking-widest">Digital Focus</span>
       <Settings size={16} className="group-hover:rotate-90 transition-transform duration-500" />
     </div>
@@ -179,13 +179,13 @@ const BreathingTimer = ({ exercise, onBack }) => {
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center min-h-[600px] w-full"
     >
-      <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors group">
-        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" /> <span className="font-bold uppercase tracking-widest text-xs">Back to Hub</span>
+      <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-slate-800 hover:text-blue-600 transition-colors group z-20">
+        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" /> <span className="font-black uppercase tracking-widest text-[10px]">Back to Hub</span>
       </button>
  
-      <div className="text-center mb-12">
+      <div className="text-center mb-12 drop-shadow-sm">
         <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-2">{exercise.name} <span className="text-blue-600">Sync</span></h2>
-        <p className="text-slate-400 font-black tracking-[0.2em] uppercase text-xs">{isActive ? currentPhase.type : exercise.desc}</p>
+        <p className="text-slate-600 font-black tracking-[0.2em] uppercase text-xs">{isActive ? currentPhase.type : exercise.desc}</p>
       </div>
 
       <div className="relative flex items-center justify-center w-80 h-80 mb-16">
@@ -232,16 +232,16 @@ const BreathingTimer = ({ exercise, onBack }) => {
         </motion.div>
       </div>
 
-      <div className="w-full max-w-sm flex flex-col gap-4">
+      <div className="w-full max-w-sm flex flex-col gap-6">
         {!isActive ? (
-          <button onClick={startSession} className="w-full py-5 bg-blue-600 rounded-[2rem] font-black text-white text-lg shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all uppercase tracking-widest">
-            {sessionTime < 300 ? 'RESUME SESSION' : 'ACTIVATE SESSION'}
+          <button onClick={startSession} className="w-full py-5 bg-blue-600 rounded-[2rem] font-black text-white text-lg shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] transform transition-all uppercase tracking-widest">
+            {sessionTime < 300 ? 'Resume Session' : 'Activate Session'}
           </button>
         ) : (
-          <button onClick={() => setIsActive(false)} className="w-full py-4 bg-slate-100 text-slate-600 rounded-[1.5rem] font-bold hover:bg-slate-200 transition-all border border-slate-200">PAUSE FOCUS</button>
+          <button onClick={() => setIsActive(false)} className="w-full py-4 bg-white/80 backdrop-blur-md text-slate-800 rounded-[1.5rem] font-black hover:bg-white transition-all border border-slate-200 shadow-lg">PAUSE FOCUS</button>
         )}
-        <div className="text-center text-slate-300 text-xs font-bold uppercase tracking-widest">
-           Total Focus: {formatTime(sessionTime)}
+        <div className="text-center text-slate-700 text-xs font-black uppercase tracking-[0.2em] drop-shadow-sm">
+           TOTAL FOCUS: {formatTime(sessionTime)}
         </div>
       </div>
     </motion.div>
@@ -260,7 +260,7 @@ const MindfulnessZone = () => {
           <Headphones size={24} />
         </div>
         <h3 className="text-xl font-black text-slate-800 mb-2">Immersion Beats</h3>
-        <p className="text-slate-400 text-sm mb-4">Curated focus sounds.</p>
+        <p className="text-slate-500 font-bold text-sm mb-4">Curated focus sounds.</p>
         <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">Explore Hub <ArrowUpRight size={14}/></div>
       </div>
       <div onClick={() => navigate('/student-dashboard/focus-games')} className="group p-8 rounded-[2.5rem] bg-white border border-slate-200 hover:border-purple-400 cursor-pointer shadow-sm hover:shadow-lg transition-all">
@@ -268,7 +268,7 @@ const MindfulnessZone = () => {
           <Target size={24} />
         </div>
         <h3 className="text-xl font-black text-slate-800 mb-2">Focus Vortex</h3>
-        <p className="text-slate-400 text-sm mb-4">Cognitive training games.</p>
+        <p className="text-slate-500 font-bold text-sm mb-4">Cognitive training games.</p>
         <div className="text-[10px] font-black text-purple-600 uppercase tracking-widest flex items-center gap-2">Enter Vortex <ArrowUpRight size={14}/></div>
       </div>
     </div>
@@ -281,11 +281,11 @@ const MindfulnessZone = () => {
       <div className="fixed inset-0 z-0 pointer-events-none">
         <video 
           autoPlay loop muted playsInline 
-          className="w-full h-full object-cover opacity-60"
+          className="w-full h-full object-cover opacity-50"
         >
           <source src="/sea.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-white/40 shadow-inner" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/50 to-white/90 backdrop-blur-[2px]" />
       </div>
 
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100 rounded-full blur-[120px] -mr-64 -mt-64 opacity-50" />
