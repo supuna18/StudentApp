@@ -121,18 +121,18 @@ const ReportSite = () => {
     };
 
     return (
-        <div className="relative w-full min-h-screen py-16 px-6 lg:px-12 overflow-hidden bg-slate-950 flex flex-col items-center justify-center">
+        <div className="relative w-full min-h-screen py-16 px-6 lg:px-12 overflow-hidden bg-slate-50 flex flex-col items-center justify-center">
             {/* Custom Background */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                 <motion.img 
                     initial={{ scale: 1.1, opacity: 0 }} 
                     animate={{ scale: 1.05, opacity: 1 }} 
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    src="/fake.jpg" 
-                    alt="Cyber Security Background" 
-                    className="w-full h-full object-cover opacity-60 blur-md"
+                    src="/smart.jpg" 
+                    alt="Security Guard Background" 
+                    className="w-full h-full object-cover opacity-50 blur-[4px]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/50 to-slate-950/90 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-white/70" />
             </div>
 
             <motion.div 
@@ -142,21 +142,21 @@ const ReportSite = () => {
                 className="relative z-10 w-full max-w-4xl space-y-10"
             >
                 {/* --- INPUT FORM --- */}
-                <div className="bg-slate-900/40 backdrop-blur-3xl p-8 lg:p-10 rounded-[2.5rem] shadow-2xl shadow-black/50 border border-white/10 relative overflow-hidden">
+                <div className="bg-white/90 backdrop-blur-xl p-8 lg:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200 border border-slate-100 relative overflow-hidden">
                     <div className="flex items-center space-x-4 mb-8 relative z-10">
-                        <div className="p-4 bg-gradient-to-br from-red-500/20 to-rose-500/5 border border-red-500/30 rounded-[1.5rem] text-3xl shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-[1.5rem] text-3xl shadow-sm text-blue-600">
                             <motion.span animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="block drop-shadow-lg">🛡️</motion.span>
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-white tracking-tight uppercase drop-shadow-sm">Security Guard</h2>
-                            <p className="text-[11px] text-red-300/80 font-black uppercase tracking-[0.2em] mt-1">Report Suspicious Content</p>
+                            <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase">Security Guard</h2>
+                            <p className="text-[11px] text-blue-500 font-black uppercase tracking-[0.2em] mt-1">Report Suspicious Content</p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                         <input 
                             type="url" placeholder="https://unsafe-link.com"
-                            className={`w-full p-5 bg-slate-950/60 border rounded-[1.5rem] text-white font-medium outline-none transition-all shadow-inner ${formErrors.url ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-700/50 focus:border-red-500/50'}`}
+                            className={`w-full p-5 bg-slate-50 border rounded-[1.5rem] text-slate-800 font-medium outline-none transition-all shadow-inner ${formErrors.url ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}`}
                             value={formData.url} onChange={(e) => setFormData({...formData, url: e.target.value})}
                         />
                         {formErrors.url && <p className="text-red-500 text-[10px] font-bold pl-2">{formErrors.url}</p>}
@@ -164,7 +164,7 @@ const ReportSite = () => {
                         <textarea 
                             placeholder="What makes this site suspicious? (Max 100)"
                             maxLength={100}
-                            className={`w-full p-5 bg-slate-950/60 border rounded-[1.5rem] h-32 outline-none text-white font-medium shadow-inner resize-none ${formErrors.reason ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-700/50 focus:border-red-500/50'}`}
+                            className={`w-full p-5 bg-slate-50 border rounded-[1.5rem] h-32 outline-none text-slate-800 font-medium shadow-inner resize-none ${formErrors.reason ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}`}
                             value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})}
                         />
                         <div className="flex justify-between px-2">
@@ -177,7 +177,7 @@ const ReportSite = () => {
                             whileTap={{ scale: 0.97 }}
                             disabled={loading}
                             type="submit" 
-                            className="w-full bg-gradient-to-r from-red-600 to-rose-700 shadow-[0_0_30px_rgba(225,29,72,0.4)] border border-red-500/50 text-white py-5 rounded-[1.5rem] font-black tracking-widest uppercase transition-all disabled:opacity-50 text-sm"
+                            className="w-full bg-blue-600 shadow-xl shadow-blue-200 hover:bg-blue-700 text-white py-5 rounded-[1.5rem] font-black tracking-widest uppercase transition-all disabled:opacity-50 text-sm"
                         >
                             {loading ? 'PROCESSING...' : editId ? 'UPDATE REPORT' : 'SUBMIT SECURITY REPORT'}
                         </motion.button>
@@ -185,7 +185,7 @@ const ReportSite = () => {
                             {status && (
                                 <motion.p 
                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                                    className="text-center font-black text-[10px] text-red-100 uppercase tracking-[0.2em] bg-red-950/90 backdrop-blur-md py-2.5 rounded-full border border-red-500/30 w-max mx-auto px-8 shadow-2xl"
+                                    className="text-center font-black text-[10px] text-blue-600 uppercase tracking-[0.2em] bg-blue-50 backdrop-blur-md py-2.5 rounded-full border border-blue-200 w-max mx-auto px-8 shadow-md"
                                 >
                                     {status}
                                 </motion.p>
@@ -197,14 +197,14 @@ const ReportSite = () => {
                 {/* --- HISTORY SECTION --- */}
                 <div className="px-2">
                     <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-xl font-black text-white/90 uppercase tracking-widest italic flex items-center gap-3 drop-shadow-sm">
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest italic flex items-center gap-3">
                             Report History 
-                            <span className="bg-red-500/20 border border-red-500/30 text-red-300 px-3 py-1 rounded-full text-sm not-italic font-black shadow-sm">{reports.length}</span>
+                            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm not-italic font-black shadow-sm">{reports.length}</span>
                         </h3>
                         <motion.button 
                             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                             onClick={fetchReports} 
-                            className="text-[10px] font-black tracking-widest uppercase text-slate-300 hover:text-white bg-slate-800/50 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-slate-700 transition-all"
+                            className="text-[10px] font-black tracking-widest uppercase text-slate-500 hover:text-blue-600 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 transition-all font-bold"
                         >
                             🔄 Refresh
                         </motion.button>
@@ -223,28 +223,28 @@ const ReportSite = () => {
                                     variants={itemVariants}
                                     layout
                                     key={report.id || report.Id} 
-                                    className="group bg-slate-900/40 backdrop-blur-2xl p-6 rounded-[2rem] shadow-lg border border-slate-700/50 hover:border-red-500/30 hover:bg-slate-800/60 flex flex-col md:flex-row md:items-center justify-between transition-all duration-300 gap-4"
+                                    className="group bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 hover:border-blue-400 flex flex-col md:flex-row md:items-center justify-between transition-all duration-300 gap-4"
                                 >
                                     <div className="flex-1 min-w-0 pr-4">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                            <p className="text-[15px] font-black text-white truncate tracking-tight">
+                                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                            <p className="text-[15px] font-black text-slate-800 truncate tracking-tight">
                                                 {report.url || report.Url}
                                             </p>
                                         </div>
-                                        <p className="text-[13px] text-slate-400 font-medium leading-relaxed line-clamp-2 pl-5">
+                                        <p className="text-[13px] text-slate-500 font-bold leading-relaxed line-clamp-2 pl-5">
                                             {report.reason || report.Reason}
                                         </p>
                                     </div>
                                     <div className="flex space-x-2">
-                                        <button onClick={() => startEdit(report)} className="p-3.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-2xl hover:bg-blue-500/20">✏️</button>
-                                        <button onClick={() => handleDelete(report.id || report.Id)} className="p-3.5 bg-slate-800 text-rose-400 border border-slate-700 rounded-2xl hover:bg-rose-500/20">🗑️</button>
+                                        <button onClick={() => startEdit(report)} className="p-3.5 bg-slate-50 text-blue-600 border border-slate-100 rounded-2xl hover:bg-blue-600 hover:text-white shadow-sm transition-all">✏️</button>
+                                        <button onClick={() => handleDelete(report.id || report.Id)} className="p-3.5 bg-slate-50 text-rose-500 border border-slate-100 rounded-2xl hover:bg-rose-500 hover:text-white shadow-sm transition-all">🗑️</button>
                                     </div>
                                 </motion.div>
                             ))
                         ) : (
-                            <div className="py-24 text-center bg-slate-900/30 rounded-[3rem] border-2 border-dashed border-slate-700/50">
-                               <p className="text-slate-400 font-bold">No reports found in EduSyncDB.</p>
+                            <div className="py-24 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
+                               <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">No threats detected in EduSyncDB.</p>
                             </div>
                         )}
                         </AnimatePresence>

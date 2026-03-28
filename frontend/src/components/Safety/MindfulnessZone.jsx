@@ -22,16 +22,16 @@ const itemVariants = {
 
 // --- DATA ---
 const breathingExercises = [
-  { id: 'box', name: 'Box', pattern: '4-4-4-4', desc: 'Relaxation', duration: '5 mins', color: 'from-purple-900/40 to-indigo-900/40', phases: [
+  { id: 'box', name: 'Box', pattern: '4-4-4-4', desc: 'Relaxation', duration: '5 mins', accent: 'bg-purple-500', phases: [
     { type: 'Inhale', duration: 4 }, { type: 'Hold', duration: 4 }, { type: 'Exhale', duration: 4 }, { type: 'Hold', duration: 4 }
   ]},
-  { id: 'long', name: 'Long exhale', pattern: '4-7-8', desc: 'Sleep', duration: '5 mins', color: 'from-blue-900/40 to-indigo-900/40', phases: [
+  { id: 'long', name: 'Long exhale', pattern: '4-7-8', desc: 'Sleep', duration: '5 mins', accent: 'bg-blue-500', phases: [
     { type: 'Inhale', duration: 4 }, { type: 'Hold', duration: 7 }, { type: 'Exhale', duration: 8 }
   ]},
-  { id: 'equal', name: 'Equal', pattern: '5-0-5', desc: 'Focus', duration: '5 mins', color: 'from-indigo-900/40 to-blue-900/40', phases: [
+  { id: 'equal', name: 'Equal', pattern: '5-0-5', desc: 'Focus', duration: '5 mins', accent: 'bg-indigo-500', phases: [
     { type: 'Inhale', duration: 5 }, { type: 'Exhale', duration: 5 }
   ]},
-  { id: 'custom', name: 'Custom', pattern: 'Set your own', desc: 'Personalized', duration: '5 mins', color: 'from-slate-900/40 to-indigo-900/40', phases: [
+  { id: 'custom', name: 'Custom', pattern: 'Set your own', desc: 'Personalized', duration: '5 mins', accent: 'bg-emerald-500', phases: [
     { type: 'Inhale', duration: 4 }, { type: 'Exhale', duration: 4 }
   ]}
 ];
@@ -53,43 +53,43 @@ const InfoModal = ({ isOpen, onClose }) => (
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-2xl bg-[#0F172A] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl"
+          className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-[3rem] overflow-hidden shadow-2xl"
         >
           <div className="p-8 md:p-12 space-y-10">
             <header className="flex justify-between items-center">
-               <h2 className="text-3xl font-black text-white">About Breathing</h2>
-               <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-                  <X size={24} className="text-white/50" />
+               <h2 className="text-3xl font-black text-slate-800">About Breathing</h2>
+               <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors">
+                  <X size={24} className="text-slate-400" />
                </button>
             </header>
 
             <div className="space-y-8 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white"><Brain size={20}/></div>
-                     <h3 className="text-xl font-bold text-white">Box Breathing (4-4-4-4)</h3>
+                     <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center"><Brain size={20}/></div>
+                     <h3 className="text-xl font-bold text-slate-800">Box Breathing (4-4-4-4)</h3>
                   </div>
-                  <p className="text-white/40 text-sm leading-relaxed">
+                  <p className="text-slate-500 text-sm leading-relaxed">
                      Known as "Square Breathing," this technique is used by Navy SEALs to stay calm and focused under pressure. It resets your nervous system and improves mental clarity by balancing oxygen levels.
                   </p>
                </div>
-
+ 
                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white"><Wind size={20}/></div>
-                     <h3 className="text-xl font-bold text-white">4-7-8 Breathing (Sleep)</h3>
+                     <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><Wind size={20}/></div>
+                     <h3 className="text-xl font-bold text-slate-800">4-7-8 Breathing (Sleep)</h3>
                   </div>
-                  <p className="text-white/40 text-sm leading-relaxed">
+                  <p className="text-slate-500 text-sm leading-relaxed">
                      A natural tranquilizer for the nervous system. By making the exhale twice as long as the inhale, you trigger the "rest and digest" response, effectively lowering your heart rate and preparing the body for deep sleep.
                   </p>
                </div>
-
+ 
                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><Target size={20}/></div>
-                     <h3 className="text-xl font-bold text-white">Equal Breathing (5-0-5)</h3>
+                     <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center"><Target size={20}/></div>
+                     <h3 className="text-xl font-bold text-slate-800">Equal Breathing (5-0-5)</h3>
                   </div>
-                  <p className="text-white/40 text-sm leading-relaxed">
+                  <p className="text-slate-500 text-sm leading-relaxed">
                      Focus on making your inhales and exhales the same length. This technique helps harmonize the brain's hemispheres, providing a steady flow of energy and sharp focus for studying or creative work.
                   </p>
                </div>
@@ -109,24 +109,25 @@ const ExerciseCard = ({ exercise, onSelect }) => (
     whileHover={{ scale: 1.02, y: -5 }}
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(exercise)}
-    className={`relative p-6 rounded-[2rem] bg-gradient-to-br ${exercise.color} border border-white/10 cursor-pointer overflow-hidden group h-[200px] flex flex-col justify-between`}
+    className={`relative p-8 rounded-[2rem] bg-white border border-slate-200 cursor-pointer overflow-hidden group h-[200px] flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-blue-200 transition-all`}
   >
-    <div className="relative z-10 text-white">
-      <h3 className="text-xl font-bold mb-1">{exercise.name}</h3>
-      <p className="text-xs font-black tracking-widest opacity-60 uppercase mb-1">{exercise.pattern}</p>
-      <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">{exercise.desc}</p>
+    <div className={`absolute top-0 left-0 w-2 h-full ${exercise.accent}`} />
+    <div className="relative z-10">
+      <h3 className="text-xl font-black text-slate-800 mb-1">{exercise.name}</h3>
+      <p className="text-xs font-black tracking-widest text-slate-400 uppercase mb-1">{exercise.pattern}</p>
+      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{exercise.desc}</p>
     </div>
     
-    <div className="relative z-10 flex items-center justify-between text-white/40">
-      <span className="text-[10px] font-bold uppercase tracking-widest">{exercise.duration}</span>
+    <div className="relative z-10 flex items-center justify-between text-slate-400">
+      <span className="text-[10px] font-black uppercase tracking-widest">Digital Focus</span>
       <Settings size={16} className="group-hover:rotate-90 transition-transform duration-500" />
     </div>
 
-    <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-40 transition-opacity">
+    <div className="absolute top-2 right-2 opacity-5 group-hover:opacity-10 transition-opacity">
       <div className="relative w-24 h-24">
-         <div className="absolute inset-0 bg-white/20 rounded-full blur-xl translate-x-4 translate-y-4" />
-         <div className="absolute inset-0 border-2 border-white/30 rounded-full scale-75" />
-         <div className="absolute inset-0 border-2 border-white/20 rounded-full scale-50 -translate-x-4" />
+         <div className="absolute inset-0 bg-blue-600 rounded-full blur-xl translate-x-4 translate-y-4" />
+         <div className="absolute inset-0 border-2 border-blue-600 rounded-full scale-75" />
+         <div className="absolute inset-0 border-2 border-blue-400 rounded-full scale-50 -translate-x-4" />
       </div>
     </div>
   </motion.div>
@@ -178,13 +179,13 @@ const BreathingTimer = ({ exercise, onBack }) => {
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center min-h-[600px] w-full"
     >
-      <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-white/50 hover:text-white transition-colors">
-        <ChevronLeft size={24} /> <span className="font-bold uppercase tracking-widest text-xs">Back</span>
+      <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors group">
+        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" /> <span className="font-bold uppercase tracking-widest text-xs">Back to Hub</span>
       </button>
-
+ 
       <div className="text-center mb-12">
-        <h2 className="text-4xl md:text-5xl font-black text-white mb-2">{exercise.name}</h2>
-        <p className="text-indigo-300 font-black tracking-[0.2em] uppercase text-xs">{isActive ? currentPhase.type : exercise.desc}</p>
+        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-2">{exercise.name} <span className="text-blue-600">Sync</span></h2>
+        <p className="text-slate-400 font-black tracking-[0.2em] uppercase text-xs">{isActive ? currentPhase.type : exercise.desc}</p>
       </div>
 
       <div className="relative flex items-center justify-center w-80 h-80 mb-16">
@@ -195,22 +196,22 @@ const BreathingTimer = ({ exercise, onBack }) => {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ 
                 scale: currentPhase.type === 'Inhale' ? 1.4 : currentPhase.type === 'Exhale' ? 0.8 : 1.1,
-                opacity: currentPhase.type === 'Inhale' ? 0.3 : 0.1
+                opacity: currentPhase.type === 'Inhale' ? 0.2 : 0.05
               }}
               transition={{ duration: currentPhase.duration, ease: "easeInOut" }}
-              className="absolute inset-0 rounded-full bg-white/20 blur-3xl"
+              className="absolute inset-0 rounded-full bg-blue-500 blur-3xl"
             />
           )}
         </AnimatePresence>
 
         <svg className="absolute w-full h-full rotate-[-90deg]">
-          <circle cx="50%" cy="50%" r="42%" stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="transparent" />
+          <circle cx="50%" cy="50%" r="42%" stroke="#e2e8f0" strokeWidth="4" fill="transparent" />
           <motion.circle 
-            cx="50%" cy="50%" r="42%" stroke="#6366F1" strokeWidth="10" fill="transparent" 
+            cx="50%" cy="50%" r="42%" stroke="#2563eb" strokeWidth="10" fill="transparent" 
             strokeDasharray="530" 
             animate={{ strokeDashoffset: 530 - (530 * phaseTimeLeft) / currentPhase.duration }}
             transition={{ duration: 1, ease: "linear" }}
-            className="drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+            className="drop-shadow-[0_0_10px_rgba(37,99,235,0.2)]"
           />
         </svg>
 
@@ -219,13 +220,13 @@ const BreathingTimer = ({ exercise, onBack }) => {
             scale: isActive ? (currentPhase.type === 'Inhale' ? 1.2 : currentPhase.type === 'Exhale' ? 0.9 : 1.1) : 1,
           }}
           transition={{ duration: currentPhase.duration, ease: "easeInOut" }}
-          className="z-10 rounded-full shadow-2xl flex flex-col items-center justify-center text-center p-8 w-56 h-56 bg-white/5 border border-white/20 backdrop-blur-xl"
+          className="z-10 rounded-full shadow-xl flex flex-col items-center justify-center text-center p-8 w-56 h-56 bg-white border border-slate-100"
         >
-          <span className="text-white text-3xl font-black">{isActive ? currentPhase.type : 'Ready?'}</span>
+          <span className="text-slate-800 text-3xl font-black">{isActive ? currentPhase.type : 'Ready?'}</span>
           {isActive && (
              <div className="mt-4 flex flex-col items-center">
-                <span className="text-white/40 text-[10px] font-black uppercase tracking-tighter mb-1">Time Left</span>
-                <span className="text-indigo-300 font-bold text-lg tabular-nums">{phaseTimeLeft}s</span>
+                <span className="text-slate-400 text-[10px] font-black uppercase tracking-tighter mb-1">Time Left</span>
+                <span className="text-blue-600 font-bold text-lg tabular-nums">{phaseTimeLeft}s</span>
              </div>
           )}
         </motion.div>
@@ -233,14 +234,14 @@ const BreathingTimer = ({ exercise, onBack }) => {
 
       <div className="w-full max-w-sm flex flex-col gap-4">
         {!isActive ? (
-          <button onClick={startSession} className="w-full py-5 bg-indigo-600 rounded-[2rem] font-black text-white text-lg shadow-xl hover:bg-indigo-700 transition-all">
-            {sessionTime < 300 ? 'RESUME JOURNEY' : 'BEGIN JOURNEY'}
+          <button onClick={startSession} className="w-full py-5 bg-blue-600 rounded-[2rem] font-black text-white text-lg shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all uppercase tracking-widest">
+            {sessionTime < 300 ? 'RESUME SESSION' : 'ACTIVATE SESSION'}
           </button>
         ) : (
-          <button onClick={() => setIsActive(false)} className="w-full py-4 bg-white/10 text-white rounded-[1.5rem] font-bold hover:bg-white/20 transition-all border border-white/5">PAUSE SESSION</button>
+          <button onClick={() => setIsActive(false)} className="w-full py-4 bg-slate-100 text-slate-600 rounded-[1.5rem] font-bold hover:bg-slate-200 transition-all border border-slate-200">PAUSE FOCUS</button>
         )}
-        <div className="text-center text-white/30 text-xs font-bold uppercase tracking-widest">
-           Total Session: {formatTime(sessionTime)}
+        <div className="text-center text-slate-300 text-xs font-bold uppercase tracking-widest">
+           Total Focus: {formatTime(sessionTime)}
         </div>
       </div>
     </motion.div>
@@ -254,44 +255,41 @@ const MindfulnessZone = () => {
 
   const MindfulnessTools = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-16">
-      <div onClick={() => navigate('/student-dashboard/music-player')} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-all">
-        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:rotate-12 transition-transform">
+      <div onClick={() => navigate('/student-dashboard/music-player')} className="group p-8 rounded-[2.5rem] bg-white border border-slate-200 hover:border-blue-400 cursor-pointer shadow-sm hover:shadow-lg transition-all">
+        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
           <Headphones size={24} />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">Immersion Beats</h3>
-        <p className="text-white/40 text-sm mb-4">Curated focus sounds.</p>
-        <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">Explore <ArrowUpRight size={14}/></div>
+        <h3 className="text-xl font-black text-slate-800 mb-2">Immersion Beats</h3>
+        <p className="text-slate-400 text-sm mb-4">Curated focus sounds.</p>
+        <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">Explore Hub <ArrowUpRight size={14}/></div>
       </div>
-      <div onClick={() => navigate('/student-dashboard/focus-games')} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-all">
-        <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:rotate-12 transition-transform">
+      <div onClick={() => navigate('/student-dashboard/focus-games')} className="group p-8 rounded-[2.5rem] bg-white border border-slate-200 hover:border-purple-400 cursor-pointer shadow-sm hover:shadow-lg transition-all">
+        <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
           <Target size={24} />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">Focus Vortex</h3>
-        <p className="text-white/40 text-sm mb-4">Cognitive training games.</p>
-        <div className="text-[10px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-2">Enter <ArrowUpRight size={14}/></div>
+        <h3 className="text-xl font-black text-slate-800 mb-2">Focus Vortex</h3>
+        <p className="text-slate-400 text-sm mb-4">Cognitive training games.</p>
+        <div className="text-[10px] font-black text-purple-600 uppercase tracking-widest flex items-center gap-2">Enter Vortex <ArrowUpRight size={14}/></div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans p-6 md:p-12 relative overflow-hidden">
-
-
-
-      {/* CUSTOM VIDEO BACKGROUND: SEA */}
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-6 md:p-12 relative overflow-hidden">
+ 
+      {/* CUSTOM VIDEO BACKGROUND WITH LIGHT OVERLAY */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <video 
           autoPlay loop muted playsInline 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-60"
         >
           <source src="/sea.mp4" type="video/mp4" />
         </video>
-        {/* Ocean-themed glassmorphic overlay for perfect contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#020617]/50 via-[#0f172a]/70 to-[#020617] backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-white/40 shadow-inner" />
       </div>
 
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[120px] -mr-64 -mt-64" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-900/10 rounded-full blur-[100px] -ml-48 -mb-48" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100 rounded-full blur-[120px] -mr-64 -mt-64 opacity-50" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-50 rounded-full blur-[100px] -ml-48 -mb-48 opacity-50" />
 
       <div className="max-w-4xl mx-auto relative z-10 py-8">
         <AnimatePresence mode="wait">
@@ -306,17 +304,17 @@ const MindfulnessZone = () => {
             >
               <header className="flex justify-between items-start">
                 <div className="space-y-4">
-                   <div className="flex items-center gap-3 text-white/50">
-                      <ChevronLeft className="cursor-pointer hover:text-white" />
-                      <h1 className="text-xl md:text-2xl font-black tracking-tight">Breathing exercises</h1>
+                   <div className="flex items-center gap-3 text-slate-400">
+                      <ChevronLeft className="cursor-pointer hover:text-blue-600" onClick={() => navigate(-1)} />
+                      <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900">Breathing Sync</h1>
                    </div>
                    <div className="info-section">
-                      <h2 className="text-3xl md:text-4xl font-black text-white max-w-md leading-tight">Choose a breathing exercise to practise.</h2>
+                      <h2 className="text-3xl md:text-4xl font-black text-slate-800 max-w-md leading-tight">Choose an exercise to <span className="text-blue-600">Digital Focus</span>.</h2>
                    </div>
                 </div>
                 <div 
                   onClick={() => setIsAboutOpen(true)}
-                  className="p-3 bg-white/5 rounded-2xl border border-white/10 text-white/50 cursor-pointer hover:text-white transition-colors"
+                  className="p-3 bg-white rounded-2xl border border-slate-200 text-slate-400 cursor-pointer hover:text-blue-600 hover:border-blue-600 shadow-sm transition-all"
                 >
                    <Info size={24} />
                 </div>
@@ -328,22 +326,22 @@ const MindfulnessZone = () => {
                  ))}
               </div>
 
-              <motion.div variants={itemVariants} className="bg-gradient-to-br from-indigo-950/40 to-slate-900/40 p-8 rounded-[2.5rem] border border-white/5 flex flex-col md:flex-row items-center gap-8 group">
+              <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col md:flex-row items-center gap-8 group shadow-sm">
                  <div className="flex-1 space-y-4">
-                    <h3 className="text-xl font-bold text-white">Before you get started</h3>
-                    <p className="text-white/40 text-sm leading-relaxed font-medium">
-                       Learn how each breathing exercise works and get tips to help you practise.
+                    <h3 className="text-xl font-black text-slate-800">Before you get started</h3>
+                    <p className="text-slate-400 text-sm leading-relaxed font-bold">
+                       Learn how each breathing exercise works and get tips to help you focus better.
                     </p>
                     <button 
                       onClick={() => setIsAboutOpen(true)}
-                      className="px-6 py-2 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                      className="px-6 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 hover:border-blue-600 transition-all"
                     >
                       Learn More
                     </button>
                  </div>
-                 <div className="w-32 h-32 md:w-40 md:h-40 bg-white/5 rounded-3xl flex items-center justify-center p-4 relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
-                    <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=200&q=80" alt="Dandelion" className="w-full h-full object-cover rounded-2xl opacity-60 grayscale group-hover:grayscale-0 transition-all duration-700" />
-                    <div className="absolute inset-0 bg-indigo-600/20 mix-blend-overlay" />
+                 <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-100 rounded-3xl flex items-center justify-center p-4 relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
+                    <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=200&q=80" alt="Dandelion" className="w-full h-full object-cover rounded-2xl opacity-80 transition-all duration-700" />
+                    <div className="absolute inset-0 bg-blue-600/10 mix-blend-overlay" />
                  </div>
               </motion.div>
 

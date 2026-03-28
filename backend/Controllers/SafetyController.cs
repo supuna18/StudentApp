@@ -4,6 +4,7 @@ using StudentApp.Api.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 using StudentApp.Api.Data;
 
 namespace StudentApp.Api.Controllers
@@ -63,17 +64,27 @@ namespace StudentApp.Api.Controllers
             return Ok(new { message = "Report deleted successfully!" });
         }
 
-        // 5. Check URL
+        // 5. Check URL - DATABASE එකේ තියෙන සම්පූර්ණ URL පවා හඳුනාගත හැකි පරිදි සකසා ඇත
         [HttpGet("check-url")]
         public async Task<IActionResult> CheckUrl([FromQuery] string url)
         {
             if (string.IsNullOrEmpty(url)) return BadRequest();
-            string cleanUrl = url.ToLower().Replace("https://", "").Replace("http://", "").Replace("www.", "");
-            string domainOnly = cleanUrl.Split('/')[0];
-
-            var filter = Builders<SafetyReport>.Filter.Regex("Url", new MongoDB.Bson.BsonRegularExpression(domainOnly, "i"));
-            var reportExists = await _mongoService.SafetyReports.Find(filter).AnyAsync();
-            return Ok(new { unsafeSite = reportExists });
+            
+            try 
+            {
+                // සියලුම වාර්තා ලබාගනී
+                var allReports = await _mongoService.SafetyReports.Find(_ => true).ToListAsync();
+                
+                // ඔබගේ DB එකේ URL එක "https://www.google.com" ලෙස තිබුණත්, browser එකේ යන එකත් සමඟ මෙය නිවැරදිව ගැළපේ
+                // url.Contains(r.Url) මගින් DB එකේ ඇති link එකේ කොටසක් වත් අදාල URL එකේ ඇත්දැයි පරීක්ෂා කරයි
+                bool isUnsafe = allReports.Any(r => !string.IsNullOrEmpty(r.Url) && url.Contains(r.Url));
+                
+                return Ok(new { unsafeSite = isUnsafe });
+            }
+            catch (Exception)
+            {
+                return Ok(new { unsafeSite = false });
+            }
         }
 
         // 6. Music Recommendations
