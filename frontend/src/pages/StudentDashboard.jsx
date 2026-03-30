@@ -9,6 +9,7 @@ import MindfulnessZone from '../components/Safety/MindfulnessZone';
 import FocusGamesPage from './FocusGamesPage';
 import StudentResourceManager from './StudentResourceManager';
 import ProfileManagement from './ProfileManagement';
+import HabitImpactPage from './HabitImpactPage';
 
 import SetLimitForm from '../components/Wellbeing/SetLimitForm';
 import MusicPlayerPage from './MusicPlayerPage';
@@ -64,6 +65,17 @@ const modules = [
     arrowColor: "text-indigo-600",
     member: "Member 4",
     to: "resources",
+  },
+  {
+    title: "Freedom Path",
+    desc: "Break free from addictive habits and visualize your projected savings and health recovery.",
+    icon: <Target size={20} strokeWidth={2} />,
+    iconBg: "bg-rose-50", iconColor: "text-rose-600",
+    badge: "Recovery", badgeBg: "bg-rose-50", badgeColor: "text-rose-700",
+    topBar: "from-rose-400 to-rose-600",
+    arrowColor: "text-rose-600",
+    member: "Member 3",
+    to: "habit-impact",
   },
 ];
 
@@ -186,6 +198,8 @@ const StudentDashboard = () => {
           <Route path="resources" element={<StudentResourceManager />} />
           <Route path="profile" element={<ProfileManagement />} />
           <Route path="set-limit" element={<SetLimitForm />} />
+          <Route path="habit-impact" element={<HabitImpactPage />} />
+
 
         </Routes>
       </div>

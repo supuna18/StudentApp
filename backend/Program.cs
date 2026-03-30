@@ -45,6 +45,7 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WellbeingService>();
 
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
