@@ -43,6 +43,9 @@ namespace StudentApp.Api.Controllers
                 return Ok(new { message = "Status synchronized successfully! 🚀" });
             }
             catch (Exception ex) {
+               Console.WriteLine($"🔥 BACKEND CRASH ERROR: {ex.Message}");
+        if (ex.InnerException != null) Console.WriteLine($"🔗 INNER: {ex.InnerException.Message}");
+
                 return BadRequest(new { message = "Error saving habit data", error = ex.Message });
             }
         }
@@ -56,6 +59,31 @@ namespace StudentApp.Api.Controllers
             }
             catch (Exception ex) {
                 return BadRequest(new { message = "Error resetting journey", error = ex.Message });
+            }
+        }
+
+        [HttpPost("log/{userId}")]
+        public async Task<IActionResult> AddOrUpdateLog(string userId, [FromBody] DailyLog log)
+        {
+            try {
+                if (log == null) return BadRequest("Log data is null");
+                await _habitService.AddOrUpdateLogAsync(userId, log);
+                return Ok(new { message = "Log entry saved successfully! 📝" });
+            }
+            catch (Exception ex) {
+                return BadRequest(new { message = "Error saving log entry", error = ex.Message });
+            }
+        }
+
+        [HttpDelete("log/{userId}/{logId}")]
+        public async Task<IActionResult> DeleteLog(string userId, string logId)
+        {
+            try {
+                await _habitService.DeleteLogAsync(userId, logId);
+                return Ok(new { message = "Log entry deleted successfully! 🗑️" });
+            }
+            catch (Exception ex) {
+                return BadRequest(new { message = "Error deleting log entry", error = ex.Message });
             }
         }
     }
