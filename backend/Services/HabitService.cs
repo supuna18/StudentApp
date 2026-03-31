@@ -22,24 +22,24 @@ public class HabitService
     }
 
     public async Task UpsertStatusAsync(HabitStatus status)
-{
-    // UserId එක පාවිච්චි කරලා record එක හොයනවා
-    var filter = Builders<HabitStatus>.Filter.Eq(h => h.UserId, status.UserId);
-    
-    // වැදගත්ම දේ: අපි අලුතින් record එකක් දානකොට, 
-    // පරණ Id එකක් (null හෝ හිස් එකක්) තිබුණොත් ඒක අයින් කරන්න ඕනේ.
-    // එතකොට තමයි MongoDB විසින් අලුත් ObjectId එකක් හදන්නේ.
-    if (string.IsNullOrEmpty(status.Id) || status.Id == "null") 
     {
-        status.Id = null; 
+        var filter = Builders<HabitStatus>.Filter.Eq(h => h.UserId, status.UserId);
+        
+        // Find existing record to preserve its _id, or generate a new one if it's a new user
+        var existing = await _habitCollection.Find(filter).FirstOrDefaultAsync();
+        if (existing != null)
+        {
+            status.Id = existing.Id; // Keep the original MongoDB _id
+        }
+        else
+        {
+            status.Id = ObjectId.GenerateNewId().ToString(); // Generate a valid ObjectId instead of null
+        }
+
+        status.UpdatedAt = DateTime.UtcNow;
+
+        await _habitCollection.ReplaceOneAsync(filter, status, new ReplaceOptions { IsUpsert = true });
     }
-
-    status.UpdatedAt = DateTime.UtcNow;
-
-    // ReplaceOptions { IsUpsert = true } මගින් තමයි 
-    // අලුත් කෙනෙක් නම් අලුත් record එකක් හදන්නේ.
-    await _habitCollection.ReplaceOneAsync(filter, status, new ReplaceOptions { IsUpsert = true });
-}
 
     public async Task DeleteStatusAsync(string userId)
     {

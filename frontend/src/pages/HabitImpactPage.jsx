@@ -82,6 +82,12 @@ const HabitImpactPage = () => {
                 dailyLogs: status?.dailyLogs || [],
                 updatedAt: new Date().toISOString()
             };
+
+            // Remove id completely if it is not a valid existing ID to avoid sending null to backend
+            if (!newStatus.id || newStatus.id === "null") {
+                delete newStatus.id;
+            }
+
             await axios.post(API_URL, newStatus);
             setStatus(newStatus);
             setTimeout(() => setIsSaving(false), 500);
