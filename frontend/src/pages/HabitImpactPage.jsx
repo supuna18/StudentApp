@@ -185,25 +185,43 @@ const HabitImpactPage = () => {
 
     return (
         <div className="min-h-screen bg-[#fafafc] text-slate-800 font-sans selection:bg-blue-100 pb-20">
-            {/* Top Navigation */}
-            <div className="w-full bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/50">
-                <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between h-20">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => navigate(-1)} className="p-2.5 bg-slate-100/80 rounded-full hover:bg-slate-200 transition-colors">
-                            <ArrowLeft size={18} className="text-slate-600" strokeWidth={2.5} />
+            {/* ── Page Header ── */}
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 mb-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-5">
+                        <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-200 shadow-sm rounded-2xl hover:bg-slate-50 transition-colors hidden sm:block">
+                            <ArrowLeft size={20} className="text-slate-600" strokeWidth={2.5} />
                         </button>
-                        <div className="flex flex-col justify-center">
-                            <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">Community Wellness</span>
-                            <span className="text-xl font-extrabold text-[#1f2937] leading-none tracking-tight">Freedom Path</span>
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border bg-white border-slate-100 shadow-rose-100">
+                            {new Date().getHours() < 12 ? '🌅' : new Date().getHours() < 18 ? '☀️' : '🌙'}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-600">
+                                    {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 18 ? 'Good Afternoon' : 'Good Evening'}
+                                </p>
+                                <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                <div className="flex items-center gap-1.5">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    </span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline-block">Tracking Active</span>
+                                </div>
+                            </div>
+                            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-800">
+                                Freedom <span className="bg-gradient-to-r from-rose-500 to-orange-500 bg-clip-text text-transparent">Path</span>
+                            </h1>
                         </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                        <button className="text-slate-400 hover:text-slate-600 transition-colors relative">
-                            <Bell size={20} />
-                            <div className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></div>
-                        </button>
-                        <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm cursor-pointer">
-                            <img src={`https://ui-avatars.com/api/?name=${userName}&background=eff6ff&color=1d4ed8`} alt="Profile" className="w-full h-full object-cover" />
+
+                    <div className="flex items-center gap-4">
+                        <div className="hidden lg:flex flex-col items-end px-4 py-2 rounded-xl border bg-white border-slate-100 shadow-sm">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">System Status</p>
+                            <p className="text-xs font-bold text-emerald-600">📡 100% Operational</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-2xl bg-white overflow-hidden border-2 border-slate-100 shadow-sm cursor-pointer ml-auto">
+                            <img src={`https://ui-avatars.com/api/?name=${userName}&background=ffe4e6&color=e11d48`} alt="Profile" className="w-full h-full object-cover" />
                         </div>
                     </div>
                 </div>
@@ -213,6 +231,11 @@ const HabitImpactPage = () => {
 
                 {/* LEFT COLUMN: CONTROLS */}
                 <div className="xl:col-span-4 space-y-8">
+                    {/* Inspiring Image */}
+                    <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] overflow-hidden">
+                        <img src="/How-to-Stop-Smoking.png" alt="Freedom Path" className="w-full h-48 object-cover rounded-[2rem] hover:scale-105 transition-transform duration-700" />
+                    </div>
+
                     {/* Streak Card */}
                     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]">
                         {isJourneyActive ? (
