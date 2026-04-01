@@ -2,6 +2,7 @@ using StudentApp.Api.Models;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 
 namespace StudentApp.Api.Services;
 
