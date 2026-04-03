@@ -236,7 +236,7 @@ const HabitImpactPage = () => {
                         <img src="/How-to-Stop-Smoking.png" alt="Freedom Path" className="w-full h-48 object-cover rounded-[2rem] hover:scale-105 transition-transform duration-700" />
                     </div>
 
-                    {/* Streak Card */}
+                    {/* Streak Card. */}
                     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]">
                         {isJourneyActive ? (
                             <div className="text-center">
