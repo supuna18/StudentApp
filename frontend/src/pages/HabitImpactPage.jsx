@@ -229,7 +229,7 @@ const HabitImpactPage = () => {
 
             <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
 
-                {/* LEFT COLUMN: CONTROLS */}
+                {/* LEFT COLUMN: CONTROLS. */}
                 <div className="xl:col-span-4 space-y-8">
                     {/* Inspiring Image */}
                     <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] overflow-hidden">
