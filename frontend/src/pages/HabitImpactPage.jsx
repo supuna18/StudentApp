@@ -4,6 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Banknote, Hourglass, CheckCircle2, Leaf, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
+const HEALTH_MILESTONES = [
+    { label: '20 Mins', desc: 'Heart rate drops', icon: '❤️', hours: 0.33, color: 'rose' },
+    { label: '12 Hours', desc: 'CO levels normal', icon: '🌬️', hours: 12, color: 'blue' },
+    { label: '48 Hours', desc: 'Smell/Taste improves', icon: '👅', hours: 48, color: 'amber' },
+    { label: '72 Hours', desc: 'Breathing easier', icon: '🫁', hours: 72, color: 'emerald' },
+    { label: '2 Weeks', desc: 'Lungs healing', icon: '🩸', hours: 336, color: 'indigo' },
+    { label: '1 Month', desc: 'Cilia regains function', icon: '🧬', hours: 720, color: 'purple' },
+    { label: '1 Year', desc: 'Heart risk cuts in half', icon: '🏆', hours: 8760, color: 'orange' }
+];
+
 const HabitImpactPage = () => {
 
     // Basic User Session State
@@ -96,7 +106,7 @@ const HabitImpactPage = () => {
     };
 
     const handleSaveLog = async () => {
-        if (logForm.count <= 0) return alert("Please enter a valid count.");
+        if (logForm.count < 0) return alert("Please enter a valid count.");
         setIsLogging(true);
         try {
             const logEntry = {
@@ -115,6 +125,25 @@ const HabitImpactPage = () => {
             setIsLogging(false);
         } catch (err) {
             alert("Failed to save log entry.");
+            setIsLogging(false);
+        }
+    };
+
+    const handleMarkTodayClean = async () => {
+        setIsLogging(true);
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const logEntry = {
+                id: Math.random().toString(36).substr(2, 9),
+                date: new Date(today).toISOString(),
+                count: 0,
+                unitPrice: 0
+            };
+            await axios.post(`${API_URL}/log/${userName}`, logEntry);
+            await fetchStatus();
+            setIsLogging(false);
+        } catch (err) {
+            alert("Failed to mark today as clean.");
             setIsLogging(false);
         }
     };
@@ -163,6 +192,7 @@ const HabitImpactPage = () => {
     const now = new Date();
     const diffMs = quitDate ? Math.max(0, now - quitDate) : 0;
     const streakDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const streakHours = diffMs / (1000 * 60 * 60);
 
     // Calculations
     const dailyBaselineCost = isSmoking ? (form.cps / 20) * form.packPrice : form.cps * form.packPrice;
@@ -226,7 +256,7 @@ const HabitImpactPage = () => {
             <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
 
                 {/* LEFT COLUMN: CONTROLS. */}
-                <div className="xl:col-span-4 space-y-8">
+                <div className="xl:col-span-4 space-y-8 sticky top-8 self-start">
                     {/* Inspiring Image */}
                     <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] overflow-hidden">
                         <img src="/How-to-Stop-Smoking.png" alt="Freedom Path" className="w-full h-48 object-cover rounded-[2rem] hover:scale-105 transition-transform duration-700" />
@@ -362,7 +392,7 @@ const HabitImpactPage = () => {
                     {/* Top Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Monthly Spending Card */}
-                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden group">
+                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden group flex flex-col h-full">
                             <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-8 shadow-sm">
                                 <TrendingDown size={28} />
                             </div>
@@ -370,26 +400,138 @@ const HabitImpactPage = () => {
                             <h3 className="text-[3.5rem] font-black text-[#1f2937] tracking-tighter leading-none mb-6">
                                 Rs. {monthlySpending.toLocaleString()}
                             </h3>
-                            <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
+                            <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                                 <span className="text-xs font-bold text-slate-400">Total logs: {monthLogs.length}</span>
                                 <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-slate-50 rounded-md text-slate-400">Month: {now.toLocaleString('default', { month: 'long' })}</span>
                             </div>
                         </div>
 
                         {/* Health Restoration */}
-                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 shadow-sm">
-                                <Hourglass size={28} />
+                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col h-full">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                                    <Hourglass size={28} />
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-1">Life Regained</p>
+                                    <h3 className="text-4xl font-black text-[#1f2937] tracking-tighter leading-none">
+                                        {lifeRegainedYears.toFixed(1)} <span className="text-sm font-bold opacity-30">Years</span>
+                                    </h3>
+                                </div>
                             </div>
-                            <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-1">Life Regained</p>
-                            <h3 className="text-[3.5rem] font-black text-[#1f2937] tracking-tighter leading-none mb-6">
-                                {lifeRegainedYears.toFixed(1)} <span className="text-2xl font-bold opacity-30">Years</span>
-                            </h3>
-                            <div className="pt-6 border-t border-slate-50">
+
+                            <div className="flex-1 space-y-6">
+                                <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Vitality Roadmap</h4>
+                                <div className="space-y-4">
+                                    {HEALTH_MILESTONES.map((m) => {
+                                        const isAchieved = streakHours >= m.hours;
+                                        return (
+                                            <div key={m.label} className={`relative flex items-center gap-4 transition-all duration-500 ${isAchieved ? 'opacity-100' : 'opacity-30 grayscale-[0.5]'}`}>
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-white transition-all ${isAchieved ? `bg-${m.color}-50 text-xl scale-110` : 'bg-slate-50 text-base opacity-50'}`}>
+                                                    {isAchieved ? m.icon : '🔒'}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className={`text-[11px] font-black uppercase tracking-widest ${isAchieved ? `text-${m.color}-600` : 'text-slate-400'}`}>
+                                                        {m.label}
+                                                    </p>
+                                                    <p className="text-[13px] font-bold text-slate-700 leading-tight">
+                                                        {m.desc}
+                                                    </p>
+                                                </div>
+                                                {isAchieved && (
+                                                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white scale-75 animate-bounce">
+                                                        <CheckCircle2 size={12} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="pt-8 mt-8 border-t border-slate-50">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 size={14} className="text-emerald-500" />
-                                    <span className="text-xs font-bold text-slate-500">Lung recovery active</span>
+                                    <span className="text-xs font-bold text-slate-500">Biological recovery active</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Freedom Calendar */}
+                    <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100">
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Freedom Calendar</h3>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{now.toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+                            </div>
+                            <button
+                                onClick={handleMarkTodayClean}
+                                disabled={isLogging}
+                                className="px-5 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center gap-2"
+                            >
+                                <CheckCircle2 size={14} /> Mark Today Clean
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-3">
+                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
+                                <div key={d} className="text-center text-[10px] font-black text-slate-300 py-2">{d}</div>
+                            ))}
+                            {Array.from({ length: new Date(now.getFullYear(), now.getMonth(), 1).getDay() }).map((_, i) => (
+                                <div key={`empty-${i}`} />
+                            ))}
+                            {Array.from({ length: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() }).map((_, i) => {
+                                const day = i + 1;
+                                const dateStr = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0];
+                                const log = (status?.dailyLogs || []).find(l => new Date(l.date).toISOString().split('T')[0] === dateStr);
+                                const isToday = day === now.getDate() && now.getMonth() === new Date().getMonth();
+                                const isFuture = new Date(now.getFullYear(), now.getMonth(), day) > now;
+                                const isAfterQuit = status?.quitDate && new Date(dateStr) >= new Date(status.quitDate).setHours(0,0,0,0);
+
+                                let bgColor = "bg-slate-50";
+                                let textColor = "text-slate-400";
+                                let icon = null;
+
+                                if (log) {
+                                    if (log.count === 0) {
+                                        bgColor = "bg-emerald-500 shadow-lg shadow-emerald-200";
+                                        textColor = "text-white";
+                                        icon = <Leaf size={8} />;
+                                    } else {
+                                        bgColor = "bg-rose-500 shadow-lg shadow-rose-200";
+                                        textColor = "text-white";
+                                        icon = <Flame size={8} />;
+                                    }
+                                } else if (isAfterQuit && !isFuture) {
+                                    bgColor = "bg-slate-50 border border-dashed border-slate-200";
+                                }
+
+                                return (
+                                    <div
+                                        key={day}
+                                        onClick={() => setLogForm({ ...logForm, date: dateStr })}
+                                        className={`group aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-110 relative ${bgColor} ${textColor}`}
+                                    >
+                                        <span className="text-xs font-black">{day}</span>
+                                        {icon && <div className="mt-0.5">{icon}</div>}
+                                        {isToday && !log && <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-ping" />}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="mt-8 pt-8 border-t border-slate-50 flex items-center justify-center gap-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Clean Day</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-rose-500" />
+                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Usage Logged</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-slate-100 border border-dashed border-slate-300" />
+                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Pending</span>
                             </div>
                         </div>
                     </div>
