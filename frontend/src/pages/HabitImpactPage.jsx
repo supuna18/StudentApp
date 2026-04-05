@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Banknote, Hourglass, CheckCircle2, Leaf, ArrowLeft, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown } from 'lucide-react';
+import { Bell, Banknote, Hourglass, CheckCircle2, Leaf, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
 
 const HabitImpactPage = () => {
-    const navigate = useNavigate();
 
     // Basic User Session State
     const [loading, setLoading] = useState(true);
@@ -189,9 +187,7 @@ const HabitImpactPage = () => {
             <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 mb-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-5">
-                        <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-200 shadow-sm rounded-2xl hover:bg-slate-50 transition-colors hidden sm:block">
-                            <ArrowLeft size={20} className="text-slate-600" strokeWidth={2.5} />
-                        </button>
+
                         <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border bg-white border-slate-100 shadow-rose-100">
                             {new Date().getHours() < 12 ? '🌅' : new Date().getHours() < 18 ? '☀️' : '🌙'}
                         </div>
