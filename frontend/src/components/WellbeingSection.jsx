@@ -6,6 +6,12 @@ import mindfulBreak from "../assets/mindful_break.png";
 const WellbeingSection = () => {
   return (
     <section id="wellbeing" className="relative py-24 overflow-hidden bg-white">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap');
+        .wb-root { font-family: 'DM Sans', sans-serif; }
+        .wb-heading { font-family: 'DM Serif Display', serif; }
+      `}</style>
+      <div className="wb-root">
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40">
         <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-blue-50 rounded-full blur-3xl" />
@@ -31,9 +37,9 @@ const WellbeingSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1] mb-6 tracking-tight"
+            className="wb-heading text-4xl md:text-6xl font-normal text-slate-900 leading-[1.1] mb-6 tracking-tight"
           >
-            Nurture your mind in a <span className="text-blue-600 italic">distracted world.</span>
+            Nurture your mind in a <em className="text-blue-600">distracted world.</em>
           </motion.h2>
           
           <motion.p
@@ -82,7 +88,7 @@ const WellbeingSection = () => {
               <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
                 <Brain size={24} />
               </div>
-              <h3 className="text-3xl font-black text-slate-800 tracking-tight">Psychology-Backed Focus</h3>
+              <h3 className="wb-heading text-3xl font-normal text-slate-800 tracking-tight">Psychology-Backed Focus</h3>
               <p className="text-slate-500 text-lg leading-relaxed font-medium">
                 Our features are designed using cognitive load theory to minimize context switching. 
                 By silencing non-essential notifications and gently nudging you back to your tasks, 
@@ -115,7 +121,7 @@ const WellbeingSection = () => {
               <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
                 <Clock size={24} />
               </div>
-              <h3 className="text-3xl font-black text-slate-800 tracking-tight">The Art of the Mindful Break</h3>
+              <h3 className="wb-heading text-3xl font-normal text-slate-800 tracking-tight">The Art of the Mindful Break</h3>
               <p className="text-slate-500 text-lg leading-relaxed font-medium">
                 Research shows that short, structured breaks significantly boost long-term retention 
                 and prevent burnout. EduSync intelligently tracks your intensity and suggests the 
@@ -153,6 +159,7 @@ const WellbeingSection = () => {
           </motion.div>
         </div>
 
+      </div>
       </div>
     </section>
   );

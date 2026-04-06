@@ -6,6 +6,12 @@ import safeBrowsing from "../assets/safe_browsing.png";
 const SafetySection = () => {
   return (
     <section id="safety" className="relative py-32 overflow-hidden bg-slate-50/50">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap');
+        .safety-root { font-family: 'DM Sans', sans-serif; }
+        .safety-heading { font-family: 'DM Serif Display', serif; }
+      `}</style>
+      <div className="safety-root">
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-30 px-6">
         <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-cyan-50 rounded-full blur-3xl animate-pulse" />
@@ -27,15 +33,15 @@ const SafetySection = () => {
               <span className="text-cyan-600 font-extrabold uppercase tracking-[0.3em] text-[11px]">Advanced Security</span>
             </motion.div>
             
-            <motion.h2
+              <motion.h2
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
-              className="text-5xl md:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight"
+              className="safety-heading text-5xl md:text-6xl font-normal text-slate-900 leading-[1.1] tracking-tight"
             >
               Browsing that protects <br />
-              <span className="text-indigo-600 italic">your integrity.</span>
+              <em className="text-indigo-600">your integrity.</em>
             </motion.h2>
           </div>
 
@@ -82,7 +88,7 @@ const SafetySection = () => {
                <div className="w-14 h-14 bg-cyan-50 text-cyan-600 rounded-[1.25rem] flex items-center justify-center shadow-sm">
                   <Eye size={28} />
                </div>
-               <h3 className="text-3xl font-black text-slate-800">AI-Powered misinformation Detection</h3>
+               <h3 className="safety-heading text-3xl font-normal text-slate-800">AI-Powered Misinformation Detection</h3>
                <p className="text-slate-500 text-lg leading-relaxed font-medium">
                   Our neural network scans the structure and language of articles you read, 
                   flagging potential fallacies and biases in real-time. It's not about 
@@ -112,9 +118,9 @@ const SafetySection = () => {
                   <div className="w-14 h-14 bg-indigo-600 text-white rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-indigo-200">
                     <Globe size={28} />
                   </div>
-                  <h3 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                  <h3 className="safety-heading text-4xl font-normal text-slate-900 tracking-tight leading-tight">
                     A Global Safety Net <br /> 
-                    <span className="text-indigo-600">for Modern Educators.</span>
+                    <em className="text-indigo-600">for Modern Educators.</em>
                   </h3>
                   <p className="text-slate-500 text-lg leading-relaxed font-medium">
                     Every report from our community of students and admins feeds back into our 
@@ -154,6 +160,7 @@ const SafetySection = () => {
 
         </div>
 
+      </div>
       </div>
     </section>
   );
