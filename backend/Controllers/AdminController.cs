@@ -42,7 +42,11 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> DeleteUser(string id)
     {
         var result = await _mongoService.DeleteUserAsync(id);
-        if (result) return Ok(new { message = "User deleted successfully" });
+        if (result) 
+        {
+            await _mongoService.LogActivityAsync("Admin Operation", $"User deleted (ID: {id})", "Warning");
+            return Ok(new { message = "User deleted successfully" });
+        }
         return NotFound(new { message = "User not found" });
     }
 
@@ -55,7 +59,11 @@ public class AdminController : ControllerBase
         user.Role = request.Role;
         var result = await _mongoService.UpdateUserAsync(id, user);
 
-        if (result) return Ok(new { message = "User role updated successfully", role = user.Role });
+        if (result) 
+        {
+            await _mongoService.LogActivityAsync("Admin Operation", $"User role updated to {request.Role} (User: {user.Email})");
+            return Ok(new { message = "User role updated successfully", role = user.Role });
+        }
         return BadRequest(new { message = "Failed to update user role" });
     }
 

@@ -111,7 +111,7 @@ public class MongoService
         var totalUsers = await _usersCollection.CountDocumentsAsync(new BsonDocument());
         var lastLogs = await _systemLogsCollection.Find(new BsonDocument())
                                                  .SortByDescending(l => l.Timestamp)
-                                                 .Limit(5)
+                                                 .Limit(10)
                                                  .ToListAsync();
 
         var uptime = DateTime.UtcNow - _serverStartTime;
@@ -124,6 +124,18 @@ public class MongoService
             totalUsers,
             recentLogs = lastLogs
         };
+    }
+
+    public async Task LogActivityAsync(string activity, string details, string severity = "Info")
+    {
+        var log = new SystemLog
+        {
+            Activity = activity,
+            Details = details,
+            Severity = severity,
+            Timestamp = DateTime.UtcNow
+        };
+        await _systemLogsCollection.InsertOneAsync(log);
     }
 
     // --- Admin Dashboard Stats ---
