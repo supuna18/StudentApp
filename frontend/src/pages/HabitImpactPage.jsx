@@ -262,6 +262,26 @@ const HabitImpactPage = () => {
                         <img src="/How-to-Stop-Smoking.png" alt="Freedom Path" className="w-full h-48 object-cover rounded-[2rem] hover:scale-105 transition-transform duration-700" />
                     </div>
 
+                    {/* Small Professional Video Insight */}
+                    <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-1.5 bg-rose-50 text-rose-500 rounded-lg">
+                                <Leaf size={14} />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recovery Insight</p>
+                        </div>
+                        <div className="rounded-xl overflow-hidden shadow-inner bg-slate-50">
+                            <video 
+                                src="/addiction_bird.mp4" 
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline
+                                className="w-full aspect-video object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
+                            />
+                        </div>
+                    </div>
+
                     {/* Streak Card. */}
                     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]">
                         {isJourneyActive ? (
