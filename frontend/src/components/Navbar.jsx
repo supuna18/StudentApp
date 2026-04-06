@@ -12,8 +12,12 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
 
     /* ── Intersection Observer for Active Tabs ── */
-    const sections = ["hero", "wellbeing", "features", "safety", "collaboration"];
-    const observerOptions = { threshold: 0.5 };
+    const sections = ["hero", "wellbeing", "safety", "features"]; 
+    const observerOptions = { 
+      root: null,
+      rootMargin: "-20% 0px -70% 0px", // Focus on top-center of viewport
+      threshold: 0 
+    };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
