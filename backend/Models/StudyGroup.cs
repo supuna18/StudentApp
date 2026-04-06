@@ -1,61 +1,41 @@
-using System.ComponentModel.DataAnnotations;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using System.Collections.Generic;
-
 namespace StudentApp.Api.Models;
 
 public class StudyGroup
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
-
-    [Required]
-    [StringLength(100, MinimumLength = 3)]
     public string GroupName { get; set; } = string.Empty;
-
-    [Required]
     public string Description { get; set; } = string.Empty;
-
-    [Required]
     public string Subject { get; set; } = string.Empty;
-
-    [Required]
     public string CreatedByEmail { get; set; } = string.Empty;
-
-    [Required]
-    [Phone]
     public string PhoneNumber { get; set; } = string.Empty;
-
     public string JoinCode { get; set; } = string.Empty;
-
     public List<MemberDetail> Members { get; set; } = new();
 }
 
-// --- Member Details (combined version) ---
 public class MemberDetail
 {
-    [Required]
     public string Email { get; set; } = string.Empty;
-
-    [Required]
-    [Phone]
     public string Phone { get; set; } = string.Empty;
+    
+    // <--- INTHA VARI-AH MODELS-LA ADD PANNA THAAN ERRORS POGUM --->
+    public DateTime JoinedAt { get; set; } 
 }
 
-// --- Join Request ---
-public class JoinRequest
-{
-    [Required]
+// Controller-la irundhu delete panna matha classes-ah inga vachukonga
+public class JoinRequest {
     public string Email { get; set; } = string.Empty;
-
-    [Required]
     public string JoinCode { get; set; } = string.Empty;
-
-    [Required]
-    [Phone]
     public string PhoneNumber { get; set; } = string.Empty;
-
     public string Subject { get; set; } = string.Empty;
+}
+
+public class UpdateRequest {
+    public string GroupName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+}
+
+public class LeaveRequest {
+    public string GroupId { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 }

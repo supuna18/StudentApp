@@ -31,19 +31,53 @@ public class StudyGroupsController : ControllerBase
         return await _groups.Find(filter).ToListAsync();
     }
     
-    [HttpGet("chat/history/{groupId}")]
-    public async Task<ActionResult<List<ChatMessage>>> GetHistory(string groupId)
+    // ════════════ 1. UPDATED HISTORY LOGIC ════════════
+    // Route-la userEmail parameter-ah add panni iruken
+    [HttpGet("chat/history/{groupId}/{userEmail}")]
+    public async Task<ActionResult<List<ChatMessage>>> GetHistory(string groupId, string userEmail)
     {
-        return await _chats.Find(c => c.GroupId == groupId)
+        var group = await _groups.Find(g => g.Id == groupId).FirstOrDefaultAsync();
+        if (group == null) return NotFound();
+
+        // OWNER-na full history theriyum
+        if (group.CreatedByEmail == userEmail)
+        {
+            return await _chats.Find(c => c.GroupId == groupId)
+                               .SortBy(c => c.Timestamp)
+                               .ToListAsync();
+        }
+
+        // MEMBER-na join panna apparam vandha messages mattum theriya filter panrom
+        var member = group.Members.FirstOrDefault(m => m.Email == userEmail);
+        if (member == null) return Unauthorized("Join the group first!");
+
+        return await _chats.Find(c => c.GroupId == groupId && c.Timestamp >= member.JoinedAt)
                            .SortBy(c => c.Timestamp)
                            .ToListAsync();
     }
 
-    // --- JOIN METHOD (FIXED) ---
+    [HttpPost("create")]
+    public async Task<IActionResult> Create([FromBody] StudyGroup group)
+    {
+        try
+        {
+            var random = new Random();
+            group.JoinCode = random.Next(100000, 999999).ToString();
+            group.Members = new List<MemberDetail>();
+            
+            await _groups.InsertOneAsync(group);
+            return Ok(new { otp = group.JoinCode });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error creating circle: " + ex.Message);
+        }
+    }
+
+    // ════════════ 2. UPDATED JOIN METHOD ════════════
     [HttpPost("join")]
     public async Task<IActionResult> Join([FromBody] JoinRequest request)
     {
-        // JoinCode MATRUM GroupName (Subject) renduமே match aaganum
         var group = await _groups.Find(g => g.JoinCode == request.JoinCode && g.GroupName == request.Subject).FirstOrDefaultAsync();
         
         if (group == null) 
@@ -52,9 +86,11 @@ public class StudyGroupsController : ControllerBase
         if (group.Members.Any(m => m.Email == request.Email))
             return Ok(new { message = "Already a member", groupId = group.Id });
 
+        // User join pannum podhu current UTC time-ah save panrom
         var update = Builders<StudyGroup>.Update.Push(g => g.Members, new MemberDetail { 
             Email = request.Email, 
-            Phone = request.PhoneNumber 
+            Phone = request.PhoneNumber,
+            JoinedAt = DateTime.UtcNow // IDHU THAAN MUKKIYAM
         });
 
         await _groups.UpdateOneAsync(g => g.Id == group.Id, update);
@@ -90,21 +126,29 @@ public class StudyGroupsController : ControllerBase
     }
 }
 
-// --- JoinRequest-la Subject-ai add seithu irukken (400 error solve aagum) ---
+// ════════════ 3. UPDATED MODELS ════════════
+
+// MemberDetail class-la JoinedAt property add panni iruken
+public class MemberDetail {
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public DateTime JoinedAt { get; set; } 
+}
+
 public class JoinRequest {
-    public string Email { get; set; }
-    public string JoinCode { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Subject { get; set; } 
+    public string Email { get; set; } = string.Empty;
+    public string JoinCode { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
 }
 
 public class UpdateRequest {
-    public string GroupName { get; set; }
-    public string Description { get; set; }
-    public string PhoneNumber { get; set; }
+    public string GroupName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
 }
 
 public class LeaveRequest {
-    public string GroupId { get; set; }
-    public string Email { get; set; }
+    public string GroupId { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 }

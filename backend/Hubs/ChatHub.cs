@@ -47,4 +47,4 @@ public class ChatHub : Hub
             throw new HubException($"SendMessage failed: {ex.Message}");
         }
     }
-}``
+}
