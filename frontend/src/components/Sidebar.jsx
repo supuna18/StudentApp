@@ -9,6 +9,7 @@ import {
   LogOut,
   User,
   Users,
+  Share2,
 } from 'lucide-react';
 
 const menuSections = [
@@ -31,6 +32,7 @@ const menuSections = [
     label: 'Community',
     items: [
       { name: 'Collaboration Hub', path: '/hub',                         icon: <Users        size={15} strokeWidth={2} /> },
+      { name: 'Shared Resources',  path: '/student-dashboard/resources', icon: <Share2       size={15} strokeWidth={2} /> },
     ],
   },
 ];
