@@ -97,6 +97,21 @@ public class AdminController : ControllerBase
         var health = await _mongoService.GetSystemHealthAsync();
         return Ok(health);
     }
+
+    [HttpGet("analytics")]
+    public async Task<IActionResult> GetAnalytics()
+    {
+        var distribution = await _mongoService.GetResourceDistributionAsync();
+        var trends = await _mongoService.GetMonthlyActivityTrendsAsync();
+        return Ok(new { distribution, trends });
+    }
+
+    [HttpGet("resources")]
+    public async Task<IActionResult> GetResources()
+    {
+        var resources = await _mongoService.GetAllResourcesAsync();
+        return Ok(resources);
+    }
 }
 
 public class UpdateRoleRequest

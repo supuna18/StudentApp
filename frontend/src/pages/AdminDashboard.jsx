@@ -20,33 +20,12 @@ import SystemHealth from './SystemHealth';
 /* ─── constants ──────────────────────────────────────────────── */
 const PIE_COLORS  = ['#2255D2', '#4A70F5', '#93B4FF'];
 const AVT_COLORS  = ['#2255D2', '#4A70F5', '#1843B8', '#6366F1', '#059669'];
-const initials    = (n) => n.split(' ').map((w) => w[0]).join('');
+const initials    = (n) => (n || "U").split(' ').map((w) => w[0]).join('');
 
-const pieData = [
-  { name: 'Approved', value: 45 },
-  { name: 'Pending',  value: 30 },
-  { name: 'Blocked',  value: 25 },
-];
 
-const barData = [
-  { month: 'Jan', students: 320, reports: 140 },
-  { month: 'Feb', students: 410, reports: 180 },
-  { month: 'Mar', students: 380, reports: 210 },
-  { month: 'Apr', students: 520, reports: 160 },
-  { month: 'May', students: 490, reports: 240 },
-  { month: 'Jun', students: 610, reports: 195 },
-  { month: 'Jul', students: 580, reports: 220 },
-  { month: 'Aug', students: 720, reports: 270 },
-  { month: 'Sep', students: 680, reports: 300 },
-];
+// barData and tableRows are now fetched from the database
 
-const tableRows = [
-  { title: 'Mastering Focus in Digital Age',  status: 'Approved', number: '#EDU-001', person: 'Kristin Watson',  type: 'Video'   },
-  { title: 'Mental Health for Tech Students', status: 'Pending',  number: '#EDU-002', person: 'Jerome Bell',     type: 'Article' },
-  { title: 'Cybersafety Fundamentals',        status: 'Approved', number: '#EDU-003', person: 'Leslie Alexander', type: 'Course'  },
-  { title: 'Mindfulness in Learning Spaces',  status: 'Pending',  number: '#EDU-004', person: 'Dianne Russell',  type: 'Video'   },
-  { title: 'Digital Wellness for Students',   status: 'Blocked',  number: '#EDU-005', person: 'Wade Warren',     type: 'Article' },
-];
+// Resources table row data is now dynamic
 
 const statusConfig = {
   Approved: { bg: 'bg-emerald-50', text: 'text-emerald-700', icon: '✓' },
@@ -85,6 +64,10 @@ const AdminDashboard = () => {
     username: 'Admin', email: 'admin@edusync.com', initials: 'AD',
   });
 
+  const [pieData, setPieData] = useState([]);
+  const [barData, setBarData] = useState([]);
+  const [tableRows, setTableRows] = useState([]);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -97,10 +80,37 @@ const AdminDashboard = () => {
     }
     (async () => {
       try {
-        const res = await fetch('http://localhost:5005/api/admin/stats', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (res.ok) setStats(await res.json());
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Basic Stats
+        const statsRes = await fetch('http://localhost:5005/api/admin/stats', { headers });
+        if (statsRes.ok) setStats(await statsRes.json());
+
+        // Analytics (Charts)
+        const analyticsRes = await fetch('http://localhost:5005/api/admin/analytics', { headers });
+        if (analyticsRes.ok) {
+          const data = await analyticsRes.json();
+          setPieData([
+            { name: 'Approved', value: data.distribution.approved },
+            { name: 'Pending', value: data.distribution.pending },
+          ]);
+          setBarData(data.trends);
+        }
+
+        // Resources Table
+        const resourcesRes = await fetch('http://localhost:5005/api/admin/resources', { headers });
+        if (resourcesRes.ok) {
+          const data = await resourcesRes.json();
+          setTableRows(data.map(r => ({
+            id: r.id || r._id,
+            title: r.title,
+            status: r.isApproved ? 'Approved' : 'Pending',
+            number: '#RES-' + (r.id || r._id).substring(0, 5).toUpperCase(),
+            person: 'User ' + r.userId.substring(0, 5),
+            type: r.fileType || 'File'
+          })));
+        }
       } catch (err) { console.error(err); }
     })();
   }, []);

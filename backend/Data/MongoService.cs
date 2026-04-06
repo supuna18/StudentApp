@@ -163,6 +163,35 @@ public class MongoService
             .ToListAsync();
     }
 
+    public async Task<object> GetResourceDistributionAsync()
+    {
+        var approved = await _resourcesCollection.CountDocumentsAsync(r => r.IsApproved);
+        var pending = await _resourcesCollection.CountDocumentsAsync(r => !r.IsApproved);
+        return new { approved, pending };
+    }
+
+    public async Task<List<object>> GetMonthlyActivityTrendsAsync()
+    {
+        var trends = new List<object>();
+        for (int i = 5; i >= 0; i--)
+        {
+            var date = DateTime.UtcNow.AddMonths(-i);
+            var monthStart = new DateTime(date.Year, date.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+
+            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt >= monthStart && u.CreatedAt <= monthEnd);
+            var reportCount = await _safetyReportsCollection.CountDocumentsAsync(r => r.ReportedAt >= monthStart && r.ReportedAt <= monthEnd);
+
+            trends.Add(new
+            {
+                month = date.ToString("MMM"),
+                students = studentCount,
+                reports = reportCount
+            });
+        }
+        return trends;
+    }
+
     // --- Resource Operations ---
     public async Task<List<Resource>> GetAllResourcesAsync() =>
         await _resourcesCollection.Find(_ => true).ToListAsync();
