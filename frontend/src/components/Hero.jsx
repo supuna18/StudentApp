@@ -9,7 +9,7 @@ const stats = [
 
 const Hero = () => {
   return (
-    <section className="relative h-screen w-full flex items-center overflow-hidden bg-[#060D1F]">
+    <section id="hero" className="relative h-screen w-full flex items-center overflow-hidden bg-[#060D1F]">
       {/* Font import */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap');
