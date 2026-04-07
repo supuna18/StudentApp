@@ -66,28 +66,42 @@ const AdminDashboard = () => {
   });
 
   const [pieData, setPieData] = useState([]);
+  const [safetyPieData, setSafetyPieData] = useState([]);
   const [barData, setBarData] = useState([]);
   const [tableRows, setTableRows] = useState([]);
   const [timeframe, setTimeframe] = useState('6M');
+  const [trendType, setTrendType] = useState('monthly'); // 'weekly' or 'monthly'
 
-  const fetchAnalytics = async (tf) => {
+  const fetchAnalytics = async (tf, type) => {
+    console.log(`Fetching analytics for timeframe: ${tf}, type: ${type}`);
     try {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       const monthsMap = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
       const months = monthsMap[tf] || 6;
 
-      const analyticsRes = await fetch(`http://localhost:5005/api/admin/analytics?months=${months}`, { headers });
+      const url = `http://localhost:5005/api/admin/analytics?months=${months}&type=${type}`;
+      const analyticsRes = await fetch(url, { headers });
       if (analyticsRes.ok) {
         const data = await analyticsRes.json();
+        console.log("Analytics data received:", data);
         setPieData([
           { name: 'Approved', value: data.distribution.approved },
           { name: 'Pending', value: data.distribution.pending },
         ]);
+        setSafetyPieData([
+          { name: 'Pending', value: data.safetyDistribution.pending },
+          { name: 'Approved', value: data.safetyDistribution.approved },
+          { name: 'Blocked', value: data.safetyDistribution.blocked },
+        ]);
         setBarData(data.trends);
+      } else {
+        console.error("Failed to fetch analytics:", analyticsRes.status, analyticsRes.statusText);
+        const errText = await analyticsRes.text();
+        console.error("Error details:", errText);
       }
     } catch (err) {
-      console.error("Error fetching analytics:", err);
+      console.error("Error in fetchAnalytics:", err);
     }
   };
 
@@ -99,7 +113,7 @@ const AdminDashboard = () => {
         const username = d.unique_name || d['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'Admin';
         const email    = d.email || d['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || 'admin@edusync.com';
         setAdminInfo({ username, email, initials: username.split(' ').map((w) => w[0]).join('').toUpperCase().substring(0, 2) });
-      } catch (err) { console.error(err); }
+      } catch (err) { console.error("JWT Decode error:", err); }
     }
     (async () => {
       try {
@@ -107,17 +121,26 @@ const AdminDashboard = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         // Basic Stats
+        console.log("Fetching basic stats...");
         const statsRes = await fetch('http://localhost:5005/api/admin/stats', { headers });
-        if (statsRes.ok) setStats(await statsRes.json());
+        if (statsRes.ok) {
+          const sData = await statsRes.json();
+          console.log("Stats received:", sData);
+          setStats(sData);
+        } else {
+          console.error("Failed to fetch stats:", statsRes.status);
+        }
 
         // Initial Analytics
-        await fetchAnalytics(timeframe);
+        await fetchAnalytics(timeframe, trendType);
 
         // Resources Table
+        console.log("Fetching resources...");
         const resourcesRes = await fetch('http://localhost:5005/api/admin/resources', { headers });
         if (resourcesRes.ok) {
-          const data = await resourcesRes.json();
-          setTableRows(data.map(r => ({
+          const rData = await resourcesRes.json();
+          console.log("Resources received:", rData.length);
+          setTableRows(rData.map(r => ({
             id: r.id || r._id,
             title: r.title,
             status: r.isApproved ? 'Approved' : 'Pending',
@@ -125,16 +148,18 @@ const AdminDashboard = () => {
             person: 'User ' + r.userId.substring(0, 5),
             type: r.fileType || 'File'
           })));
+        } else {
+          console.error("Failed to fetch resources:", resourcesRes.status);
         }
-      } catch (err) { console.error(err); }
+      } catch (err) { console.error("Error in main useEffect:", err); }
     })();
   }, []);
 
   useEffect(() => {
     if (activeTab === 'Analytics') {
-      fetchAnalytics(timeframe);
+      fetchAnalytics(timeframe, trendType);
     }
-  }, [timeframe]);
+  }, [timeframe, trendType]);
 
   const handleLogout = () => { localStorage.removeItem('token'); navigate('/', { replace: true }); };
 
@@ -174,61 +199,81 @@ const AdminDashboard = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-4 mb-5">
-        {/* Pie */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+        {/* Pie: Resource Distribution */}
         <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[13px] font-700 text-[#0F1C4D]">Resource Distribution</span>
             <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={44} outerRadius={68} paddingAngle={3} dataKey="value">
-                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]}/>)}
+              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
+                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}
               </Pie>
               <Tooltip content={<ChartTooltip/>}/>
+              <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
             </PieChart>
           </ResponsiveContainer>
-          <div className="flex justify-center gap-4 mt-2 flex-wrap">
-            {pieData.map((d, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-[11px] font-600 text-slate-500">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[i] }}/>
-                {d.name}
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Bar */}
+        {/* Pie: Safety Report Distribution */}
         <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-            <span className="text-[13px] font-700 text-[#0F1C4D]">Student & Report Activity</span>
-            <div className="flex items-center gap-2.5">
-              <div className="flex gap-1 bg-[#F0F4FF] border border-[#E8EEFF] p-1 rounded-lg">
-                {['1M','3M','6M','1Y'].map((t) => (
-                  <button 
-                    key={t} 
-                    onClick={() => setTimeframe(t)}
-                    className={`px-2.5 py-1 rounded-[6px] text-[10.5px] font-700 transition-all duration-150
-                      ${t === timeframe ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-blue-600'}`}
-                  >{t}</button>
-                ))}
-              </div>
-              <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[13px] font-700 text-[#0F1C4D]">Safety Report Status</span>
+            <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={barData} barGap={4} barCategoryGap="28%">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false}/>
+            <PieChart>
+              <Pie data={safetyPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
+                {['#F59E0B', '#10B981', '#EF4444'].map((color, i) => <Cell key={i} fill={color}/>)}
+              </Pie>
               <Tooltip content={<ChartTooltip/>}/>
-              <Bar dataKey="students" fill="#2255D2" radius={[4,4,0,0]} name="Students"/>
-              <Bar dataKey="reports"  fill="#93B4FF" radius={[4,4,0,0]} name="Reports"/>
-              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 11, paddingTop: 6, fontFamily: 'DM Sans' }}/>
-            </BarChart>
+              <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
+            </PieChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[14px] font-700 text-[#0F1C4D]">Activity Trends</span>
+            <div className="flex bg-[#F0F4FF] p-1 rounded-lg">
+              <button 
+                onClick={() => setTrendType('monthly')}
+                className={`px-3 py-1 text-[10px] font-700 rounded-md transition-all ${trendType === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+              >Monthly</button>
+              <button 
+                onClick={() => setTrendType('weekly')}
+                className={`px-3 py-1 text-[10px] font-700 rounded-md transition-all ${trendType === 'weekly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+              >Weekly</button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="flex gap-1 bg-[#F0F4FF] border border-[#E8EEFF] p-1 rounded-lg">
+              {['1M','3M','6M','1Y'].map((t) => (
+                <button 
+                  key={t} 
+                  onClick={() => setTimeframe(t)}
+                  className={`px-2.5 py-1 rounded-[6px] text-[10.5px] font-700 transition-all duration-150
+                    ${t === timeframe ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-blue-600'}`}
+                >{t}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={barData} barGap={8} barCategoryGap="20%">
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
+            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+            <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+            <Tooltip content={<ChartTooltip/>}/>
+            <Bar dataKey="students" fill="#2255D2" radius={[4,4,0,0]} name="New Students"/>
+            <Bar dataKey="reports"  fill="#93B4FF" radius={[4,4,0,0]} name="Safety Reports"/>
+            <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 11, paddingTop: 10 }}/>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Table */}

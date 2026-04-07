@@ -99,11 +99,19 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("analytics")]
-    public async Task<IActionResult> GetAnalytics([FromQuery] int months = 6)
+    public async Task<IActionResult> GetAnalytics([FromQuery] int months = 6, [FromQuery] string type = "monthly")
     {
         var distribution = await _mongoService.GetResourceDistributionAsync();
-        var trends = await _mongoService.GetMonthlyActivityTrendsAsync(months);
-        return Ok(new { distribution, trends });
+        var safetyDistribution = await _mongoService.GetSafetyReportStatusDistributionAsync();
+        
+        object trends;
+        if (type == "weekly") {
+            trends = await _mongoService.GetWeeklyActivityTrendsAsync(months > 0 ? months : 4);
+        } else {
+            trends = await _mongoService.GetMonthlyActivityTrendsAsync(months);
+        }
+        
+        return Ok(new { distribution, safetyDistribution, trends });
     }
 
     [HttpGet("resources")]

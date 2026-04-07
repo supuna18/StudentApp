@@ -167,7 +167,43 @@ public class MongoService
     {
         var approved = await _resourcesCollection.CountDocumentsAsync(r => r.IsApproved);
         var pending = await _resourcesCollection.CountDocumentsAsync(r => !r.IsApproved);
-        return new { approved, pending };
+
+        // Also group by FileType or Category? Let's group by FileType
+        var byType = await _resourcesCollection.Aggregate()
+            .Group(new BsonDocument { { "_id", "$FileType" }, { "count", new BsonDocument("$sum", 1) } })
+            .ToListAsync();
+
+        return new { approved, pending, byType };
+    }
+
+    public async Task<object> GetSafetyReportStatusDistributionAsync()
+    {
+        var pending = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Pending");
+        var approved = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Approved");
+        var blocked = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Blocked");
+        return new { pending, approved, blocked };
+    }
+
+    public async Task<List<object>> GetWeeklyActivityTrendsAsync(int weeks = 4)
+    {
+        var trends = new List<object>();
+        for (int i = weeks - 1; i >= 0; i--)
+        {
+            var end = DateTime.UtcNow.AddDays(-7 * i);
+            var start = end.AddDays(-7);
+
+            // Cumulative students up to 'end'
+            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt <= end);
+            var reportCount = await _safetyReportsCollection.CountDocumentsAsync(r => r.ReportedAt >= start && r.ReportedAt <= end);
+
+            trends.Add(new
+            {
+                label = end.ToString("MMM dd"), // Better label for weekly
+                students = (int)studentCount,
+                reports = (int)reportCount
+            });
+        }
+        return trends;
     }
 
     public async Task<List<object>> GetMonthlyActivityTrendsAsync(int months = 6)
@@ -179,23 +215,19 @@ public class MongoService
             var monthStart = new DateTime(date.Year, date.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
 
-            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt <= monthEnd); // Cumulative students or joined that month?
-            // The existing code was checking for u.CreatedAt >= monthStart && u.CreatedAt <= monthEnd, which is "students joined this month".
-            // Let's stick to the existing logic but make it dynamic.
-            
-            var joinCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt >= monthStart && u.CreatedAt <= monthEnd);
+            // Cumulative students up to 'monthEnd'
+            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt <= monthEnd);
             var reportCount = await _safetyReportsCollection.CountDocumentsAsync(r => r.ReportedAt >= monthStart && r.ReportedAt <= monthEnd);
 
             trends.Add(new
             {
-                month = date.ToString("MMM"),
-                students = joinCount,
-                reports = reportCount
+                label = date.ToString("MMM"),
+                students = (int)studentCount,
+                reports = (int)reportCount
             });
         }
         return trends;
     }
-
     // --- Resource Operations ---
     public async Task<List<Resource>> GetAllResourcesAsync() =>
         await _resourcesCollection.Find(_ => true).ToListAsync();
