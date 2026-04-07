@@ -31,15 +31,12 @@ public class StudyGroupsController : ControllerBase
         return await _groups.Find(filter).ToListAsync();
     }
     
-    // ════════════ 1. UPDATED HISTORY LOGIC ════════════
-    // Route-la userEmail parameter-ah add panni iruken
     [HttpGet("chat/history/{groupId}/{userEmail}")]
     public async Task<ActionResult<List<ChatMessage>>> GetHistory(string groupId, string userEmail)
     {
         var group = await _groups.Find(g => g.Id == groupId).FirstOrDefaultAsync();
         if (group == null) return NotFound();
 
-        // OWNER-na full history theriyum
         if (group.CreatedByEmail == userEmail)
         {
             return await _chats.Find(c => c.GroupId == groupId)
@@ -47,7 +44,6 @@ public class StudyGroupsController : ControllerBase
                                .ToListAsync();
         }
 
-        // MEMBER-na join panna apparam vandha messages mattum theriya filter panrom
         var member = group.Members.FirstOrDefault(m => m.Email == userEmail);
         if (member == null) return Unauthorized("Join the group first!");
 
@@ -63,7 +59,7 @@ public class StudyGroupsController : ControllerBase
         {
             var random = new Random();
             group.JoinCode = random.Next(100000, 999999).ToString();
-            group.Members = new List<MemberDetail>();
+            group.Members = new List<StudentApp.Api.Models.MemberDetail>(); // Explicitly using Models namespace
             
             await _groups.InsertOneAsync(group);
             return Ok(new { otp = group.JoinCode });
@@ -74,7 +70,6 @@ public class StudyGroupsController : ControllerBase
         }
     }
 
-    // ════════════ 2. UPDATED JOIN METHOD ════════════
     [HttpPost("join")]
     public async Task<IActionResult> Join([FromBody] JoinRequest request)
     {
@@ -86,13 +81,14 @@ public class StudyGroupsController : ControllerBase
         if (group.Members.Any(m => m.Email == request.Email))
             return Ok(new { message = "Already a member", groupId = group.Id });
 
-        // User join pannum podhu current UTC time-ah save panrom
-        var update = Builders<StudyGroup>.Update.Push(g => g.Members, new MemberDetail { 
+        // Fix: Use StudentApp.Api.Models.MemberDetail to avoid conflict
+        var newMember = new StudentApp.Api.Models.MemberDetail { 
             Email = request.Email, 
             Phone = request.PhoneNumber,
-            JoinedAt = DateTime.UtcNow // IDHU THAAN MUKKIYAM
-        });
+            JoinedAt = DateTime.UtcNow 
+        };
 
+        var update = Builders<StudyGroup>.Update.Push(g => g.Members, newMember);
         await _groups.UpdateOneAsync(g => g.Id == group.Id, update);
         return Ok(new { message = "Joined Successfully!", groupId = group.Id });
     }
@@ -102,9 +98,9 @@ public class StudyGroupsController : ControllerBase
     {
         var filter = Builders<StudyGroup>.Filter.Eq(g => g.Id, id);
         var update = Builders<StudyGroup>.Update
-            .Set(g => g.GroupName, updateData.GroupName)
-            .Set(g => g.Description, updateData.Description)
-            .Set(g => g.PhoneNumber, updateData.PhoneNumber);
+            .Set("GroupName", updateData.GroupName)
+            .Set("Description", updateData.Description)
+            .Set("PhoneNumber", updateData.PhoneNumber);
         await _groups.UpdateOneAsync(filter, update);
         return Ok(new { message = "Updated!" });
     }
@@ -126,15 +122,7 @@ public class StudyGroupsController : ControllerBase
     }
 }
 
-// ════════════ 3. UPDATED MODELS ════════════
-
-// MemberDetail class-la JoinedAt property add panni iruken
-public class MemberDetail {
-    public string Email { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
-    public DateTime JoinedAt { get; set; } 
-}
-
+// MUKKIYAM: DTO classes-ah mattum bottom-la vechikonga, 'MemberDetail' class-ah delete pannidunga
 public class JoinRequest {
     public string Email { get; set; } = string.Empty;
     public string JoinCode { get; set; } = string.Empty;

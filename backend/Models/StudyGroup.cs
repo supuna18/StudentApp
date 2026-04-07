@@ -12,15 +12,11 @@ public class StudyGroup
     public List<MemberDetail> Members { get; set; } = new();
 }
 
-public class MemberDetail
-{
+public class MemberDetail {
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
-    
-    // <--- INTHA VARI-AH MODELS-LA ADD PANNA THAAN ERRORS POGUM --->
-    public DateTime JoinedAt { get; set; } 
+    public DateTime JoinedAt { get; set; } // Indha line irukkannu confirm pannunga
 }
-
 // Controller-la irundhu delete panna matha classes-ah inga vachukonga
 public class JoinRequest {
     public string Email { get; set; } = string.Empty;

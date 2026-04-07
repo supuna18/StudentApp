@@ -59,4 +59,23 @@ public class SchedulerController : ControllerBase
 
         return Ok(new { message = "Session Deleted Successfully" });
     }
+
+    // ════════════ 5. NEW: MARK SESSION AS STARTED/COMPLETE ════════════
+    // Frontend-la "Start Focus Session" click pannunaal indha API call aagum.
+    // Idhu database-la IsCompleted = true nu maathum, appo thaan reminder mail anuppadhu.
+    [HttpPut("complete/{id}")]
+    public async Task<IActionResult> MarkComplete(string id)
+    {
+        var filter = Builders<StudySession>.Filter.Eq(s => s.Id, id);
+        var update = Builders<StudySession>.Update.Set(s => s.IsCompleted, true);
+        
+        var result = await _sessions.UpdateOneAsync(filter, update);
+
+        if (result.MatchedCount == 0)
+        {
+            return NotFound(new { message = "Session not found" });
+        }
+
+        return Ok(new { message = "Focus Session Started!" });
+    }
 }

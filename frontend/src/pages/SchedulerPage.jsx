@@ -50,7 +50,8 @@ const SchedulerPage = () => {
   const fetchSessions = async () => {
     try {
       const res = await axios.get(`${API_URL}/${userEmail}`);
-      setSessions(res.data);
+      const activeSessions = res.data.filter(s => s.isCompleted === false);
+      setSessions(activeSessions);
     } catch (err) {
       console.error('Fetch Error:', err);
     }
@@ -82,6 +83,7 @@ const SchedulerPage = () => {
   };
 
   const startFocus = async (session) => {
+
     const isSeconds = session.duration.toString().includes('s');
     const durationValue = parseInt(session.duration);
     const durationMs = isSeconds ? durationValue * 1000 : durationValue * 60 * 1000;
@@ -99,7 +101,7 @@ const SchedulerPage = () => {
     }
     alert(`STUDY PROTOCOL INITIATED: Stay focused for ${displayLabel}!`);
 
-    setTimeout(() => {
+    setTimeout(async() => {
       try {
         const context = new (window.AudioContext || window.webkitAudioContext)();
         if (context) {
@@ -122,10 +124,15 @@ const SchedulerPage = () => {
           tag: 'focus-end'
         });
       }
-      setTimeout(() => {
+      
         alert(`🏁 MISSION COMPLETE: "${session.title}" session finished!\nTake a well-deserved break.`);
-      }, 200);
-    }, durationMs);
+             try { 
+        await axios.put(`${API_URL}/complete/${session.id}`); 
+        fetchSessions(); // Refresh list to remove from agenda AFTER clicking OK
+      } catch (e) { 
+        console.error("Complete Update Error:", e);
+      } 
+        }, durationMs);
 
     window.postMessage({ type: 'START_FOCUS_MODE', duration: isSeconds ? 1 : durationValue }, '*');
   };
