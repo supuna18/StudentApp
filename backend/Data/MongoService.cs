@@ -170,22 +170,26 @@ public class MongoService
         return new { approved, pending };
     }
 
-    public async Task<List<object>> GetMonthlyActivityTrendsAsync()
+    public async Task<List<object>> GetMonthlyActivityTrendsAsync(int months = 6)
     {
         var trends = new List<object>();
-        for (int i = 5; i >= 0; i--)
+        for (int i = months - 1; i >= 0; i--)
         {
             var date = DateTime.UtcNow.AddMonths(-i);
             var monthStart = new DateTime(date.Year, date.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
 
-            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt >= monthStart && u.CreatedAt <= monthEnd);
+            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt <= monthEnd); // Cumulative students or joined that month?
+            // The existing code was checking for u.CreatedAt >= monthStart && u.CreatedAt <= monthEnd, which is "students joined this month".
+            // Let's stick to the existing logic but make it dynamic.
+            
+            var joinCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt >= monthStart && u.CreatedAt <= monthEnd);
             var reportCount = await _safetyReportsCollection.CountDocumentsAsync(r => r.ReportedAt >= monthStart && r.ReportedAt <= monthEnd);
 
             trends.Add(new
             {
                 month = date.ToString("MMM"),
-                students = studentCount,
+                students = joinCount,
                 reports = reportCount
             });
         }

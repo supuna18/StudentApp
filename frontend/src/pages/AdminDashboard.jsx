@@ -68,6 +68,28 @@ const AdminDashboard = () => {
   const [pieData, setPieData] = useState([]);
   const [barData, setBarData] = useState([]);
   const [tableRows, setTableRows] = useState([]);
+  const [timeframe, setTimeframe] = useState('6M');
+
+  const fetchAnalytics = async (tf) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const monthsMap = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
+      const months = monthsMap[tf] || 6;
+
+      const analyticsRes = await fetch(`http://localhost:5005/api/admin/analytics?months=${months}`, { headers });
+      if (analyticsRes.ok) {
+        const data = await analyticsRes.json();
+        setPieData([
+          { name: 'Approved', value: data.distribution.approved },
+          { name: 'Pending', value: data.distribution.pending },
+        ]);
+        setBarData(data.trends);
+      }
+    } catch (err) {
+      console.error("Error fetching analytics:", err);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -88,16 +110,8 @@ const AdminDashboard = () => {
         const statsRes = await fetch('http://localhost:5005/api/admin/stats', { headers });
         if (statsRes.ok) setStats(await statsRes.json());
 
-        // Analytics (Charts)
-        const analyticsRes = await fetch('http://localhost:5005/api/admin/analytics', { headers });
-        if (analyticsRes.ok) {
-          const data = await analyticsRes.json();
-          setPieData([
-            { name: 'Approved', value: data.distribution.approved },
-            { name: 'Pending', value: data.distribution.pending },
-          ]);
-          setBarData(data.trends);
-        }
+        // Initial Analytics
+        await fetchAnalytics(timeframe);
 
         // Resources Table
         const resourcesRes = await fetch('http://localhost:5005/api/admin/resources', { headers });
@@ -115,6 +129,12 @@ const AdminDashboard = () => {
       } catch (err) { console.error(err); }
     })();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'Analytics') {
+      fetchAnalytics(timeframe);
+    }
+  }, [timeframe]);
 
   const handleLogout = () => { localStorage.removeItem('token'); navigate('/', { replace: true }); };
 
@@ -186,8 +206,11 @@ const AdminDashboard = () => {
             <div className="flex items-center gap-2.5">
               <div className="flex gap-1 bg-[#F0F4FF] border border-[#E8EEFF] p-1 rounded-lg">
                 {['1M','3M','6M','1Y'].map((t) => (
-                  <button key={t} className={`px-2.5 py-1 rounded-[6px] text-[10.5px] font-700 transition-all duration-150
-                    ${t === '1Y' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-blue-600'}`}
+                  <button 
+                    key={t} 
+                    onClick={() => setTimeframe(t)}
+                    className={`px-2.5 py-1 rounded-[6px] text-[10.5px] font-700 transition-all duration-150
+                      ${t === timeframe ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-blue-600'}`}
                   >{t}</button>
                 ))}
               </div>

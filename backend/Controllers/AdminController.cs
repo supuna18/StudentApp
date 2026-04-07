@@ -99,10 +99,10 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("analytics")]
-    public async Task<IActionResult> GetAnalytics()
+    public async Task<IActionResult> GetAnalytics([FromQuery] int months = 6)
     {
         var distribution = await _mongoService.GetResourceDistributionAsync();
-        var trends = await _mongoService.GetMonthlyActivityTrendsAsync();
+        var trends = await _mongoService.GetMonthlyActivityTrendsAsync(months);
         return Ok(new { distribution, trends });
     }
 
