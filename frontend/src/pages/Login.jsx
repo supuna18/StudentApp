@@ -98,10 +98,10 @@ const Login = () => {
       <div className="login-root w-screen h-screen flex items-center justify-center bg-[#2255D2] overflow-hidden">
 
         {/* ── Card shell ── */}
-        <div className="w-full max-w-[980px] h-full max-h-[600px] mx-6 bg-white rounded-[20px] shadow-[0_32px_80px_rgba(15,28,77,0.22)] flex overflow-hidden">
+        <div className="w-full max-w-[980px] h-full sm:h-auto sm:max-h-[600px] mx-4 sm:mx-6 bg-white rounded-[20px] shadow-[0_32px_80px_rgba(15,28,77,0.22)] flex flex-col md:flex-row overflow-hidden">
 
           {/* ══════════ LEFT PANEL ══════════ */}
-          <div className="relative w-[46%] flex-shrink-0 flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
+          <div className="relative w-full md:w-[46%] flex-shrink-0 hidden md:flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
 
             {/* Ambient orbs */}
             <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-blue-500/[0.08] blur-[80px] pointer-events-none" />

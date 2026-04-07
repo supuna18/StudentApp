@@ -57,6 +57,7 @@ const ChartTooltip = ({ active, payload, label }) =>
 const AdminDashboard = () => {
   const navigate    = useNavigate();
   const [activeTab, setActiveTab] = useState('Analytics');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stats, setStats] = useState({
     totalStudents: 0, activeBlocks: 0, pendingReports: 0, systemHealth: '0%',
   });
@@ -129,11 +130,11 @@ const AdminDashboard = () => {
   const AnalyticsContent = () => (
     <div>
       {/* Stats */}
-      <div className="grid grid-cols-4 border border-[#E8EEFF] rounded-2xl bg-white overflow-hidden mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-[#E8EEFF] rounded-2xl bg-white overflow-hidden mb-5">
         {statCards.map(({ val, badge, dir, lbl }, i) => (
           <div
             key={i}
-            className={`px-6 py-5 hover:bg-[#EEF2FF] transition-colors duration-200 ${i < 3 ? 'border-r border-[#E8EEFF]' : ''}`}
+            className={`px-6 py-5 hover:bg-[#EEF2FF] transition-colors duration-200 ${i < 3 ? 'lg:border-r border-[#E8EEFF]' : ''} ${i % 2 === 0 ? 'sm:border-r' : ''} border-b lg:border-b-0`}
           >
             <div className="flex items-center justify-between mb-3">
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full
@@ -146,14 +147,14 @@ const AdminDashboard = () => {
                 <MoreHorizontal size={14}/>
               </button>
             </div>
-            <div className="serif-heading text-[34px] text-[#0F1C4D] leading-none tracking-tight mb-1.5 italic">{val}</div>
-            <div className="text-[11.5px] text-slate-400">{lbl}</div>
+            <div className="serif-heading text-[28px] md:text-[34px] text-[#0F1C4D] leading-none tracking-tight mb-1.5 italic">{val}</div>
+            <div className="text-[11px] md:text-[11.5px] text-slate-400">{lbl}</div>
           </div>
         ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-[220px_1fr] gap-4 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-4 mb-5">
         {/* Pie */}
         <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -180,7 +181,7 @@ const AdminDashboard = () => {
 
         {/* Bar */}
         <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
             <span className="text-[13px] font-700 text-[#0F1C4D]">Student & Report Activity</span>
             <div className="flex items-center gap-2.5">
               <div className="flex gap-1 bg-[#F0F4FF] border border-[#E8EEFF] p-1 rounded-lg">
@@ -193,7 +194,7 @@ const AdminDashboard = () => {
               <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barGap={4} barCategoryGap="28%">
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false}/>
@@ -209,16 +210,16 @@ const AdminDashboard = () => {
 
       {/* Table */}
       <div className="bg-white border border-[#E8EEFF] rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8EEFF]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between px-5 py-4 border-b border-[#E8EEFF] gap-4">
           <div>
             <p className="text-[13.5px] font-700 text-[#0F1C4D]">Educational Resources</p>
             <p className="text-[11.5px] text-slate-400 mt-0.5">Manage and review all platform resources</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] text-[11.5px] font-600 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-all duration-150">
               <Filter size={11}/> Filter
             </button>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] bg-[#F0F4FF] min-w-[180px]">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] bg-[#F0F4FF] flex-1 md:min-w-[180px]">
               <Search size={12} className="text-slate-400 flex-shrink-0"/>
               <input
                 placeholder="Search resources…"
@@ -226,62 +227,63 @@ const AdminDashboard = () => {
                 style={{ fontFamily: 'DM Sans' }}
               />
             </div>
-            <button className="text-slate-400 hover:text-blue-600 transition-colors p-1.5"><MoreHorizontal size={14}/></button>
           </div>
         </div>
 
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-[#F0F4FF]">
-              <th className="pl-5 pr-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Title ↕</th>
-              <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Status ↕</th>
-              <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Number ↕</th>
-              <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Responsible Person ↕</th>
-              <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Type</th>
-              <th className="pr-5 px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableRows.map((row, i) => {
-              const s = statusConfig[row.status];
-              return (
-                <tr key={i} className="hover:bg-[#EEF2FF] transition-colors duration-150 border-b border-[#E8EEFF] last:border-b-0">
-                  <td className="pl-5 pr-4 py-3.5 text-[12.5px] font-600 text-[#0F1C4D]">{row.title}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-700 ${s.bg} ${s.text}`}>
-                      {s.icon} {row.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-[10.5px] font-600 text-slate-400 font-mono">{row.number}</td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[9.5px] font-800 text-white flex-shrink-0"
-                        style={{ background: AVT_COLORS[i % AVT_COLORS.length] }}
-                      >
-                        {initials(row.person)}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[800px]">
+            <thead>
+              <tr className="bg-[#F0F4FF]">
+                <th className="pl-5 pr-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Title ↕</th>
+                <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Status ↕</th>
+                <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Number ↕</th>
+                <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Responsible Person ↕</th>
+                <th className="px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Type</th>
+                <th className="pr-5 px-4 py-2.5 text-left text-[9.5px] font-700 tracking-[.8px] uppercase text-slate-400 border-b border-[#E8EEFF]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map((row, i) => {
+                const s = statusConfig[row.status];
+                return (
+                  <tr key={i} className="hover:bg-[#EEF2FF] transition-colors duration-150 border-b border-[#E8EEFF] last:border-b-0">
+                    <td className="pl-5 pr-4 py-3.5 text-[12.5px] font-600 text-[#0F1C4D]">{row.title}</td>
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-700 ${s.bg} ${s.text}`}>
+                        {s.icon} {row.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-[10.5px] font-600 text-slate-400 font-mono">{row.number}</td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[9.5px] font-800 text-white flex-shrink-0"
+                          style={{ background: AVT_COLORS[i % AVT_COLORS.length] }}
+                        >
+                          {initials(row.person)}
+                        </div>
+                        <span className="text-[12.5px] text-[#0F1C4D]">{row.person}</span>
                       </div>
-                      <span className="text-[12.5px] text-[#0F1C4D]">{row.person}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5 text-[10px] font-700 tracking-[.5px] uppercase text-slate-400">{row.type}</td>
-                  <td className="pr-5 px-4 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <button className="flex items-center gap-1 px-2.5 py-1.5 border border-[#E8EEFF] rounded-[7px] text-[10.5px] font-600 text-slate-500 hover:border-blue-400 hover:text-blue-600 bg-white transition-all duration-150 whitespace-nowrap">
-                        <Send size={9}/> Revise
-                      </button>
-                      {[<Edit2 size={12}/>, <Trash2 size={12}/>, <ExternalLink size={12}/>].map((ic, j) => (
-                        <button key={j} className="w-7 h-7 rounded-[7px] border-none bg-transparent flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150">
-                          {ic}
+                    </td>
+                    <td className="px-4 py-3.5 text-[10px] font-700 tracking-[.5px] uppercase text-slate-400">{row.type}</td>
+                    <td className="pr-5 px-4 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <button className="flex items-center gap-1 px-2.5 py-1.5 border border-[#E8EEFF] rounded-[7px] text-[10.5px] font-600 text-slate-500 hover:border-blue-400 hover:text-blue-600 bg-white transition-all duration-150 whitespace-nowrap">
+                          <Send size={9}/> Revise
                         </button>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        {[<Edit2 size={12}/>, <Trash2 size={12}/>, <ExternalLink size={12}/>].map((ic, j) => (
+                          <button key={j} className="w-7 h-7 rounded-[7px] border-none bg-transparent flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150">
+                            {ic}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -323,8 +325,19 @@ const AdminDashboard = () => {
 
       <div className="admin-root flex min-h-screen bg-[#F0F4FF]">
 
+        {/* ─── Mobile Sidebar Toggle ─── */}
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="lg:hidden fixed top-4 right-4 z-[60] p-2 bg-white border border-[#E8EEFF] rounded-xl shadow-md text-blue-600"
+        >
+          {isSidebarOpen ? <Trash2 size={20} /> : <MoreHorizontal size={20} />}
+        </button>
+
         {/* ─── Sidebar ─────────────────────────────────────── */}
-        <aside className="w-[220px] bg-white border-r border-[#E8EEFF] flex flex-col fixed top-0 left-0 bottom-0 z-50">
+        <aside className={`
+          w-[220px] bg-white border-r border-[#E8EEFF] flex flex-col fixed top-0 bottom-0 z-50 transition-transform duration-300
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
 
           {/* Brand */}
           <div className="flex items-center gap-2.5 px-4 py-5 border-b border-[#E8EEFF]">
@@ -349,7 +362,7 @@ const AdminDashboard = () => {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
                       className={`
                         flex items-center gap-2.5 w-full px-3 py-2.5 rounded-[10px]
                         text-[12.5px] font-500 transition-all duration-150 mb-0.5 text-left
@@ -387,20 +400,28 @@ const AdminDashboard = () => {
           </div>
         </aside>
 
+        {/* ─── Overlay ─── */}
+        {isSidebarOpen && (
+          <div 
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40"
+          />
+        )}
+
         {/* ─── Main ─────────────────────────────────────────── */}
-        <div className="flex-1 ml-[220px] flex flex-col min-h-screen">
+        <div className="flex-1 lg:ml-[220px] flex flex-col min-h-screen transition-all duration-300">
 
           {/* Topbar */}
-          <div className="bg-white border-b border-[#E8EEFF] px-8 py-4 flex items-center justify-between sticky top-0 z-40 anim-up">
+          <div className="bg-white border-b border-[#E8EEFF] px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between sticky top-0 z-40 anim-up gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="serif-heading text-[22px] text-[#0F1C4D] italic leading-tight">{activeTab}</h1>
+                <h1 className="serif-heading text-[20px] md:text-[22px] text-[#0F1C4D] italic leading-tight">{activeTab}</h1>
                 <span className="opacity-80">{tabIcons[activeTab]}</span>
               </div>
-              <p className="text-[12px] text-slate-400 mt-0.5">Real-time monitoring and administrative controls.</p>
+              <p className="text-[11px] md:text-[12px] text-slate-400 mt-0.5">Real-time monitoring and administrative controls.</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-4 py-1.5 bg-[#EEF2FF] border border-blue-200/50 rounded-full text-[11.5px] font-700 text-blue-600">
+              <div className="flex items-center gap-1.5 px-4 py-1.5 bg-[#EEF2FF] border border-blue-200/50 rounded-full text-[10px] md:text-[11.5px] font-700 text-blue-600">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600" style={{ animation: 'pulse 2s infinite' }}/>
                 System Live
               </div>
@@ -408,7 +429,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-8">
+          <div className="flex-1 p-4 md:p-8">
             {renderContent()}
           </div>
         </div>
