@@ -15,6 +15,9 @@ public class MongoService
     private readonly IMongoCollection<UserLimit> _userLimitsCollection;
     private readonly IMongoCollection<SystemLog> _systemLogsCollection;
     private readonly IMongoCollection<Resource> _resourcesCollection;
+    private readonly IMongoCollection<BloomPeriod> _bloomPeriodsCollection;
+    private readonly IMongoCollection<BloomDailyLog> _bloomDailyLogsCollection;
+    private readonly IMongoCollection<BloomSettings> _bloomSettingsCollection;
 
     private static readonly DateTime _serverStartTime = DateTime.UtcNow;
 
@@ -42,6 +45,10 @@ public class MongoService
 
         var resourcesCollectionName = config.GetSection("StudentDatabase")["ResourcesCollectionName"] ?? "Resources";
         _resourcesCollection = _database.GetCollection<Resource>(resourcesCollectionName);
+
+        _bloomPeriodsCollection = _database.GetCollection<BloomPeriod>("BloomPeriods");
+        _bloomDailyLogsCollection = _database.GetCollection<BloomDailyLog>("BloomDailyLogs");
+        _bloomSettingsCollection = _database.GetCollection<BloomSettings>("BloomSettings");
     }
 
     // --- Collections ---
@@ -172,4 +179,56 @@ public class MongoService
         var result = await _resourcesCollection.ReplaceOneAsync(r => r.Id == id, updatedResource);
         return result.ModifiedCount > 0;
     }
-}
+
+    // --- Bloom Operations ---
+    public async Task<List<BloomPeriod>> GetBloomPeriodsAsync(string userId) =>
+        await _bloomPeriodsCollection.Find(p => p.UserId == userId).ToListAsync();
+
+    public async Task CreateBloomPeriodAsync(BloomPeriod period) =>
+        await _bloomPeriodsCollection.InsertOneAsync(period);
+
+    public async Task<bool> UpdateBloomPeriodAsync(string id, BloomPeriod updatedPeriod)
+    {
+        var result = await _bloomPeriodsCollection.ReplaceOneAsync(p => p.Id == id, updatedPeriod);
+        return result.ModifiedCount > 0;
+    }
+
+    public async Task<bool> DeleteBloomPeriodAsync(string id)
+    {
+        var result = await _bloomPeriodsCollection.DeleteOneAsync(p => p.Id == id);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<List<BloomDailyLog>> GetBloomDailyLogsAsync(string userId) =>
+        await _bloomDailyLogsCollection.Find(l => l.UserId == userId).ToListAsync();
+
+    public async Task CreateOrUpdateBloomDailyLogAsync(string userId, DateTime date, BloomDailyLog log)
+    {
+        var filter = Builders<BloomDailyLog>.Filter.And(
+            Builders<BloomDailyLog>.Filter.Eq(l => l.UserId, userId),
+            Builders<BloomDailyLog>.Filter.Eq(l => l.Date, date.Date)
+        );
+        var options = new ReplaceOptions { IsUpsert = true };
+        await _bloomDailyLogsCollection.ReplaceOneAsync(filter, log, options);
+    }
+
+    public async Task<bool> DeleteBloomDailyLogAsync(string userId, DateTime date)
+    {
+        var filter = Builders<BloomDailyLog>.Filter.And(
+            Builders<BloomDailyLog>.Filter.Eq(l => l.UserId, userId),
+            Builders<BloomDailyLog>.Filter.Eq(l => l.Date, date.Date)
+        );
+        var result = await _bloomDailyLogsCollection.DeleteOneAsync(filter);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<BloomSettings?> GetBloomSettingsAsync(string userId) =>
+        await _bloomSettingsCollection.Find(s => s.UserId == userId).FirstOrDefaultAsync();
+
+    public async Task SaveBloomSettingsAsync(BloomSettings settings)
+    {
+        var filter = Builders<BloomSettings>.Filter.Eq(s => s.UserId, settings.UserId);
+        var options = new ReplaceOptions { IsUpsert = true };
+        await _bloomSettingsCollection.ReplaceOneAsync(filter, settings, options);
+    }
+}

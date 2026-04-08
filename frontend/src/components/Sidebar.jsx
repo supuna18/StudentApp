@@ -9,6 +9,7 @@ import {
   LogOut,
   User,
   Users,
+  Flower,
 } from 'lucide-react';
 
 const menuSections = [
@@ -23,8 +24,14 @@ const menuSections = [
     label: 'Tools',
     items: [
       { name: 'Security Guard',    path: '/student-dashboard/safety',     icon: <ShieldCheck size={15} strokeWidth={2} /> },
-      { name: 'Mindfulness Zone',  path: '/student-dashboard/wellness',   icon: <Heart        size={15} strokeWidth={2} /> },
       { name: 'Usage Limits',      path: '/student-dashboard/set-limit',  icon: <Clock        size={15} strokeWidth={2} /> },
+    ],
+  },
+  {
+    label: 'Bloom',
+    items: [
+      { name: 'Mindfulness Zone',  path: '/student-dashboard/wellness',   icon: <Heart        size={15} strokeWidth={2} /> },
+      { name: 'Bloom Health',      path: '/student-dashboard/bloom',      icon: <Flower       size={15} strokeWidth={2} /> },
     ],
   },
   {
