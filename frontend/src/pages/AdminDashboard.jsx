@@ -15,6 +15,8 @@ import {
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
+import autoTable from 'jspdf-autotable';
+
 import UserManagement  from './UserManagement';
 import SafetyApprovals from './SafetyApprovals';
 import ResourceManager from './ResourceManager';
@@ -189,15 +191,9 @@ const AdminDashboard = () => {
 
   const handleLogout = () => { localStorage.removeItem('token'); navigate('/', { replace: true }); };
 
-  const downloadReport = async () => {
-    const input = document.getElementById('admin-analytics-report');
-    if (!input) return;
+  const downloadReport = () => {
     try {
-      const canvas = await html2canvas(input, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgW = 190;
-      const imgH = (canvas.height * imgW) / canvas.width;
       
       // EduSync Header styling
       pdf.setFillColor(15, 28, 77); // #0F1C4D
@@ -216,7 +212,62 @@ const AdminDashboard = () => {
       pdf.setTextColor(200, 200, 200);
       pdf.text(`Generated: ${new Date().toLocaleString()}`, 130, 28);
 
-      pdf.addImage(imgData, 'PNG', 10, 45, imgW, imgH);
+      pdf.setTextColor(15, 28, 77); // Reset to dark colors for text
+      
+      // 1. Key Statistics Table
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Key Platform Statistics", 15, 50);
+      
+      autoTable(pdf, {
+        startY: 55,
+        head: [['Metric', 'Value']],
+        body: [
+          ['Total Students', stats.totalStudents.toString()],
+          ['Active Blocks', stats.activeBlocks.toString()],
+          ['Pending Reports', stats.pendingReports.toString()],
+          ['System Health', stats.systemHealth.toString()]
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [34, 85, 210] }, // #2255D2
+        margin: { left: 15, right: 15 }
+      });
+
+      // 2. Resource Distribution Table
+      const nextY2 = pdf.lastAutoTable.finalY + 15;
+      pdf.setFontSize(14);
+      pdf.text("Resource Distribution by Type", 15, nextY2);
+      
+      autoTable(pdf, {
+        startY: nextY2 + 5,
+        head: [['Resource Type', 'Count']],
+        body: resourceByTypeData.map(r => [r.name, r.value.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [34, 85, 210] },
+        margin: { left: 15, right: 15 }
+      });
+
+      // 3. Detailed Educational Resources Table
+      const nextY3 = pdf.lastAutoTable.finalY + 15;
+      pdf.setFontSize(14);
+      pdf.text("Detailed Educational Resources", 15, nextY3);
+      
+      autoTable(pdf, {
+        startY: nextY3 + 5,
+        head: [['Title', 'Status', 'Ref No.', 'Owner', 'Type']],
+        body: tableRows.map(row => [
+          row.title || 'N/A', 
+          row.status || 'N/A', 
+          row.number || 'N/A', 
+          row.person || 'N/A', 
+          row.type || 'N/A'
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [34, 85, 210] },
+        margin: { left: 15, right: 15 },
+        styles: { fontSize: 9 }
+      });
+
       pdf.save(`EduSync_Analytics_Report_${Date.now()}.pdf`);
     } catch (err) { console.error("Error generating PDF:", err); }
   };
