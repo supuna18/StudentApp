@@ -154,13 +154,18 @@ public class MongoService
         };
     }
 
-    public async Task<List<BsonDocument>> GetSystemUsageTrendsAsync()
+    public async Task<object> GetSystemUsageTrendsAsync()
     {
-        return await _userLimitsCollection.Aggregate()
+        var trendsDocs = await _userLimitsCollection.Aggregate()
             .Group(new BsonDocument { { "_id", "$domain" }, { "count", new BsonDocument("$sum", 1) } })
             .Sort(new BsonDocument("count", -1))
             .Limit(5)
             .ToListAsync();
+            
+        return trendsDocs.Select(doc => new {
+            domain = doc["_id"].IsBsonNull ? "Unknown" : doc["_id"].AsString,
+            count = doc["count"].AsInt32
+        }).ToList();
     }
 
     public async Task<object> GetResourceDistributionAsync()
@@ -169,9 +174,14 @@ public class MongoService
         var pending = await _resourcesCollection.CountDocumentsAsync(r => !r.IsApproved);
 
         // Also group by FileType or Category? Let's group by FileType
-        var byType = await _resourcesCollection.Aggregate()
+        var byTypeDocs = await _resourcesCollection.Aggregate()
             .Group(new BsonDocument { { "_id", "$FileType" }, { "count", new BsonDocument("$sum", 1) } })
             .ToListAsync();
+
+        var byType = byTypeDocs.Select(doc => new {
+            _id = doc["_id"].IsBsonNull ? "Unknown" : doc["_id"].AsString,
+            count = doc["count"].AsInt32
+        }).ToList();
 
         return new { approved, pending, byType };
     }

@@ -9,6 +9,7 @@ import {
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  ComposedChart, Line, Area
 } from 'recharts';
 
 import UserManagement  from './UserManagement';
@@ -67,6 +68,8 @@ const AdminDashboard = () => {
 
   const [pieData, setPieData] = useState([]);
   const [safetyPieData, setSafetyPieData] = useState([]);
+  const [resourceByTypeData, setResourceByTypeData] = useState([]);
+  const [safetyApprovalsCount, setSafetyApprovalsCount] = useState({ pending: 0, approved: 0 });
   const [barData, setBarData] = useState([]);
   const [tableRows, setTableRows] = useState([]);
   const [timeframe, setTimeframe] = useState('6M');
@@ -85,15 +88,35 @@ const AdminDashboard = () => {
       if (analyticsRes.ok) {
         const data = await analyticsRes.json();
         console.log("Analytics data received:", data);
-        setPieData([
+        const pData = [
           { name: 'Approved', value: data.distribution.approved },
           { name: 'Pending', value: data.distribution.pending },
-        ]);
+        ];
+        // Ensure pie shows a default uncolored slice if completely zero
+        setPieData(pData.every(d => d.value === 0) ? [{ name: 'No Resources', value: 1, fill: '#E8EEFF' }] : pData);
+        
+        // Map robust Resource types
+        if (data.distribution.byType && data.distribution.byType.length > 0) {
+          const mappedByType = data.distribution.byType.map(item => ({
+            name: item._id || 'Unknown',
+            value: item.count
+          }));
+          setResourceByTypeData(mappedByType);
+        } else {
+          setResourceByTypeData([{ name: 'No Resources', value: 0 }]);
+        }
+
         setSafetyPieData([
           { name: 'Pending', value: data.safetyDistribution.pending },
           { name: 'Approved', value: data.safetyDistribution.approved },
           { name: 'Blocked', value: data.safetyDistribution.blocked },
         ]);
+        
+        setSafetyApprovalsCount({
+          pending: data.safetyDistribution.pending || 0,
+          approved: data.safetyDistribution.approved || 0
+        });
+
         setBarData(data.trends);
       } else {
         console.error("Failed to fetch analytics:", analyticsRes.status, analyticsRes.statusText);
@@ -198,44 +221,80 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+      {/* Charts Row 1: Resource & Safety KPI */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         {/* Pie: Resource Distribution */}
-        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
+        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[13px] font-700 text-[#0F1C4D]">Resource Distribution</span>
             <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
-                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}
-              </Pie>
-              <Tooltip content={<ChartTooltip/>}/>
-              <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="flex-1 h-[200px] mt-2">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
+                  {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}
+                </Pie>
+                <Tooltip content={<ChartTooltip/>}/>
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* Pie: Safety Report Distribution */}
-        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5">
+        {/* Bar: Resource by Type */}
+        <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[13px] font-700 text-[#0F1C4D]">Safety Report Status</span>
+            <span className="text-[13px] font-700 text-[#0F1C4D]">Resources by Type</span>
             <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={safetyPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
-                {['#F59E0B', '#10B981', '#EF4444'].map((color, i) => <Cell key={i} fill={color}/>)}
-              </Pie>
-              <Tooltip content={<ChartTooltip/>}/>
-              <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="flex-1 h-[200px] mt-2">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={resourceByTypeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E8EEFF"/>
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+                <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+                <Tooltip content={<ChartTooltip/>}/>
+                <Bar dataKey="value" fill="#4A70F5" radius={[4,4,0,0]} name="Count"/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Safety Approvals KPI */}
+        <div className="bg-gradient-to-br from-[#0F1C4D] to-[#1E3A8A] border border-[#0F1C4D] rounded-2xl p-6 text-white flex flex-col justify-center relative overflow-hidden shadow-lg">
+          {/* Background decoration */}
+          <ShieldAlert className="absolute -right-6 -bottom-6 text-white/5" size={140} />
+          
+          <div className="relative z-10">
+            <h3 className="text-[13px] font-700 text-white/80 uppercase tracking-wider mb-6">Safety Approvals</h3>
+            
+            <div className="flex justify-between items-end mb-5">
+              <div>
+                <p className="text-[12px] text-white/70 mb-1">Pending Review</p>
+                <p className="font-serif text-4xl font-bold leading-none">{safetyApprovalsCount.pending}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-orange-400/20 text-orange-400 flex items-center justify-center">
+                <ShieldAlert size={20} />
+              </div>
+            </div>
+
+            <div className="w-full h-[1px] bg-white/10 mb-5"></div>
+
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-[12px] text-white/70 mb-1">Approved Safe</p>
+                <p className="text-2xl font-bold leading-none text-emerald-400">{safetyApprovalsCount.approved}</p>
+              </div>
+              <div className="text-[11px] bg-white/10 px-2 py-1 rounded font-semibold text-emerald-300">
+                Action Required: {safetyApprovalsCount.pending > 0 ? 'Yes' : 'No'}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 mb-5">
+      <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 mb-5 overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
             <span className="text-[14px] font-700 text-[#0F1C4D]">Activity Trends</span>
@@ -263,17 +322,22 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={barData} barGap={8} barCategoryGap="20%">
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
-            <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
-            <Tooltip content={<ChartTooltip/>}/>
-            <Bar dataKey="students" fill="#2255D2" radius={[4,4,0,0]} name="New Students"/>
-            <Bar dataKey="reports"  fill="#93B4FF" radius={[4,4,0,0]} name="Safety Reports"/>
-            <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 11, paddingTop: 10 }}/>
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="w-full overflow-x-auto pb-4">
+          <div className="min-w-[500px]">
+            <ResponsiveContainer width="100%" height={250}>
+            <ComposedChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+              <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false}/>
+              <Tooltip content={<ChartTooltip/>}/>
+              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 11, paddingTop: 10 }}/>
+              <Area yAxisId="left" type="monotone" dataKey="students" fill="#EEF2FF" stroke="#2255D2" strokeWidth={2} name="New Students" />
+              <Bar yAxisId="right" dataKey="reports" fill="#F59E0B" radius={[4,4,0,0]} name="Safety Reports" barSize={20} />
+            </ComposedChart>
+          </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Table */}

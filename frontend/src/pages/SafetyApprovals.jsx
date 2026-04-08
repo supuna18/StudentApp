@@ -88,14 +88,14 @@ const SafetyApprovals = () => {
 
       <div className="sa-root">
         {/* Header */}
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             
             <p className="text-[12.5px] text-slate-400 mt-1">Review and manage reported sites to keep students safe.</p>
           </div>
 
-          <div className="flex items-center gap-3">
-             <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E8EEFF] rounded-[10px] min-w-[240px] hover:border-blue-300 transition-colors">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+             <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E8EEFF] rounded-[10px] flex-1 md:min-w-[240px] hover:border-blue-300 transition-colors">
               <Search size={13} className="text-slate-400 flex-shrink-0" />
               <input
                 value={search}
@@ -112,7 +112,8 @@ const SafetyApprovals = () => {
 
         {/* Table Card */}
         <div className="bg-white border border-[#E8EEFF] rounded-2xl overflow-hidden shadow-sm">
-          <table className="w-full border-collapse">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-[#F8FAFF]">
                 <th className="py-4 pl-6 pr-4 text-left text-[10px] font-bold tracking-[1px] uppercase text-slate-400 border-b border-[#E8EEFF]">Reported URL</th>
@@ -199,6 +200,7 @@ const SafetyApprovals = () => {
               )}
             </tbody>
           </table>
+         </div>
         </div>
       </div>
     </div>
