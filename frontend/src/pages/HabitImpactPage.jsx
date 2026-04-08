@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Banknote, Hourglass, CheckCircle2, Leaf, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView } from 'framer-motion';
+import { CheckCircle2, Leaf, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown, Hourglass, Sparkles, Moon, Sun } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
 const HEALTH_MILESTONES = [
@@ -14,23 +14,57 @@ const HEALTH_MILESTONES = [
     { label: '1 Year', desc: 'Heart risk cuts in half', icon: '🏆', hours: 8760, color: 'orange' }
 ];
 
+// ── Animation Variants ──
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.05 } }
+};
+const cardVariants = {
+    hidden: { opacity: 0, y: 28, scale: 0.97 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 18 } }
+};
+const slideInLeft = {
+    hidden: { opacity: 0, x: -40 },
+    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 80, damping: 18 } }
+};
+const slideInRight = {
+    hidden: { opacity: 0, x: 40 },
+    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 80, damping: 18 } }
+};
+const milestoneVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i) => ({ opacity: 1, x: 0, transition: { delay: i * 0.07, type: 'spring', stiffness: 100, damping: 20 } })
+};
+
+// ── Animated Number Counter ──
+const AnimatedCounter = ({ value, className }) => {
+    const ref = useRef(null);
+    const motionValue = useMotionValue(0);
+    const spring = useSpring(motionValue, { stiffness: 60, damping: 20 });
+    const display = useTransform(spring, (val) => Math.round(val).toLocaleString());
+    const isInView = useInView(ref, { once: true });
+    useEffect(() => { if (isInView) motionValue.set(value); }, [isInView, value, motionValue]);
+    return <motion.span ref={ref} className={className}>{display}</motion.span>;
+};
+
+// ── Floating Orb ──
+const FloatingOrb = ({ style, className }) => (
+    <motion.div
+        className={`absolute rounded-full blur-3xl pointer-events-none ${className}`}
+        style={style}
+        animate={{ y: [0, -20, 0], x: [0, 10, 0], scale: [1, 1.05, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+    />
+);
+
 const HabitImpactPage = () => {
-
-    // Basic User Session State
-    const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
+    const [loading, setLoading]     = useState(true);
+    const [status, setStatus]       = useState(null);
+    const [isSaving, setIsSaving]   = useState(false);
     const [isLogging, setIsLogging] = useState(false);
+    const [darkMode, setDarkMode]   = useState(() => localStorage.getItem('fp-dark') === 'true');
 
-    // Baseline Form State
-    const [form, setForm] = useState({
-        habitType: 'Smoking',
-        cps: 15,
-        years: 8,
-        packPrice: 1500
-    });
-
-    // Daily Log Form State
+    const [form, setForm] = useState({ habitType: 'Smoking', cps: 15, years: 8, packPrice: 1500 });
     const [logForm, setLogForm] = useState({
         id: null,
         date: new Date().toISOString().split('T')[0],
@@ -41,342 +75,290 @@ const HabitImpactPage = () => {
     const isSmoking = form.habitType === 'Smoking';
     const priceTiers = [90, 110, 130, 160, 170];
 
-    // Auth Token Handling
     const token = localStorage.getItem('token');
-    let userName = "Guest";
+    let userName = 'Guest';
     if (token) {
         try {
             const decoded = jwtDecode(token);
-            userName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || decoded.name || decoded.unique_name || "Guest";
-        } catch (e) { console.error("Error decoding token:", e); }
+            userName = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decoded.name || decoded.unique_name || 'Guest';
+        } catch (e) { console.error('Token decode error:', e); }
     }
 
-    const API_URL = "http://localhost:5005/api/habit";
+    const API_URL = 'http://localhost:5005/api/habit';
 
-    useEffect(() => {
-        fetchStatus();
-    }, []);
+    // Persist dark mode preference
+    const toggleDark = () => {
+        setDarkMode(prev => {
+            const next = !prev;
+            localStorage.setItem('fp-dark', String(next));
+            return next;
+        });
+    };
+
+    useEffect(() => { fetchStatus(); }, []);
 
     const fetchStatus = async () => {
         try {
             const res = await axios.get(`${API_URL}/${userName}`);
-            if (res.data && res.data.message !== "First_Time_User") {
+            if (res.data && res.data.message !== 'First_Time_User') {
                 setStatus(res.data);
-                setForm({
-                    habitType: res.data.habitType || 'Smoking',
-                    cps: res.data.dailyAmount || 15,
-                    years: res.data.yearsActive || 8,
-                    packPrice: res.data.unitPrice || 1500
-                });
+                setForm({ habitType: res.data.habitType || 'Smoking', cps: res.data.dailyAmount || 15, years: res.data.yearsActive || 8, packPrice: res.data.unitPrice || 1500 });
             }
-        } catch (err) {
-            console.log("No existing status found.");
-        } finally {
-            setLoading(false);
-        }
+        } catch { console.log('No existing status.'); }
+        finally { setLoading(false); }
     };
 
     const handleUpdateProjection = async (isStarting = false) => {
         setIsSaving(true);
         try {
-            const newStatus = {
-                ...status,
-                habitType: form.habitType,
-                dailyAmount: form.cps,
-                yearsActive: form.years,
-                unitPrice: form.packPrice,
-                userId: userName,
-                quitDate: (isStarting || !status) ? new Date().toISOString() : status.quitDate,
-                dailyLogs: status?.dailyLogs || [],
-                updatedAt: new Date().toISOString()
-            };
-
-            // Remove id completely if it is not a valid existing ID to avoid sending null to backend
-            if (!newStatus.id || newStatus.id === "null") {
-                delete newStatus.id;
-            }
-
+            const newStatus = { ...status, habitType: form.habitType, dailyAmount: form.cps, yearsActive: form.years, unitPrice: form.packPrice, userId: userName, quitDate: (isStarting || !status) ? new Date().toISOString() : status.quitDate, dailyLogs: status?.dailyLogs || [], updatedAt: new Date().toISOString() };
+            if (!newStatus.id || newStatus.id === 'null') delete newStatus.id;
             await axios.post(API_URL, newStatus);
             setStatus(newStatus);
             setTimeout(() => setIsSaving(false), 500);
-        } catch (err) {
-            alert("Failed to update projection.");
-            setIsSaving(false);
-        }
+        } catch { alert('Failed to update projection.'); setIsSaving(false); }
     };
 
     const handleSaveLog = async () => {
-        if (logForm.count < 0) return alert("Please enter a valid count.");
+        if (logForm.count < 0) return alert('Please enter a valid count.');
         setIsLogging(true);
         try {
-            const logEntry = {
-                id: logForm.id || Math.random().toString(36).substr(2, 9),
-                date: new Date(logForm.date).toISOString(),
-                count: Number(logForm.count),
-                unitPrice: Number(logForm.unitPrice)
-            };
+            const logEntry = { id: logForm.id || Math.random().toString(36).substr(2, 9), date: new Date(logForm.date).toISOString(), count: Number(logForm.count), unitPrice: Number(logForm.unitPrice) };
             await axios.post(`${API_URL}/log/${userName}`, logEntry);
-
-            // Re-fetch to get updated list
             await fetchStatus();
-
-            // Reset form
             setLogForm({ id: null, date: new Date().toISOString().split('T')[0], count: 0, unitPrice: 130 });
             setIsLogging(false);
-        } catch (err) {
-            alert("Failed to save log entry.");
-            setIsLogging(false);
-        }
+        } catch { alert('Failed to save log entry.'); setIsLogging(false); }
     };
 
     const handleMarkTodayClean = async () => {
         setIsLogging(true);
         try {
             const today = new Date().toISOString().split('T')[0];
-            const logEntry = {
-                id: Math.random().toString(36).substr(2, 9),
-                date: new Date(today).toISOString(),
-                count: 0,
-                unitPrice: 0
-            };
-            await axios.post(`${API_URL}/log/${userName}`, logEntry);
+            await axios.post(`${API_URL}/log/${userName}`, { id: Math.random().toString(36).substr(2, 9), date: new Date(today).toISOString(), count: 0, unitPrice: 0 });
             await fetchStatus();
             setIsLogging(false);
-        } catch (err) {
-            alert("Failed to mark today as clean.");
-            setIsLogging(false);
-        }
+        } catch { alert('Failed to mark today as clean.'); setIsLogging(false); }
     };
 
     const handleDeleteLog = async (logId) => {
-        if (!window.confirm("Delete this entry?")) return;
-        try {
-            await axios.delete(`${API_URL}/log/${userName}/${logId}`);
-            fetchStatus();
-        } catch (err) {
-            alert("Failed to delete log.");
-        }
+        if (!window.confirm('Delete this entry?')) return;
+        try { await axios.delete(`${API_URL}/log/${userName}/${logId}`); fetchStatus(); }
+        catch { alert('Failed to delete log.'); }
     };
 
     const handleEditLog = (log) => {
-        setLogForm({
-            id: log.id,
-            date: new Date(log.date).toISOString().split('T')[0],
-            count: log.count,
-            unitPrice: log.unitPrice
-        });
+        setLogForm({ id: log.id, date: new Date(log.date).toISOString().split('T')[0], count: log.count, unitPrice: log.unitPrice });
         window.scrollTo({ top: 300, behavior: 'smooth' });
     };
 
     const handleReset = async () => {
-        if (!window.confirm("Are you sure you want to reset your streak? This will erase your current active progress!")) return;
-        try {
-            await axios.delete(`${API_URL}/${userName}`);
-            setStatus(null);
-            fetchStatus();
-        } catch (err) {
-            console.error("Reset failed");
-        }
-    }
+        if (!window.confirm('Are you sure you want to reset your streak?')) return;
+        try { await axios.delete(`${API_URL}/${userName}`); setStatus(null); fetchStatus(); }
+        catch { console.error('Reset failed'); }
+    };
+
+    // ── Dark mode style helpers ──
+    const d = (light, dark) => darkMode ? dark : light;
+
+    // Token aliases for readability
+    const bg        = d('bg-[#fafafc]',  'bg-[#0f111a]');
+    const card      = d('bg-white',      'bg-[#1a1d2e]');
+    const cardBorder= d('border-slate-100', 'border-slate-700/40');
+    const cardShadow= d('shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]', 'shadow-[0_20px_50px_-20px_rgba(0,0,0,0.4)]');
+    const textPrimary = d('text-slate-800',  'text-slate-100');
+    const textSecond  = d('text-slate-500',  'text-slate-400');
+    const textMuted   = d('text-slate-400',  'text-slate-500');
+    const inputBg     = d('bg-slate-50',     'bg-slate-800');
+    const divider     = d('border-slate-50', 'border-slate-700/40');
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-4 border-blue-200 border-t-[#0F4C81] animate-spin"></div>
+            <div className={`min-h-screen ${bg} flex items-center justify-center transition-colors duration-500`}>
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }} className="w-10 h-10 rounded-full border-4 border-blue-100 border-t-rose-500" />
             </div>
         );
     }
 
     const isJourneyActive = !!status;
-    const quitDate = status?.quitDate ? new Date(status.quitDate) : null;
-    const now = new Date();
-    const diffMs = quitDate ? Math.max(0, now - quitDate) : 0;
-    const streakDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const quitDate  = status?.quitDate ? new Date(status.quitDate) : null;
+    const now       = new Date();
+    const diffMs    = quitDate ? Math.max(0, now - quitDate) : 0;
+    const streakDays  = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const streakHours = diffMs / (1000 * 60 * 60);
 
-    // Calculations
     const dailyBaselineCost = isSmoking ? (form.cps / 20) * form.packPrice : form.cps * form.packPrice;
-
-    // Calculate Monthly Spending from Logs
     const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const monthLogs = (status?.dailyLogs || []).filter(log => {
-        const d = new Date(log.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    });
-    const monthlySpending = monthLogs.reduce((acc, log) => acc + (log.count * log.unitPrice), 0);
-    const projectedYearlySavings = (dailyBaselineCost * 365.25) - (monthlySpending * 12);
+    const currentYear  = now.getFullYear();
+    const monthLogs    = (status?.dailyLogs || []).filter(log => { const d2 = new Date(log.date); return d2.getMonth() === currentMonth && d2.getFullYear() === currentYear; });
+    const monthlySpending = monthLogs.reduce((acc, log) => acc + log.count * log.unitPrice, 0);
+    const lifeRegainedYears = isSmoking ? (form.cps * form.years * 1.5) / 100 + 0.2 : (form.cps * form.years * 1.2) / 100 + 0.1;
 
-    const lifeRegainedYears = isSmoking
-        ? (form.cps * form.years * 1.5) / 100 + 0.2
-        : (form.cps * form.years * 1.2) / 100 + 0.1;
+    const hour = now.getHours();
+    const greeting  = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
+    const greetEmoji = hour < 12 ? '🌅' : hour < 18 ? '☀️' : '🌙';
 
     return (
-        <div className="min-h-screen bg-[#fafafc] text-slate-800 font-sans selection:bg-blue-100 pb-20">
-            {/* ── Page Header ── */}
-            <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 mb-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex items-center gap-5">
+        <motion.div
+            className={`min-h-screen ${bg} ${textPrimary} font-sans selection:bg-blue-100 pb-20 relative overflow-hidden transition-colors duration-500`}
+            initial={false} animate={{ backgroundColor: darkMode ? '#0f111a' : '#fafafc' }}
+        >
+            {/* ── Floating Orbs ── */}
+            <FloatingOrb className={d('bg-rose-200/30',   'bg-rose-900/20')}   style={{ width: 400, height: 400, top: -100, left: -150 }} />
+            <FloatingOrb className={d('bg-blue-200/20',   'bg-blue-900/15')}   style={{ width: 300, height: 300, top: 200, right: -80 }} />
+            <FloatingOrb className={d('bg-orange-100/40', 'bg-purple-900/15')} style={{ width: 250, height: 250, bottom: 100, left: '40%' }} />
 
-                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border bg-white border-slate-100 shadow-rose-100">
-                            {new Date().getHours() < 12 ? '🌅' : new Date().getHours() < 18 ? '☀️' : '🌙'}
-                        </div>
+            {/* ── Header ── */}
+            <motion.div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 mb-4 relative z-10" initial="hidden" animate="visible" variants={containerVariants}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+
+                    <motion.div className="flex items-center gap-5" variants={slideInLeft}>
+                        <motion.div
+                            className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border ${card} ${cardBorder} shadow-rose-100`}
+                            animate={{ rotate: [0, 5, -5, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                        >
+                            {greetEmoji}
+                        </motion.div>
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-600">
-                                    {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 18 ? 'Good Afternoon' : 'Good Evening'}
-                                </p>
-                                <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500">{greeting}</p>
+                                <span className={`w-1 h-1 rounded-full ${d('bg-slate-300','bg-slate-600')}`} />
                                 <div className="flex items-center gap-1.5">
                                     <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                                     </span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline-block">Tracking Active</span>
+                                    <span className={`text-[10px] font-bold ${textMuted} uppercase tracking-widest hidden sm:inline-block`}>Tracking Active</span>
                                 </div>
                             </div>
-                            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-800">
+                            <h1 className={`text-3xl md:text-5xl font-black tracking-tight ${textPrimary}`}>
                                 Freedom <span className="bg-gradient-to-r from-rose-500 to-orange-500 bg-clip-text text-transparent">Path</span>
                             </h1>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="hidden lg:flex flex-col items-end px-4 py-2 rounded-xl border bg-white border-slate-100 shadow-sm">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">System Status</p>
-                            <p className="text-xs font-bold text-emerald-600">📡 100% Operational</p>
+                    <motion.div className="flex items-center gap-3" variants={slideInRight}>
+                        {/* Dark mode toggle */}
+                        <motion.button
+                            onClick={toggleDark}
+                            className={`relative w-14 h-7 rounded-full transition-colors duration-300 flex items-center px-1 ${darkMode ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                            whileTap={{ scale: 0.95 }}
+                            title="Toggle dark mode"
+                        >
+                            <motion.div
+                                className={`w-5 h-5 rounded-full flex items-center justify-center shadow-md ${darkMode ? 'bg-white text-indigo-600' : 'bg-white text-amber-500'}`}
+                                animate={{ x: darkMode ? 26 : 0 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                            >
+                                {darkMode ? <Moon size={11} /> : <Sun size={11} />}
+                            </motion.div>
+                        </motion.button>
+
+                        <div className={`hidden lg:flex flex-col items-end px-4 py-2 rounded-xl border ${card} ${cardBorder} shadow-sm`}>
+                            <p className={`text-[9px] font-black ${textMuted} uppercase tracking-widest`}>System Status</p>
+                            <p className="text-xs font-bold text-emerald-500">📡 100% Operational</p>
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-white overflow-hidden border-2 border-slate-100 shadow-sm cursor-pointer ml-auto">
+                        <motion.div className={`w-12 h-12 rounded-2xl overflow-hidden border-2 ${cardBorder} shadow-sm cursor-pointer`} whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
                             <img src={`https://ui-avatars.com/api/?name=${userName}&background=ffe4e6&color=e11d48`} alt="Profile" className="w-full h-full object-cover" />
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </div>
-            </div>
+            </motion.div>
 
-            <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
+            {/* ── Content Grid ── */}
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-12 grid grid-cols-1 xl:grid-cols-12 gap-12 relative z-10">
 
-                {/* LEFT COLUMN: CONTROLS. */}
-                <div className="xl:col-span-4 space-y-8 sticky top-8 self-start">
-                    {/* Inspiring Image */}
-                    <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] overflow-hidden">
+                {/* ──── LEFT COLUMN ──── */}
+                <motion.div className="xl:col-span-4 space-y-8 sticky top-8 self-start" initial="hidden" animate="visible" variants={containerVariants}>
+
+                    {/* Image */}
+                    <motion.div className={`${card} p-2 rounded-[2.5rem] border ${cardBorder} ${cardShadow} overflow-hidden`} variants={cardVariants} whileHover={{ scale: 1.02 }} transition={{ type:'spring', stiffness:200, damping:20 }}>
                         <img src="/How-to-Stop-Smoking.png" alt="Freedom Path" className="w-full h-48 object-cover rounded-[2rem] hover:scale-105 transition-transform duration-700" />
-                    </div>
+                    </motion.div>
 
-                    {/* Small Professional Video Insight */}
-                    <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                    {/* Video Insight */}
+                    <motion.div className={`${card} p-4 rounded-[2rem] border ${cardBorder} shadow-sm relative overflow-hidden group`} variants={cardVariants} whileHover={{ scale: 1.01 }}>
+                        <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" animate={{ x: ['-100%','200%'] }} transition={{ duration:3, repeat:Infinity, repeatDelay:4, ease:'easeInOut' }} />
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-1.5 bg-rose-50 text-rose-500 rounded-lg">
+                            <motion.div className="p-1.5 bg-rose-500/10 text-rose-500 rounded-lg" animate={{ scale:[1,1.15,1] }} transition={{ duration:2, repeat:Infinity }}>
                                 <Leaf size={14} />
-                            </div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recovery Insight</p>
+                            </motion.div>
+                            <p className={`text-[10px] font-black uppercase tracking-widest ${textMuted}`}>Recovery Insight</p>
                         </div>
-                        <div className="rounded-xl overflow-hidden shadow-inner bg-slate-50">
-                            <video 
-                                src="/addiction_bird.mp4" 
-                                autoPlay 
-                                loop 
-                                muted 
-                                playsInline
-                                className="w-full aspect-video object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
-                            />
+                        <div className={`rounded-xl overflow-hidden shadow-inner ${inputBg}`}>
+                            <video src="/addiction_bird.mp4" autoPlay loop muted playsInline className="w-full aspect-video object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {/* Streak Card. */}
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]">
+                    {/* Streak Card */}
+                    <motion.div className={`${card} p-8 rounded-[2.5rem] border ${cardBorder} ${cardShadow}`} variants={cardVariants}>
                         {isJourneyActive ? (
                             <div className="text-center">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#0F4C81] bg-blue-50 px-4 py-1.5 rounded-full mb-6 inline-block">Active Journey</span>
+                                <motion.span className="text-[10px] font-black uppercase tracking-widest text-[#0F4C81] bg-blue-500/10 px-4 py-1.5 rounded-full mb-6 inline-block" initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.3, type:'spring' }}>
+                                    Active Journey
+                                </motion.span>
                                 <div className="flex items-baseline justify-center gap-2 mb-2">
-                                    <span className="text-7xl font-black text-[#1f2937] tracking-tighter">{streakDays}</span>
-                                    <span className="text-2xl font-bold text-slate-400">Days</span>
+                                    <AnimatedCounter value={streakDays} className={`text-7xl font-black ${textPrimary} tracking-tighter tabular-nums`} />
+                                    <span className={`text-2xl font-bold ${textMuted}`}>Days</span>
                                 </div>
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-8">Freedom Momentum</p>
-                                <button onClick={handleReset} className="text-[11px] font-black uppercase text-rose-500 flex items-center gap-2 mx-auto hover:text-rose-700 transition px-6 py-3 bg-rose-50 rounded-xl">
+                                <p className={`text-xs font-bold ${textSecond} uppercase tracking-widest mb-8`}>Freedom Momentum</p>
+                                <motion.button onClick={handleReset} className="text-[11px] font-black uppercase text-rose-500 flex items-center gap-2 mx-auto hover:text-rose-400 px-6 py-3 bg-rose-500/10 rounded-xl transition" whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}>
                                     <RotateCcw size={14} /> Reset Progress
-                                </button>
+                                </motion.button>
                             </div>
                         ) : (
                             <div className="text-center py-4">
-                                <div className="w-16 h-16 bg-slate-50 rounded-3xl text-slate-300 flex items-center justify-center mx-auto mb-6 shadow-inner"><Flame size={32} /></div>
-                                <h4 className="text-2xl font-black text-slate-800 mb-3 tracking-tight">Ready to break free?</h4>
-                                <p className="text-sm text-slate-500 font-medium mb-8 leading-relaxed px-4">Set your baseline and take the first step towards a healthier, wealthier you.</p>
-                                <button
-                                    onClick={() => handleUpdateProjection(true)}
-                                    className="w-full py-4 bg-[#1f2937] text-white font-bold rounded-2xl shadow-lg hover:bg-black transition-all"
-                                >
+                                <motion.div className={`w-16 h-16 ${inputBg} rounded-3xl ${textMuted} flex items-center justify-center mx-auto mb-6 shadow-inner`} animate={{ scale:[1,1.08,1] }} transition={{ duration:2, repeat:Infinity }}>
+                                    <Flame size={32} />
+                                </motion.div>
+                                <h4 className={`text-2xl font-black ${textPrimary} mb-3 tracking-tight`}>Ready to break free?</h4>
+                                <p className={`text-sm ${textSecond} font-medium mb-8 leading-relaxed px-4`}>Set your baseline and take the first step towards a healthier, wealthier you.</p>
+                                <motion.button onClick={() => handleUpdateProjection(true)} className={`w-full py-4 ${d('bg-[#1f2937] text-white','bg-slate-100 text-slate-900')} font-bold rounded-2xl shadow-lg transition-all`} whileHover={{ scale:1.03, boxShadow:'0 10px 30px rgba(0,0,0,0.2)' }} whileTap={{ scale:0.97 }}>
                                     Start Journey
-                                </button>
+                                </motion.button>
                             </div>
                         )}
-                    </div>
+                    </motion.div>
 
-                    {/* Daily Input Form */}
+                    {/* Daily Log Form */}
                     <AnimatePresence>
                         {isJourneyActive && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-[0_25px_60px_-20px_rgba(30,58,138,0.08)] relative overflow-hidden"
-                            >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                                <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
-                                    <div className="p-2 bg-blue-600 text-white rounded-lg"><Plus size={18} strokeWidth={3} /></div>
+                            <motion.div initial={{ opacity:0, y:30, scale:0.95 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:-20, scale:0.95 }} transition={{ type:'spring', stiffness:100, damping:18 }} className={`${card} p-8 rounded-[2.5rem] border ${d('border-blue-100','border-blue-900/40')} shadow-[0_25px_60px_-20px_rgba(30,58,138,0.08)] relative overflow-hidden`}>
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                                <h3 className={`text-xl font-black ${textPrimary} mb-6 flex items-center gap-3`}>
+                                    <motion.div className="p-2 bg-blue-600 text-white rounded-lg" whileHover={{ rotate:90 }} transition={{ type:'spring', stiffness:200 }}>
+                                        <Plus size={18} strokeWidth={3} />
+                                    </motion.div>
                                     Log Daily Usage
                                 </h3>
-
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Date</label>
+                                        <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Date</label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                                            <input
-                                                type="date"
-                                                value={logForm.date}
-                                                onChange={(e) => setLogForm({ ...logForm, date: e.target.value })}
-                                                className="w-full h-14 bg-slate-50 border-none rounded-2xl pl-12 pr-5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                                            />
+                                            <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 ${textMuted}`} size={16} />
+                                            <input type="date" value={logForm.date} onChange={e => setLogForm({...logForm, date:e.target.value})} className={`w-full h-14 ${inputBg} border-none rounded-2xl pl-12 pr-5 text-sm font-bold ${textPrimary} outline-none focus:ring-2 focus:ring-blue-500/20 transition-all`} />
                                         </div>
                                     </div>
-
                                     <div className="space-y-2">
-                                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Amount Smoke</label>
-                                        <input
-                                            type="number"
-                                            placeholder="0"
-                                            value={logForm.count || ''}
-                                            onChange={(e) => setLogForm({ ...logForm, count: e.target.value })}
-                                            className="w-full h-16 bg-slate-50 border-none rounded-2xl px-6 text-2xl font-black text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                                        />
+                                        <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Amount Smoked</label>
+                                        <input type="number" placeholder="0" value={logForm.count||''} onChange={e=>setLogForm({...logForm,count:e.target.value})} className={`w-full h-16 ${inputBg} border-none rounded-2xl px-6 text-2xl font-black ${textPrimary} outline-none focus:ring-2 focus:ring-blue-500/20 transition-all`} />
                                     </div>
-
                                     <div className="space-y-3">
-                                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Price Per Cigarette (LKR)</label>
+                                        <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Price Per Cigarette (LKR)</label>
                                         <div className="flex flex-wrap gap-2">
                                             {priceTiers.map(price => (
-                                                <button
-                                                    key={price}
-                                                    onClick={() => setLogForm({ ...logForm, unitPrice: price })}
-                                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${logForm.unitPrice === price ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                                                >
+                                                <motion.button key={price} onClick={() => setLogForm({...logForm, unitPrice:price})} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${logForm.unitPrice === price ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : `${inputBg} ${textSecond} hover:opacity-80`}`} whileHover={{ scale:1.08 }} whileTap={{ scale:0.95 }}>
                                                     Rs.{price}
-                                                </button>
+                                                </motion.button>
                                             ))}
                                         </div>
                                     </div>
-
-                                    <button
-                                        onClick={handleSaveLog}
-                                        disabled={isLogging}
-                                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 transition-all active:scale-[0.98] disabled:opacity-50"
-                                    >
-                                        {isLogging ? 'Saving Entry...' : (logForm.id ? 'Update Log Entry' : 'Add Log Entry')}
-                                    </button>
+                                    <motion.button onClick={handleSaveLog} disabled={isLogging} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50" whileHover={{ scale:1.02, boxShadow:'0 15px 30px rgba(37,99,235,0.3)' }} whileTap={{ scale:0.97 }}>
+                                        {isLogging ? 'Saving...' : (logForm.id ? 'Update Log Entry' : 'Add Log Entry')}
+                                    </motion.button>
                                     {logForm.id && (
-                                        <button
-                                            onClick={() => setLogForm({ id: null, date: new Date().toISOString().split('T')[0], count: 0, unitPrice: 130 })}
-                                            className="w-full text-xs font-bold text-slate-400 hover:text-slate-600 transition"
-                                        >
+                                        <button onClick={() => setLogForm({id:null,date:new Date().toISOString().split('T')[0],count:0,unitPrice:130})} className={`w-full text-xs font-bold ${textMuted} hover:${textSecond} transition`}>
                                             Cancel Edit
                                         </button>
                                     )}
@@ -386,253 +368,211 @@ const HabitImpactPage = () => {
                     </AnimatePresence>
 
                     {/* Baseline Settings */}
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100">
-                        <h3 className="text-[17px] font-black text-[#1f2937] mb-6">Baseline Settings</h3>
+                    <motion.div className={`${card} p-8 rounded-[2.5rem] border ${cardBorder}`} variants={cardVariants}>
+                        <h3 className={`text-[17px] font-black ${textPrimary} mb-6`}>Baseline Settings</h3>
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] uppercase font-black text-slate-400 tracking-widest ml-1">Daily Avg</label>
-                                    <input type="number" value={form.cps} onChange={(e) => setForm({ ...form, cps: Number(e.target.value) })} className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm font-bold text-slate-800 outline-none" />
+                                    <label className={`text-[9px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Daily Avg</label>
+                                    <input type="number" value={form.cps} onChange={e=>setForm({...form,cps:Number(e.target.value)})} className={`w-full h-12 ${inputBg} border-none rounded-xl px-4 text-sm font-bold ${textPrimary} outline-none`} />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] uppercase font-black text-slate-400 tracking-widest ml-1">Pack Price</label>
-                                    <input type="number" value={form.packPrice} onChange={(e) => setForm({ ...form, packPrice: Number(e.target.value) })} className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm font-bold text-slate-800 outline-none" />
+                                    <label className={`text-[9px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Pack Price</label>
+                                    <input type="number" value={form.packPrice} onChange={e=>setForm({...form,packPrice:Number(e.target.value)})} className={`w-full h-12 ${inputBg} border-none rounded-xl px-4 text-sm font-bold ${textPrimary} outline-none`} />
                                 </div>
                             </div>
-                            <button onClick={() => handleUpdateProjection(false)} className="w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all">
+                            <motion.button onClick={() => handleUpdateProjection(false)} className={`w-full h-12 ${d('bg-slate-100 hover:bg-slate-200 text-slate-700','bg-slate-700 hover:bg-slate-600 text-slate-200')} font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all`} whileHover={{ scale:1.02 }} whileTap={{ scale:0.97 }}>
                                 {isSaving ? 'Processing...' : 'Update Baseline'}
-                            </button>
+                            </motion.button>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
 
-                {/* RIGHT COLUMN: INSIGHTS & HISTORY */}
-                <div className="xl:col-span-8 space-y-8">
+                {/* ──── RIGHT COLUMN ──── */}
+                <motion.div className="xl:col-span-8 space-y-8" initial="hidden" animate="visible" variants={containerVariants}>
 
-                    {/* Top Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Monthly Spending Card */}
-                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden group flex flex-col h-full">
-                            <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-8 shadow-sm">
+                    {/* Stats Row */}
+                    <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-8" variants={cardVariants}>
+                        {/* Monthly Spending */}
+                        <motion.div className={`${card} rounded-[2.5rem] p-10 ${cardShadow} border ${cardBorder} relative overflow-hidden group flex flex-col h-full`} whileHover={{ scale:1.02, boxShadow: darkMode ? '0 25px 60px -20px rgba(244,63,94,0.2)' : '0 25px 60px -20px rgba(244,63,94,0.12)' }} transition={{ type:'spring', stiffness:200, damping:20 }}>
+                            <div className={`absolute inset-0 ${d('bg-gradient-to-br from-rose-50/0 to-rose-50/60','bg-gradient-to-br from-rose-900/0 to-rose-900/10')} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2.5rem]`} />
+                            <motion.div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mb-8 shadow-sm" whileHover={{ rotate:-10, scale:1.1 }}>
                                 <TrendingDown size={28} />
-                            </div>
+                            </motion.div>
                             <p className="text-[11px] font-black text-rose-400 uppercase tracking-widest mb-1">Monthly Spending</p>
-                            <h3 className="text-[3.5rem] font-black text-[#1f2937] tracking-tighter leading-none mb-6">
-                                Rs. {monthlySpending.toLocaleString()}
+                            <h3 className={`text-[3.5rem] font-black ${textPrimary} tracking-tighter leading-none mb-6 flex items-baseline gap-2`}>
+                                Rs. <AnimatedCounter value={monthlySpending} className="tabular-nums" />
                             </h3>
-                            <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-400">Total logs: {monthLogs.length}</span>
-                                <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-slate-50 rounded-md text-slate-400">Month: {now.toLocaleString('default', { month: 'long' })}</span>
+                            <div className={`mt-auto pt-6 border-t ${divider} flex items-center justify-between`}>
+                                <span className={`text-xs font-bold ${textMuted}`}>Total logs: {monthLogs.length}</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 ${inputBg} rounded-md ${textMuted}`}>
+                                    {now.toLocaleString('default',{month:'long'})}
+                                </span>
                             </div>
-                        </div>
+                        </motion.div>
 
-                        {/* Health Restoration */}
-                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col h-full">
+                        {/* Vitality Roadmap */}
+                        <motion.div className={`${card} rounded-[2.5rem] p-10 ${cardShadow} border ${cardBorder} flex flex-col h-full`} whileHover={{ scale:1.02 }} transition={{ type:'spring', stiffness:200, damping:20 }}>
                             <div className="flex items-center justify-between mb-8">
-                                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                                <motion.div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-sm" whileHover={{ rotate:10, scale:1.1 }}>
                                     <Hourglass size={28} />
-                                </div>
+                                </motion.div>
                                 <div className="text-right">
                                     <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-1">Life Regained</p>
-                                    <h3 className="text-4xl font-black text-[#1f2937] tracking-tighter leading-none">
-                                        {lifeRegainedYears.toFixed(1)} <span className="text-sm font-bold opacity-30">Years</span>
+                                    <h3 className={`text-4xl font-black ${textPrimary} tracking-tighter leading-none`}>
+                                        {lifeRegainedYears.toFixed(1)} <span className={`text-sm font-bold ${d('opacity-30','opacity-40')}`}>Yrs</span>
                                     </h3>
                                 </div>
                             </div>
-
-                            <div className="flex-1 space-y-6">
-                                <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Vitality Roadmap</h4>
-                                <div className="space-y-4">
-                                    {HEALTH_MILESTONES.map((m) => {
-                                        const isAchieved = streakHours >= m.hours;
-                                        return (
-                                            <div key={m.label} className={`relative flex items-center gap-4 transition-all duration-500 ${isAchieved ? 'opacity-100' : 'opacity-30 grayscale-[0.5]'}`}>
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-white transition-all ${isAchieved ? `bg-${m.color}-50 text-xl scale-110` : 'bg-slate-50 text-base opacity-50'}`}>
-                                                    {isAchieved ? m.icon : '🔒'}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className={`text-[11px] font-black uppercase tracking-widest ${isAchieved ? `text-${m.color}-600` : 'text-slate-400'}`}>
-                                                        {m.label}
-                                                    </p>
-                                                    <p className="text-[13px] font-bold text-slate-700 leading-tight">
-                                                        {m.desc}
-                                                    </p>
-                                                </div>
-                                                {isAchieved && (
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white scale-75 animate-bounce">
-                                                        <CheckCircle2 size={12} />
-                                                    </div>
-                                                )}
+                            <div className="flex-1 space-y-3">
+                                <h4 className={`text-xs font-black ${textMuted} uppercase tracking-[0.2em] mb-4`}>Vitality Roadmap</h4>
+                                {HEALTH_MILESTONES.map((m, i) => {
+                                    const isAchieved = streakHours >= m.hours;
+                                    return (
+                                        <motion.div key={m.label} custom={i} initial="hidden" animate="visible" variants={milestoneVariants} className={`flex items-center gap-4 transition-all duration-500 ${isAchieved ? 'opacity-100' : 'opacity-30 grayscale-[0.5]'}`}>
+                                            <motion.div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-white/5 ${isAchieved ? `bg-${m.color}-500/10 text-xl` : `${inputBg} text-base opacity-50`}`} animate={isAchieved ? { scale:[1,1.15,1] } : {}} transition={{ duration:1.5, repeat:isAchieved?Infinity:0, repeatDelay:2 }}>
+                                                {isAchieved ? m.icon : '🔒'}
+                                            </motion.div>
+                                            <div className="flex-1">
+                                                <p className={`text-[11px] font-black uppercase tracking-widest ${isAchieved ? `text-${m.color}-500` : textMuted}`}>{m.label}</p>
+                                                <p className={`text-[13px] font-bold ${textSecond} leading-tight`}>{m.desc}</p>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                            {isAchieved && (
+                                                <motion.div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white" initial={{ scale:0, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ type:'spring', stiffness:200, delay:i*0.1 }}>
+                                                    <CheckCircle2 size={12} />
+                                                </motion.div>
+                                            )}
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
-
-                            <div className="pt-8 mt-8 border-t border-slate-50">
+                            <div className={`pt-8 mt-8 border-t ${divider}`}>
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 size={14} className="text-emerald-500" />
-                                    <span className="text-xs font-bold text-slate-500">Biological recovery active</span>
+                                    <span className={`text-xs font-bold ${textSecond}`}>Biological recovery active</span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
                     {/* Freedom Calendar */}
-                    <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100">
+                    <motion.div className={`${card} rounded-[2.5rem] p-10 ${cardShadow} border ${cardBorder}`} variants={cardVariants}>
                         <div className="flex items-center justify-between mb-8">
                             <div>
-                                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Freedom Calendar</h3>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{now.toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+                                <h3 className={`text-2xl font-black ${textPrimary} tracking-tight`}>Freedom Calendar</h3>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${textMuted} mt-1`}>{now.toLocaleString('default',{month:'long',year:'numeric'})}</p>
                             </div>
-                            <button
-                                onClick={handleMarkTodayClean}
-                                disabled={isLogging}
-                                className="px-5 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center gap-2"
-                            >
+                            <motion.button onClick={handleMarkTodayClean} disabled={isLogging} className="px-5 py-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-500/20 transition-all flex items-center gap-2" whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}>
                                 <CheckCircle2 size={14} /> Mark Today Clean
-                            </button>
+                            </motion.button>
                         </div>
 
                         <div className="grid grid-cols-7 gap-3">
-                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                                <div key={d} className="text-center text-[10px] font-black text-slate-300 py-2">{d}</div>
+                            {['S','M','T','W','T','F','S'].map((dd,i) => (
+                                <div key={i} className={`text-center text-[10px] font-black ${textMuted} py-2`}>{dd}</div>
                             ))}
-                            {Array.from({ length: new Date(now.getFullYear(), now.getMonth(), 1).getDay() }).map((_, i) => (
-                                <div key={`empty-${i}`} />
-                            ))}
-                            {Array.from({ length: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() }).map((_, i) => {
+                            {Array.from({ length: new Date(now.getFullYear(), now.getMonth(), 1).getDay() }).map((_,i) => <div key={`e${i}`} />)}
+                            {Array.from({ length: new Date(now.getFullYear(), now.getMonth()+1, 0).getDate() }).map((_,i) => {
                                 const day = i + 1;
                                 const dateStr = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0];
-                                const log = (status?.dailyLogs || []).find(l => new Date(l.date).toISOString().split('T')[0] === dateStr);
+                                const log = (status?.dailyLogs||[]).find(l => new Date(l.date).toISOString().split('T')[0] === dateStr);
                                 const isToday = day === now.getDate() && now.getMonth() === new Date().getMonth();
                                 const isFuture = new Date(now.getFullYear(), now.getMonth(), day) > now;
-                                const isAfterQuit = status?.quitDate && new Date(dateStr) >= new Date(status.quitDate).setHours(0,0,0,0);
+                                const isAfterQuit = status?.quitDate && new Date(dateStr) >= new Date(new Date(status.quitDate).setHours(0,0,0,0));
 
-                                let bgColor = "bg-slate-50";
-                                let textColor = "text-slate-400";
+                                let cellClass = inputBg;
+                                let textClass = textMuted;
                                 let icon = null;
-
                                 if (log) {
-                                    if (log.count === 0) {
-                                        bgColor = "bg-emerald-500 shadow-lg shadow-emerald-200";
-                                        textColor = "text-white";
-                                        icon = <Leaf size={8} />;
-                                    } else {
-                                        bgColor = "bg-rose-500 shadow-lg shadow-rose-200";
-                                        textColor = "text-white";
-                                        icon = <Flame size={8} />;
-                                    }
+                                    if (log.count === 0) { cellClass = 'bg-emerald-500 shadow-lg shadow-emerald-500/20'; textClass = 'text-white'; icon = <Leaf size={8} />; }
+                                    else                 { cellClass = 'bg-rose-500 shadow-lg shadow-rose-500/20'; textClass = 'text-white'; icon = <Flame size={8} />; }
                                 } else if (isAfterQuit && !isFuture) {
-                                    bgColor = "bg-slate-50 border border-dashed border-slate-200";
+                                    cellClass = `${inputBg} border border-dashed ${d('border-slate-200','border-slate-600')}`;
                                 }
 
                                 return (
-                                    <div
-                                        key={day}
-                                        onClick={() => setLogForm({ ...logForm, date: dateStr })}
-                                        className={`group aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-110 relative ${bgColor} ${textColor}`}
-                                    >
+                                    <motion.div key={day} onClick={() => setLogForm({...logForm, date:dateStr})} className={`group aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer relative ${cellClass} ${textClass}`} initial={{ opacity:0, scale:0.5 }} animate={{ opacity:1, scale:1 }} transition={{ delay:i*0.015, type:'spring', stiffness:200, damping:20 }} whileHover={{ scale:1.15, zIndex:10 }} whileTap={{ scale:0.9 }}>
                                         <span className="text-xs font-black">{day}</span>
                                         {icon && <div className="mt-0.5">{icon}</div>}
-                                        {isToday && !log && <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-ping" />}
-                                    </div>
+                                        {isToday && !log && (
+                                            <motion.div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" animate={{ scale:[1,1.5,1], opacity:[1,0.5,1] }} transition={{ duration:1.5, repeat:Infinity }} />
+                                        )}
+                                    </motion.div>
                                 );
                             })}
                         </div>
-                        <div className="mt-8 pt-8 border-t border-slate-50 flex items-center justify-center gap-6">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Clean Day</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-rose-500" />
-                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Usage Logged</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-slate-100 border border-dashed border-slate-300" />
-                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Pending</span>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* History List */}
-                    <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-slate-100">
+                        <div className={`mt-8 pt-8 border-t ${divider} flex items-center justify-center gap-6`}>
+                            {[{color:'bg-emerald-500',label:'Clean Day'},{color:'bg-rose-500',label:'Usage Logged'},{color:`${inputBg} border border-dashed ${d('border-slate-300','border-slate-600')}`,label:'Pending'}].map(({color,label}) => (
+                                <div key={label} className="flex items-center gap-2">
+                                    <div className={`w-3 h-3 rounded-full ${color}`} />
+                                    <span className={`text-[10px] font-black uppercase ${textMuted} tracking-widest`}>{label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Log History */}
+                    <motion.div className={`${card} rounded-[2.5rem] p-10 ${cardShadow} border ${cardBorder}`} variants={cardVariants}>
                         <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Logging History</h3>
-                            <div className="px-5 py-2 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                Total Entries: {status?.dailyLogs?.length || 0}
-                            </div>
+                            <h3 className={`text-2xl font-black ${textPrimary} tracking-tight`}>Logging History</h3>
+                            <motion.div className={`px-5 py-2 ${inputBg} rounded-2xl text-[10px] font-black uppercase tracking-widest ${textMuted}`} animate={{ opacity:[0.6,1,0.6] }} transition={{ duration:2, repeat:Infinity }}>
+                                Total: {status?.dailyLogs?.length || 0}
+                            </motion.div>
                         </div>
 
                         <div className="space-y-4">
                             <AnimatePresence mode="popLayout">
-                                {(status?.dailyLogs || []).sort((a, b) => new Date(b.date) - new Date(a.date)).map((log) => (
-                                    <motion.div
-                                        key={log.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        className="group flex items-center justify-between p-6 bg-slate-50/50 hover:bg-white rounded-[2rem] border border-transparent hover:border-slate-100 transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/20"
-                                    >
+                                {(status?.dailyLogs||[]).sort((a,b) => new Date(b.date)-new Date(a.date)).map((log, idx) => (
+                                    <motion.div key={log.id} layout initial={{ opacity:0, x:-30, scale:0.95 }} animate={{ opacity:1, x:0, scale:1 }} exit={{ opacity:0, x:30, scale:0.95 }} transition={{ delay:idx*0.04, type:'spring', stiffness:100, damping:18 }} className={`group flex items-center justify-between p-6 ${d('bg-slate-50/50 hover:bg-white','bg-slate-800/40 hover:bg-slate-800')} rounded-[2rem] border border-transparent ${d('hover:border-slate-100','hover:border-slate-700/50')} transition-all duration-300 hover:shadow-xl`} whileHover={{ x:4 }}>
                                         <div className="flex items-center gap-6">
-                                            <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex flex-col items-center justify-center shadow-sm">
-                                                <span className="text-[9px] font-black uppercase text-slate-400 leading-none mb-0.5">{new Date(log.date).toLocaleString('default', { month: 'short' })}</span>
-                                                <span className="text-xl font-black text-slate-800 leading-none">{new Date(log.date).getDate()}</span>
-                                            </div>
+                                            <motion.div className={`w-14 h-14 rounded-2xl ${card} border ${cardBorder} flex flex-col items-center justify-center shadow-sm`} whileHover={{ rotate:-5, scale:1.05 }}>
+                                                <span className={`text-[9px] font-black uppercase ${textMuted} leading-none mb-0.5`}>{new Date(log.date).toLocaleString('default',{month:'short'})}</span>
+                                                <span className={`text-xl font-black ${textPrimary} leading-none`}>{new Date(log.date).getDate()}</span>
+                                            </motion.div>
                                             <div>
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="text-lg font-black text-slate-800 leading-none">{log.count} <span className="text-xs font-bold text-slate-400">units</span></span>
-                                                </div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Price: Rs.{log.unitPrice}</p>
+                                                <span className={`text-lg font-black ${textPrimary} leading-none`}>{log.count} <span className={`text-xs font-bold ${textMuted}`}>units</span></span>
+                                                <p className={`text-[10px] font-black uppercase tracking-widest ${textMuted}`}>Price: Rs.{log.unitPrice}</p>
                                             </div>
                                         </div>
-
                                         <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={() => handleEditLog(log)}
-                                                className="p-3 bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-100 rounded-xl transition-all shadow-sm"
-                                            >
+                                            <motion.button onClick={() => handleEditLog(log)} className={`p-3 ${card} border ${cardBorder} ${textMuted} hover:text-blue-500 hover:border-blue-500/20 rounded-xl transition-all shadow-sm`} whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }}>
                                                 <Edit3 size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteLog(log.id)}
-                                                className="p-3 bg-white border border-slate-100 text-slate-400 hover:text-rose-600 hover:border-rose-100 rounded-xl transition-all shadow-sm"
-                                            >
+                                            </motion.button>
+                                            <motion.button onClick={() => handleDeleteLog(log.id)} className={`p-3 ${card} border ${cardBorder} ${textMuted} hover:text-rose-500 hover:border-rose-500/20 rounded-xl transition-all shadow-sm`} whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }}>
                                                 <Trash2 size={16} />
-                                            </button>
+                                            </motion.button>
                                         </div>
-
-                                        <div className="text-right group-hover:hidden transition-all">
-                                            <p className="text-lg font-black text-slate-400 leading-none mb-1">Rs. {(log.count * log.unitPrice).toLocaleString()}</p>
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Total Spent</span>
+                                        <div className={`text-right group-hover:hidden`}>
+                                            <p className={`text-lg font-black ${textMuted} leading-none mb-1`}>Rs. {(log.count*log.unitPrice).toLocaleString()}</p>
+                                            <span className={`text-[9px] font-black uppercase tracking-widest ${d('text-slate-300','text-slate-600')}`}>Total Spent</span>
                                         </div>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
 
                             {(!status?.dailyLogs || status.dailyLogs.length === 0) && (
-                                <div className="py-20 text-center">
-                                    <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-slate-200 italic shadow-inner">Empty</div>
-                                    <p className="text-sm font-bold text-slate-400">No logs found. Start tracking your daily usage above!</p>
-                                </div>
+                                <motion.div className="py-20 text-center" initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ type:'spring' }}>
+                                    <motion.div className={`w-20 h-20 ${inputBg} rounded-[2rem] flex items-center justify-center mx-auto mb-6 ${textMuted} shadow-inner`} animate={{ rotate:[0,5,-5,0] }} transition={{ duration:3, repeat:Infinity }}>
+                                        <Sparkles size={32} />
+                                    </motion.div>
+                                    <p className={`text-sm font-bold ${textMuted}`}>No logs yet. Start tracking your daily usage above!</p>
+                                </motion.div>
                             )}
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
 
             <style>{`
-                input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
-                    -webkit-appearance: none; margin: 0;
-                }
+                input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
                 ::-webkit-scrollbar { width: 10px; }
-                ::-webkit-scrollbar-track { background: #fafafc; }
-                ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; border: 3px solid #fafafc; }
-                ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+                ::-webkit-scrollbar-track { background: ${darkMode ? '#0f111a' : '#fafafc'}; }
+                ::-webkit-scrollbar-thumb { background: ${darkMode ? '#334155' : '#e2e8f0'}; border-radius: 10px; border: 3px solid ${darkMode ? '#0f111a' : '#fafafc'}; }
+                ::-webkit-scrollbar-thumb:hover { background: ${darkMode ? '#475569' : '#cbd5e1'}; }
+                input[type="date"]::-webkit-calendar-picker-indicator { filter: ${darkMode ? 'invert(1)' : 'none'}; }
             `}</style>
-        </div>
+        </motion.div>
     );
 };
 
