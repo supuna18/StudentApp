@@ -4,13 +4,16 @@ import { jwtDecode } from 'jwt-decode';
 import {
   LayoutDashboard, Users, ShieldAlert, BookOpen, LogOut,
   Activity, MoreHorizontal, Filter, Search, TrendingUp,
-  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send, Heart,
+  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send, Heart, Download
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   ComposedChart, Line, Area
 } from 'recharts';
+
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 import UserManagement  from './UserManagement';
 import SafetyApprovals from './SafetyApprovals';
@@ -186,6 +189,38 @@ const AdminDashboard = () => {
 
   const handleLogout = () => { localStorage.removeItem('token'); navigate('/', { replace: true }); };
 
+  const downloadReport = async () => {
+    const input = document.getElementById('admin-analytics-report');
+    if (!input) return;
+    try {
+      const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgW = 190;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      
+      // EduSync Header styling
+      pdf.setFillColor(15, 28, 77); // #0F1C4D
+      pdf.rect(0, 0, 210, 35, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("EduSync", 15, 18);
+      
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Administrative Analytics", 15, 28);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(200, 200, 200);
+      pdf.text(`Generated: ${new Date().toLocaleString()}`, 130, 28);
+
+      pdf.addImage(imgData, 'PNG', 10, 45, imgW, imgH);
+      pdf.save(`EduSync_Analytics_Report_${Date.now()}.pdf`);
+    } catch (err) { console.error("Error generating PDF:", err); }
+  };
+
   /* ── stat cards data ── */
   const statCards = [
     { val: stats.totalStudents.toLocaleString(), badge: '+12%', dir: 'up', lbl: 'Total Students'  },
@@ -196,7 +231,7 @@ const AdminDashboard = () => {
 
   /* ── analytics content ── */
   const AnalyticsContent = () => (
-    <div>
+    <div id="admin-analytics-report">
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-[#E8EEFF] rounded-2xl bg-white overflow-hidden mb-5">
         {statCards.map(({ val, badge, dir, lbl }, i) => (
@@ -553,7 +588,15 @@ const AdminDashboard = () => {
               <p className="text-[11px] md:text-[12px] text-slate-400 mt-0.5">Real-time monitoring and administrative controls.</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-4 py-1.5 bg-[#EEF2FF] border border-blue-200/50 rounded-full text-[10px] md:text-[11.5px] font-700 text-blue-600">
+              {activeTab === 'Analytics' && (
+                <button 
+                  onClick={downloadReport}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] text-[12px] font-bold shadow-[0_4px_12px_rgba(34,85,210,0.25)] hover:shadow-[0_6px_16px_rgba(34,85,210,0.35)] transition-all active:scale-[0.98]"
+                >
+                  <Download size={14} strokeWidth={2.5}/> Download Report
+                </button>
+              )}
+              <div className="flex items-center gap-1.5 px-4 py-2 bg-[#EEF2FF] border border-blue-200/50 rounded-[10px] text-[10px] md:text-[11.5px] font-700 text-blue-600 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600" style={{ animation: 'pulse 2s infinite' }}/>
                 System Live
               </div>
