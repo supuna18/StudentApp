@@ -201,7 +201,7 @@ const UserManagement = () => {
       <div className="um-root">
 
         {/* ── Page header ── */}
-        <div className="flex items-end justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
           <div>
             <h2 className="serif-heading text-[24px] text-[#0F1C4D] italic leading-tight">User Management</h2>
             <p className="text-[12px] text-slate-400 mt-1">
@@ -209,9 +209,9 @@ const UserManagement = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
             {/* Search */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E8EEFF] rounded-[10px] min-w-[200px] hover:border-blue-300 transition-colors">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E8EEFF] rounded-[10px] min-w-0 sm:min-w-[200px] hover:border-blue-300 transition-colors">
               <Search size={13} className="text-slate-400 flex-shrink-0" />
               <input
                 value={search}
@@ -222,21 +222,23 @@ const UserManagement = () => {
               />
             </div>
 
-            {/* Filter */}
-            <button className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-all duration-150">
-              <Filter size={12} /> Filter
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Filter */}
+              <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-all duration-150">
+                <Filter size={12} /> Filter
+              </button>
 
-            {/* Add user */}
-            <button 
-              onClick={() => {
-                setIsAddModalOpen(true);
-                setFormErrors({});
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-            >
-              <Plus size={14} strokeWidth={2.5} /> Add User
-            </button>
+              {/* Add user */}
+              <button 
+                onClick={() => {
+                  setIsAddModalOpen(true);
+                  setFormErrors({});
+                }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+              >
+                <Plus size={14} strokeWidth={2.5} /> Add User
+              </button>
+            </div>
           </div>
         </div>
 
@@ -248,114 +250,118 @@ const UserManagement = () => {
             <div>
               <p className="text-[13.5px] font-bold text-[#0F1C4D]">All Users</p>
               <p className="text-[11.5px] text-slate-400 mt-0.5">
-                Showing {filtered.length} of {users.length.toLocaleString()} registered users
+                Showing {filtered.length} of {users.length.toLocaleString()} users
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 bg-[#EEF2FF] text-blue-700 text-[11px] font-bold px-3 py-1.5 rounded-full">
               <Users size={10} strokeWidth={2.5} />
-              {users.length.toLocaleString()} Users
+              {users.length.toLocaleString()} <span className="hidden sm:inline">Users</span>
             </span>
           </div>
 
           {/* Table */}
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-[#F8FAFF]">
-                {['User', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((h, i) => (
-                  <th
-                    key={h}
-                    className={`py-2.5 text-[9.5px] font-bold tracking-[.9px] uppercase text-slate-400 border-b border-[#E8EEFF]
-                      ${i === 0 ? 'pl-5 pr-4 text-left' : i === 5 ? 'pr-5 pl-4 text-right' : 'px-4 text-left'}`}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-[13px] text-slate-400">
-                    No users found matching your search.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((user, i) => {
-                  const role   = roleConfig[user.role] ?? roleConfig.Student;
-                  const isActive = true; // For now default to active
-                  return (
-                    <tr
-                      key={user.id || user._id}
-                      className="border-b border-[#E8EEFF] last:border-b-0 hover:bg-[#EEF2FF] transition-colors duration-150"
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-[#F8FAFF]">
+                  {['User', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((h, i) => (
+                    <th
+                      key={h}
+                      className={`py-2.5 text-[9.5px] font-bold tracking-[.9px] uppercase text-slate-400 border-b border-[#E8EEFF]
+                        ${i === 0 ? 'pl-5 pr-4 text-left' : i === 5 ? 'pr-5 pl-4 text-right' : 'px-4 text-left'}`}
                     >
-                      {/* User */}
-                      <td className="pl-5 pr-4 py-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-extrabold text-white flex-shrink-0"
-                            style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                          >
-                            {getInitials(user.username)}
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-10 text-center text-[13px] text-slate-400">
+                      No users found matching your search.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((user, i) => {
+                    const role   = roleConfig[user.role] ?? roleConfig.Student;
+                    const isActive = true; // For now default to active
+                    return (
+                      <tr
+                        key={user.id || user._id}
+                        className="border-b border-[#E8EEFF] last:border-b-0 hover:bg-[#EEF2FF] transition-colors duration-150"
+                      >
+                        {/* User */}
+                        <td className="pl-5 pr-4 py-3.5">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-extrabold text-white flex-shrink-0"
+                              style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
+                            >
+                              {getInitials(user.username)}
+                            </div>
+                            <span className="text-[13px] font-semibold text-[#0F1C4D] truncate max-w-[120px]">{user.username}</span>
                           </div>
-                          <span className="text-[13px] font-semibold text-[#0F1C4D]">{user.username}</span>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Email */}
-                      <td className="px-4 py-3.5 text-[12.5px] text-slate-500">{user.email}</td>
+                        {/* Email */}
+                        <td className="px-4 py-3.5 text-[12.5px] text-slate-500">
+                          <span className="truncate max-w-[150px] block">{user.email}</span>
+                        </td>
 
-                      {/* Role */}
-                      <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10.5px] font-bold ${role.bg} ${role.text}`}>
-                          {user.role}
-                        </span>
-                      </td>
+                        {/* Role */}
+                        <td className="px-4 py-3.5">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10.5px] font-bold ${role.bg} ${role.text}`}>
+                            {user.role}
+                          </span>
+                        </td>
 
-                      {/* Status */}
-                      <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-semibold
-                          ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}/>
-                          Active
-                        </span>
-                      </td>
-
-                      {/* Joined */}
-                      <td className="px-4 py-3.5 text-[12px] text-slate-400">
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="pr-5 pl-4 py-3.5">
-                        <div className="flex items-center justify-end gap-1">
-                          <button 
-                            onClick={() => setViewUser(user)}
-                            className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
+                        {/* Status */}
+                        <td className="px-4 py-3.5">
+                          <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-semibold
+                            ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}
                           >
-                            <Eye size={13}/>
-                          </button>
-                          <button 
-                            onClick={() => handleEditRole(user)}
-                            className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
-                          >
-                            <Edit2 size={13}/>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user.id || user._id)}
-                            className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all duration-150"
-                          >
-                            <Trash2 size={13}/>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}/>
+                            Active
+                          </span>
+                        </td>
+
+                        {/* Joined */}
+                        <td className="px-4 py-3.5 text-[12px] text-slate-400">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="pr-5 pl-4 py-3.5">
+                          <div className="flex items-center justify-end gap-1">
+                            <button 
+                              onClick={() => setViewUser(user)}
+                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
+                            >
+                              <Eye size={13}/>
+                            </button>
+                            <button 
+                              onClick={() => handleEditRole(user)}
+                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
+                            >
+                              <Edit2 size={13}/>
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user.id || user._id)}
+                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all duration-150"
+                            >
+                              <Trash2 size={13}/>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {/* Pagination Placeholder */}
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#E8EEFF]">
@@ -367,8 +373,8 @@ const UserManagement = () => {
 
         {/* View User Modal */}
         {viewUser && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm" style={{ fontFamily: 'DM Sans' }}>
-            <div className="bg-white rounded-2xl w-[400px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" style={{ fontFamily: 'DM Sans' }}>
+            <div className="bg-white rounded-2xl w-full max-w-[400px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
               <div className="px-6 py-4 border-b border-[#E8EEFF] flex items-center justify-between">
                 <h3 className="text-[15px] font-bold text-[#0F1C4D]">User Details</h3>
                 <button onClick={() => setViewUser(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -383,9 +389,9 @@ const UserManagement = () => {
                   >
                     {getInitials(viewUser.username)}
                   </div>
-                  <div>
-                    <h4 className="text-[16px] font-bold text-[#0F1C4D]">{viewUser.username}</h4>
-                    <p className="text-[13px] text-slate-500">{viewUser.email}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-[16px] font-bold text-[#0F1C4D] truncate">{viewUser.username}</h4>
+                    <p className="text-[13px] text-slate-500 truncate">{viewUser.email}</p>
                   </div>
                 </div>
                 
@@ -423,14 +429,14 @@ const UserManagement = () => {
         {/* Add User Modal */}
         {isAddModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-white/20 animate-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-white/20 animate-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto">
               {/* Header */}
-              <div className="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-between text-white">
+              <div className="px-6 sm:px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-between text-white sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
                     <UserPlus size={20} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-lg font-bold tracking-tight">Add New User</h3>
                     <p className="text-xs text-white/70">Create a new account for EduSync</p>
                   </div>
@@ -440,14 +446,14 @@ const UserManagement = () => {
                     setIsAddModalOpen(false);
                     setFormErrors({});
                   }}
-                  className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-colors flex-shrink-0"
                 >
                   <X size={18} />
                 </button>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleAddUser} className="p-8">
+              <form onSubmit={handleAddUser} className="p-6 sm:p-8">
                 {formErrors.server && (
                   <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-600 text-[12px] font-medium animate-in fade-in slide-in-from-top-2">
                     <AlertCircle size={14} />
