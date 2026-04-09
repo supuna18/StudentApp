@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace StudentApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/bloom")]
 [Authorize]
 public class BloomController : ControllerBase
 {

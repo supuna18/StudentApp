@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,8 +10,7 @@ public class BloomSettings
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
-    [Required]
-    public string UserId { get; set; } = string.Empty;
+    public string? UserId { get; set; }
 
     public int PeriodDuration { get; set; } = 5;
 }
