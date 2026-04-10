@@ -23,6 +23,17 @@ const BloomPage = () => {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const MOOD_ADVICE = {
+    Happy: "Radiate that positivity! Today is a great day to spread joy to others.",
+    Calm: "A peaceful mind is a powerful one. Enjoy this tranquility.",
+    Balanced: "You're in a great flow. Keep maintaining this steady energy.",
+    Tired: "Listen to your body. Today calls for extra rest and a warm cup of herbal tea.",
+    Anxious: "Pause. Take five deep breaths. Remember that this feeling is temporary.",
+    Irritable: "Give yourself some space. A short walk in nature can work wonders.",
+    Sad: "It's okay to feel this way. Be gentle with yourself today.",
+    Stressed: "Prioritize what matters. Try to tackle one small thing at a time."
+  };
+
   // --- Initialize Metadata ---
   const apiFetch = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
@@ -31,7 +42,11 @@ const BloomPage = () => {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
     const response = await fetch(`http://localhost:5005/api/bloom${endpoint}`, { ...options, headers });
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'API Error');
+    }
+    if (options.method === 'DELETE') return { success: true };
     return response.json();
   };
 
@@ -42,12 +57,14 @@ const BloomPage = () => {
         setPeriods(data.periods.sort((a,b) => new Date(b.startDate) - new Date(a.startDate)));
         
         const logsMap = {};
-        data.dailyLogs.forEach(l => {
-            const d = l.date.split('T')[0];
-            logsMap[d] = l;
-        });
+        if (data.dailyLogs) {
+            data.dailyLogs.forEach(l => {
+                const d = l.date.split('T')[0];
+                logsMap[d] = l;
+            });
+        }
         setDailyLogs(logsMap);
-        setPeriodDuration(data.settings.periodDuration);
+        setPeriodDuration(data.settings?.periodDuration || 5);
     } catch (e) {
         console.error("Fetch error", e);
     } finally {
@@ -111,6 +128,20 @@ const BloomPage = () => {
     return "Good evening";
   };
 
+  const weeklyMoodStats = useMemo(() => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const relevantLogs = Object.values(dailyLogs).filter(log => new Date(log.date) >= sevenDaysAgo);
+    const counts = {};
+    relevantLogs.forEach(log => {
+      counts[log.mood] = (counts[log.mood] || 0) + 1;
+    });
+    
+    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+    return { topMood: sorted[0]?.[0] || '---', count: relevantLogs.length };
+  }, [dailyLogs]);
+
   const phaseDetails = useMemo(() => {
     const d = cycleStats.day;
     if (d <= periodDuration) return { 
@@ -166,15 +197,11 @@ const BloomPage = () => {
     const dTime = date.getTime();
     const dateStr = date.toISOString().split('T')[0];
 
-    // Check if within any logged period range
     for (const p of periods) {
         const start = new Date(p.startDate);
         const end = new Date(start);
         end.setDate(end.getDate() + periodDuration - 1);
-        
-        if (dTime >= start.getTime() && dTime <= end.getTime()) {
-            return 'period';
-        }
+        if (dTime >= start.getTime() && dTime <= end.getTime()) return 'period';
     }
 
     if (cycleStats.nextPeriod) {
@@ -187,7 +214,6 @@ const BloomPage = () => {
     }
 
     if (cycleStats.ovulation && dateStr === cycleStats.ovulation.toISOString().split('T')[0]) return 'ovulation';
-
     return null;
   };
 
@@ -215,16 +241,20 @@ const BloomPage = () => {
         setIsModalOpen(false);
         setEditingPeriod(null);
     } catch (e) {
-        alert("Failed to save period record.");
+        alert("Failed to save period record: " + e.message);
     }
   };
 
   const handleDeletePeriod = async (id) => {
+      if (!id || id === 'null' || id === 'undefined') {
+          alert("Cannot delete record: ID is missing or corrupted. Please refresh.");
+          return;
+      }
       try {
           await apiFetch(`/period/${id}`, { method: 'DELETE' });
           await fetchBloomData();
       } catch (e) {
-          alert("Failed to delete record.");
+          alert("Failed to delete record: " + e.message);
       }
   };
 
@@ -268,7 +298,7 @@ const BloomPage = () => {
           setTimeout(() => setShowSuccess(false), 2000);
           setIsDailyModalOpen(false);
       } catch (e) {
-          alert("Failed to save daily log.");
+          alert("Failed to save daily log: " + e.message);
       }
   };
 
@@ -296,10 +326,7 @@ const BloomPage = () => {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
   };
 
   const itemVariants = {
@@ -341,14 +368,8 @@ const BloomPage = () => {
         </div>
       </div>
 
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 px-8"
-      >
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 px-8">
         <div className="lg:col-span-8 space-y-8">
-          
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`relative h-64 rounded-[2.5rem] overflow-hidden ${phaseDetails.heroBg} text-white p-10 flex flex-col justify-center shadow-xl`}>
             <div className="absolute inset-0 opacity-40 bg-[url('/periods.jpg')] bg-cover bg-center mix-blend-overlay"></div>
             <div className="relative z-10">
@@ -363,14 +384,7 @@ const BloomPage = () => {
               <div className="relative w-40 h-40 mb-6 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle cx="80" cy="80" r="70" stroke="#F1F5F9" strokeWidth="8" fill="transparent" />
-                  <motion.circle 
-                    initial={{ strokeDashoffset: 440 }}
-                    animate={{ strokeDashoffset: 440 - (440 * (28 - (28 - cycleStats.day)) / 28) }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    cx="80" cy="80" r="70" stroke="#B33045" strokeWidth="10" fill="transparent" 
-                    strokeDasharray="440" 
-                    strokeLinecap="round"
-                  />
+                  <motion.circle initial={{ strokeDashoffset: 440 }} animate={{ strokeDashoffset: 440 - (440 * (28 - (28 - cycleStats.day)) / 28) }} transition={{ duration: 1.5, ease: "easeOut" }} cx="80" cy="80" r="70" stroke="#B33045" strokeWidth="10" fill="transparent" strokeDasharray="440" strokeLinecap="round" />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-4xl font-bold text-[#2D3748]">{28 - cycleStats.day}</span>
@@ -389,9 +403,7 @@ const BloomPage = () => {
               </div>
               <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm self-start px-4 py-2 rounded-full border border-white/50 mt-6 relative z-10">
                 <div className={`w-2 h-2 ${cycleStats.day >= 11 && cycleStats.day <= 16 ? 'bg-indigo-600 animate-pulse' : 'bg-slate-300'} rounded-full`}></div>
-                <span className="text-[11px] font-bold text-indigo-800">
-                    {cycleStats.day >= 11 && cycleStats.day <= 16 ? 'High Today' : 'Low chance'}
-                </span>
+                <span className="text-[11px] font-bold text-indigo-800">{cycleStats.day >= 11 && cycleStats.day <= 16 ? 'High Today' : 'Low chance'}</span>
               </div>
             </motion.div>
           </div>
@@ -413,17 +425,7 @@ const BloomPage = () => {
                     const isToday = dayObj.fullDate.toDateString() === new Date().toDateString();
                     return (
                         <div key={i} className="flex items-center justify-center p-1 relative">
-                            <motion.div 
-                                onClick={() => { setNewPeriodDate(dayObj.fullDate.toISOString().split('T')[0]); setIsModalOpen(true); }}
-                                className={`w-11 h-11 flex flex-col items-center justify-center rounded-2xl text-sm font-bold transition-all cursor-pointer relative
-                                    ${!dayObj.isCurrentMonth ? 'text-slate-200 opacity-40' : 'text-slate-600'}
-                                    ${dateType === 'period' ? 'bg-rose-500 text-white shadow-lg' : ''}
-                                    ${dateType === 'predicted-period' ? 'border-2 border-dashed border-rose-300 bg-rose-50 text-rose-600' : ''}
-                                    ${dateType === 'fertile' ? 'bg-indigo-100 text-indigo-700' : ''}
-                                    ${isToday ? 'ring-2 ring-slate-800' : ''}
-                                    ${!dateType && dayObj.isCurrentMonth ? 'hover:bg-slate-50' : ''}
-                                `}
-                            >
+                            <motion.div onClick={() => { setNewPeriodDate(dayObj.fullDate.toISOString().split('T')[0]); setIsModalOpen(true); }} className={`w-11 h-11 flex flex-col items-center justify-center rounded-2xl text-sm font-bold transition-all cursor-pointer relative ${!dayObj.isCurrentMonth ? 'text-slate-200 opacity-40' : 'text-slate-600'} ${dateType === 'period' ? 'bg-rose-500 text-white shadow-lg' : ''} ${dateType === 'predicted-period' ? 'border-2 border-dashed border-rose-300 bg-rose-50 text-rose-600' : ''} ${dateType === 'fertile' ? 'bg-indigo-100 text-indigo-700' : ''} ${isToday ? 'ring-2 ring-slate-800' : ''} ${!dateType && dayObj.isCurrentMonth ? 'hover:bg-slate-50' : ''}`}>
                                 {dayObj.day}
                                 {dateType === 'ovulation' && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
                             </motion.div>
@@ -435,83 +437,25 @@ const BloomPage = () => {
         </div>
 
         <div className="lg:col-span-4 space-y-8">
-            <motion.section variants={itemVariants} className="bg-white rounded-[2.5rem] p-8 space-y-8 border border-slate-50 shadow-sm relative overflow-hidden glow-hover transition-all duration-500">
-                <div className="absolute top-0 right-0 p-4">
-                    <button onClick={() => setIsSettingsOpen(true)} className="text-slate-300 hover:text-rose-500 transition-colors">
-                        <Settings size={18} />
-                    </button>
-                </div>
-                <div className="flex flex-col items-center gap-2 mb-2">
-                    <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-2">
-                        <Activity size={24} />
+            {/* Quick Stats Card - Refined to match User Screenshot */}
+            <motion.section variants={itemVariants} className="bg-white rounded-[3rem] p-10 space-y-8 border border-slate-50 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-500">
+                <Settings className="absolute top-8 right-8 text-slate-200 cursor-pointer hover:text-rose-500 transition-colors" size={20} onClick={() => setIsSettingsOpen(true)} />
+                <div className="flex flex-col items-center gap-6">
+                    <div className="w-16 h-16 bg-rose-50/50 rounded-2xl flex items-center justify-center text-rose-500">
+                        <Activity size={32} />
                     </div>
-                    <h3 className="text-xl font-bold tracking-tight">Quick Stats</h3>
+                    <h3 className="text-2xl font-bold tracking-tight text-slate-800">Quick Stats</h3>
                 </div>
-                
-                <div className="space-y-4">
-                    <div className="space-y-3">
-                        <StatRow 
-                            icon={<Sparkles size={14} className="text-indigo-400" />} 
-                            label="Fertile window" 
-                            value={`${formatDate(cycleStats.fertileStart)} – ${formatDate(cycleStats.fertileEnd)}`} 
-                        />
-                        <StatRow 
-                            icon={<Smile size={14} className="text-indigo-500" />} 
-                            label="Ovulation" 
-                            value={formatDate(cycleStats.ovulation)} 
-                        />
-                        <StatRow 
-                            icon={<CalendarIcon size={14} className="text-rose-400" />} 
-                            label="Next Period" 
-                            value={formatDate(cycleStats.nextPeriod)} 
-                        />
-                        <StatRow 
-                            icon={<Clock size={14} className="text-slate-400" />} 
-                            label="Last Period log" 
-                            value={formatDate(lastPeriodDate)} 
-                            highlight 
-                        />
-                    </div>
+                <div className="space-y-5 px-4">
+                    <StatRow icon={<Sparkles size={16} className="text-indigo-400" />} label="Fertile window" value={`${formatDate(cycleStats.fertileStart)} – ${formatDate(cycleStats.fertileEnd)}`} />
+                    <StatRow icon={<Smile size={16} className="text-indigo-500" />} label="Ovulation" value={formatDate(cycleStats.ovulation)} />
+                    <StatRow icon={<CalendarIcon size={16} className="text-rose-400" />} label="Next Period" value={formatDate(cycleStats.nextPeriod)} />
+                    <StatRow icon={<Clock size={16} className="text-slate-400" />} label="Last Period log" value={formatDate(lastPeriodDate)} highlight />
                 </div>
-
-                <div className="pt-6 border-t border-slate-50 flex justify-between items-center px-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Period length</span>
-                    <span className="text-xs font-bold text-rose-500">{periodDuration} days</span>
+                <div className="pt-8 border-t border-slate-50 flex justify-between items-center px-4">
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-300">Period length</span>
+                    <span className="text-sm font-bold text-rose-500">{periodDuration} days</span>
                 </div>
-            </motion.section>
-            
-            <motion.section variants={itemVariants} className="bg-slate-800 rounded-[2.5rem] p-8 space-y-6 text-white text-center shadow-2xl shadow-slate-900/20 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Droplets className="text-rose-400 mx-auto relative z-10" size={32} />
-                <div className="space-y-2 relative z-10">
-                    <h3 className="text-xl font-bold tracking-tight">Daily log</h3>
-                    <p className="text-white/40 text-sm">
-                        {dailyLogs[new Date().toISOString().split('T')[0]] ? 'Update today\'s entry' : 'How was your cycle today?'}
-                    </p>
-                </div>
-                
-                {dailyLogs[new Date().toISOString().split('T')[0]] ? (
-                    <div className="bg-white/5 p-4 rounded-2xl text-left space-y-3 relative z-10">
-                        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[#B33045]">
-                            <span>Today's Status</span>
-                            <CheckCircle2 size={12} />
-                        </div>
-                        <div className="flex gap-4 text-xs font-bold">
-                            <span className="text-rose-200">Flow: {dailyLogs[new Date().toISOString().split('T')[0]].flow}</span>
-                            <span className="text-indigo-200">Mood: {dailyLogs[new Date().toISOString().split('T')[0]].mood}</span>
-                        </div>
-                        {dailyLogs[new Date().toISOString().split('T')[0]].note && (
-                            <p className="text-[10px] text-white/50 italic line-clamp-2">"{dailyLogs[new Date().toISOString().split('T')[0]].note}"</p>
-                        )}
-                        <button onClick={handleOpenDailyLog} className="w-full py-3 bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/20 transition-all">Edit Log</button>
-                    </div>
-                ) : (
-                    <div className="flex gap-4 relative z-10">
-                        {['Light','Normal','Heavy'].map(l => (
-                            <button key={l} onClick={() => { setSelectedDailyLog({ ...selectedDailyLog, flow: l }); setIsDailyModalOpen(true); }} className="flex-1 bg-white/5 py-4 rounded-2xl text-[10px] uppercase font-bold tracking-widest hover:bg-white/10 transition-all">{l}</button>
-                        ))}
-                    </div>
-                )}
             </motion.section>
 
             <motion.section variants={itemVariants} className="bg-white rounded-[2.5rem] p-8 space-y-6 border border-slate-50 shadow-sm glow-hover transition-all duration-500">
@@ -520,49 +464,67 @@ const BloomPage = () => {
                     <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{periods.length} Logs</span>
                 </div>
                 <div className="space-y-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                    {periods.length === 0 ? (
-                        <p className="text-center text-slate-300 text-xs py-10 italic">No logs found yet.</p>
-                    ) : (
-                        periods.map(p => {
-                            const end = new Date(p.startDate);
-                            end.setDate(end.getDate() + periodDuration - 1);
-                            return (
-                                <div key={p.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group border border-transparent hover:border-rose-100 transition-all">
-                                    <div className="space-y-1">
-                                        <div className="text-sm font-bold text-slate-700">
-                                            {formatDate(new Date(p.startDate))} – {formatDate(end)}
-                                        </div>
-                                        <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider italic">
-                                            {new Date(p.startDate).getFullYear()} • {periodDuration} Days
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEditInit(p)} className="p-2 bg-white rounded-lg text-slate-400 hover:text-rose-500 shadow-sm">
-                                            <ExternalLink size={14} />
-                                        </button>
-                                        <button onClick={() => handleDeletePeriod(p.id)} className="p-2 bg-white rounded-lg text-slate-400 hover:text-rose-600 shadow-sm">
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
+                    {periods.length === 0 ? <p className="text-center text-slate-300 text-xs py-10 italic">No logs found yet.</p> : periods.map(p => {
+                        const end = new Date(p.startDate);
+                        end.setDate(end.getDate() + periodDuration - 1);
+                        return (
+                            <div key={p.id || Math.random()} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group border border-transparent hover:border-rose-100 transition-all">
+                                <div className="space-y-1">
+                                    <div className="text-sm font-bold text-slate-700">{formatDate(new Date(p.startDate))} – {formatDate(end)}</div>
+                                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider italic">{new Date(p.startDate).getFullYear()} • {periodDuration} Days</div>
                                 </div>
-                            );
-                        })
-                    )}
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => handleEditInit(p)} className="p-2 bg-white rounded-lg text-slate-400 hover:text-rose-500 shadow-sm"><ExternalLink size={14} /></button>
+                                    <button onClick={() => handleDeletePeriod(p.id)} className="p-2 bg-white rounded-lg text-slate-400 hover:text-rose-600 shadow-sm"><Trash2 size={14} /></button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </motion.section>
+
+            <motion.section variants={itemVariants} className="bg-slate-800 rounded-[2.5rem] p-8 space-y-6 text-white text-center shadow-2xl shadow-slate-900/20 relative overflow-hidden group border border-slate-700">
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Droplets className="text-rose-400 mx-auto relative z-10" size={32} />
+                <div className="space-y-2 relative z-10"><h3 className="text-xl font-bold tracking-tight">Daily log</h3><p className="text-white/40 text-sm">How was your cycle today?</p></div>
+                {dailyLogs[new Date().toISOString().split('T')[0]] ? (
+                    <div className="bg-white/5 p-4 rounded-2xl text-left space-y-3 relative z-10">
+                        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-rose-400"><span>Today's Status</span><CheckCircle2 size={12} /></div>
+                        <div className="flex gap-4 text-xs font-bold"><span className="text-rose-200">Flow: {dailyLogs[new Date().toISOString().split('T')[0]].flow}</span><span className="text-indigo-200">Mood: {dailyLogs[new Date().toISOString().split('T')[0]].mood}</span></div>
+                        {dailyLogs[new Date().toISOString().split('T')[0]].note && <p className="text-[10px] text-white/50 italic line-clamp-2">"{dailyLogs[new Date().toISOString().split('T')[0]].note}"</p>}
+                        <button onClick={handleOpenDailyLog} className="w-full py-4 bg-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10">Edit Daily Entry</button>
+                    </div>
+                ) : (
+                    <div className="space-y-4 relative z-10">
+                        <div className="flex gap-2">{['Light','Normal','Heavy'].map(l => <button key={l} onClick={() => { setSelectedDailyLog({ ...selectedDailyLog, flow: l }); setIsDailyModalOpen(true); }} className="flex-1 bg-white/5 py-3 rounded-xl text-[10px] uppercase font-bold tracking-widest hover:bg-white/10 transition-all border border-white/5">{l}</button>)}</div>
+                        <button onClick={handleOpenDailyLog} className="w-full py-4 bg-rose-500 rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-900/40 flex items-center justify-center gap-2"><Smile size={16} /> Log Mood & Wellness</button>
+                    </div>
+                )}
+            </motion.section>
+
+            <motion.section variants={itemVariants} className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div className="flex flex-col items-center gap-2 mb-6">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 mb-2"><Smile size={24} /></div>
+                    <h3 className="text-xl font-bold tracking-tight">Mood Analysis</h3>
+                </div>
+                <div className="space-y-6">
+                    <div className="bg-slate-50 p-6 rounded-3xl text-center space-y-2">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Weekly Top Mood</span>
+                        <div className="text-3xl font-bold text-indigo-600">{weeklyMoodStats.topMood}</div>
+                        <p className="text-xs text-slate-400 font-medium">Logged {weeklyMoodStats.count} times this week</p>
+                    </div>
+                    {MOOD_ADVICE[weeklyMoodStats.topMood] && <div className="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50"><p className="text-xs text-indigo-900/70 leading-relaxed italic">"{MOOD_ADVICE[weeklyMoodStats.topMood]}"</p></div>}
                 </div>
             </motion.section>
         </div>
       </motion.div>
 
-       {/* Settings Modal */}
        <AnimatePresence>
         {isSettingsOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSettingsOpen(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative glass-card w-full max-w-sm rounded-[3rem] p-10 shadow-2xl space-y-8 border border-white/50">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-2xl font-bold text-slate-800">Settings</h3>
-                    <X className="text-slate-300 cursor-pointer" size={24} onClick={() => setIsSettingsOpen(false)} />
-                </div>
+                <div className="flex justify-between items-center"><h3 className="text-2xl font-bold text-slate-800">Settings</h3><X className="text-slate-100 cursor-pointer" size={24} onClick={() => setIsSettingsOpen(false)} /></div>
                 <div className="space-y-4">
                     <label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Period Duration (Days)</label>
                     <div className="flex items-center gap-4">
@@ -577,157 +539,59 @@ const BloomPage = () => {
         )}
       </AnimatePresence>
 
-       {/* Log Period Modal */}
        <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setIsModalOpen(false); setEditingPeriod(null); }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative glass-card w-full max-w-md rounded-[3rem] p-10 shadow-2xl space-y-8 border border-white/50">
                 <h3 className="text-2xl font-bold bloom-serif italic">{editingPeriod ? 'Edit Period Entry' : 'Start New Period'}</h3>
-                <div className="space-y-4">
-                    <label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Log start date</label>
-                    <input type="date" value={newPeriodDate} onChange={(e) => setNewPeriodDate(e.target.value)} className="w-full bg-slate-50 p-5 rounded-2xl outline-none font-bold text-slate-700" />
-                </div>
-                <div className="p-6 bg-rose-50 rounded-2xl space-y-2 border border-rose-100">
-                    <div className="flex items-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider">
-                        <Info size={14} /> <span>Cycle Tip</span>
-                    </div>
-                    <p className="text-xs text-rose-900/70 leading-relaxed">
-                        Bloom will track a <b>{periodDuration}-day</b> period from this date. Change this in settings if needed.
-                    </p>
-                </div>
+                <div className="space-y-4"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Log start date</label><input type="date" value={newPeriodDate} onChange={(e) => setNewPeriodDate(e.target.value)} className="w-full bg-slate-50 p-5 rounded-2xl outline-none font-bold text-slate-700" /></div>
+                <div className="p-6 bg-rose-50 rounded-2xl space-y-2 border border-rose-100"><div className="flex items-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider"><Info size={14} /> <span>Cycle Tip</span></div><p className="text-xs text-rose-900/70 leading-relaxed">Bloom will track a <b>{periodDuration}-day</b> period from this date. Change this in settings if needed.</p></div>
                 <div className="flex gap-4">
-                    <button onClick={handleAddPeriod} className="flex-1 py-5 rounded-3xl bg-slate-900 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
-                        {editingPeriod ? 'Update entry' : 'Save record'} <CheckCircle2 size={18} />
-                    </button>
-                    {editingPeriod && (
-                        <button onClick={() => { handleDeletePeriod(editingPeriod.id); setIsModalOpen(false); setEditingPeriod(null); }} className="px-6 py-5 rounded-3xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors active:scale-95">
-                            <Trash2 size={20} />
-                        </button>
-                    )}
+                    <button onClick={handleAddPeriod} className="flex-1 py-5 rounded-3xl bg-slate-900 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transition-all">{editingPeriod ? 'Update entry' : 'Save record'} <CheckCircle2 size={18} /></button>
+                    {editingPeriod && <button onClick={() => { handleDeletePeriod(editingPeriod.id); setIsModalOpen(false); setEditingPeriod(null); }} className="px-6 py-5 rounded-3xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors active:scale-95"><Trash2 size={20} /></button>}
                 </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Daily Wellness Modal (Mood & Daily Log) */}
       <AnimatePresence>
         {isDailyModalOpen && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDailyModalOpen(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative glass-card w-full max-w-md rounded-[3rem] p-10 shadow-2xl space-y-8 max-h-[90vh] overflow-y-auto custom-scrollbar border border-white/50">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-2xl font-bold bloom-serif italic">Daily Wellness</h3>
-                    <X className="text-slate-300 cursor-pointer" size={24} onClick={() => setIsDailyModalOpen(false)} />
-                </div>
-
+                <div className="flex justify-between items-center"><h3 className="text-2xl font-bold bloom-serif italic">Daily Wellness</h3><X className="text-slate-300 cursor-pointer" size={24} onClick={() => setIsDailyModalOpen(false)} /></div>
                 <div className="space-y-6">
-                    {/* Flow */}
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Flow Intensity</label>
-                        <div className="flex gap-2">
-                            {['None', 'Light', 'Normal', 'Heavy'].map(f => (
-                                <button 
-                                    key={f}
-                                    onClick={() => setSelectedDailyLog({ ...selectedDailyLog, flow: f })}
-                                    className={`flex-1 py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.flow === f ? 'bg-rose-500 border-rose-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}
-                                >
-                                    {f}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Mood */}
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Current Mood</label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {['Happy', 'Calm', 'Balanced', 'Tired', 'Anxious', 'Irritable'].map(m => (
-                                <button 
-                                    key={m}
-                                    onClick={() => setSelectedDailyLog({ ...selectedDailyLog, mood: m })}
-                                    className={`py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.mood === m ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}
-                                >
-                                    {m}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Mood Journal */}
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Mood Journal</label>
-                        <textarea 
-                            value={selectedDailyLog.note}
-                            onChange={(e) => setSelectedDailyLog({ ...selectedDailyLog, note: e.target.value })}
-                            placeholder="How are you feeling today?"
-                            className="w-full bg-slate-50 rounded-2xl p-5 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-slate-100 resize-none font-medium"
-                        />
-                    </div>
+                    <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Flow Intensity</label><div className="flex gap-2">{['None', 'Light', 'Normal', 'Heavy'].map(f => <button key={f} onClick={() => setSelectedDailyLog({ ...selectedDailyLog, flow: f })} className={`flex-1 py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.flow === f ? 'bg-rose-500 border-rose-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}>{f}</button>)}</div></div>
+                    <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Current Mood</label><div className="grid grid-cols-3 gap-2">{['Happy', 'Calm', 'Balanced', 'Tired', 'Anxious', 'Irritable'].map(m => <button key={m} onClick={() => setSelectedDailyLog({ ...selectedDailyLog, mood: m })} className={`py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.mood === m ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}>{m}</button>)}</div></div>
+                    <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Mood Journal</label><textarea value={selectedDailyLog.note} onChange={(e) => setSelectedDailyLog({ ...selectedDailyLog, note: e.target.value })} placeholder="How are you feeling today?" className="w-full bg-slate-50 rounded-2xl p-5 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-slate-100 resize-none font-medium" /></div>
+                    {selectedDailyLog.mood && <div className="p-6 bg-rose-50 rounded-2xl border border-rose-100 space-y-2"><div className="flex items-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider"><Sparkles size={14} /> <span>Bloom Advice</span></div><p className="text-xs text-rose-900/70 leading-relaxed font-medium">{MOOD_ADVICE[selectedDailyLog.mood]}</p></div>}
                 </div>
-
                 <div className="flex gap-4">
-                    <button onClick={handleSaveDailyLog} className="flex-1 py-5 rounded-3xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-all">
-                        Save Entry
-                    </button>
-                    {dailyLogs[new Date().toISOString().split('T')[0]] && (
-                        <button onClick={handleDeleteDailyLog} className="px-6 py-5 rounded-3xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors active:scale-95">
-                            <Trash2 size={20} />
-                        </button>
-                    )}
+                    <button onClick={handleSaveDailyLog} className="flex-1 py-5 rounded-3xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-all">Save Entry</button>
+                    {dailyLogs[new Date().toISOString().split('T')[0]] && <button onClick={handleDeleteDailyLog} className="px-6 py-5 rounded-3xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors active:scale-95"><Trash2 size={20} /></button>}
                 </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
       
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <button onClick={() => setIsModalOpen(true)} className="bg-[#B33045] text-white px-10 py-5 rounded-full font-bold shadow-2xl shadow-rose-900/20 hover:scale-110 active:scale-95 transition-all text-xl flex items-center gap-3">
-           <Droplets size={24} className="animate-pulse" /> Log Period
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: 50, x: '-50%' }}
-            className="fixed bottom-24 left-1/2 z-[200] bg-emerald-500 text-white px-8 py-4 rounded-3xl font-bold shadow-2xl flex items-center gap-3"
-          >
-            <CheckCircle2 size={24} /> Records Updated Successfully!
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"><button onClick={() => setIsModalOpen(true)} className="bg-[#B33045] text-white px-10 py-5 rounded-full font-bold shadow-2xl shadow-rose-900/20 hover:scale-110 active:scale-95 transition-all text-xl flex items-center gap-3"><Droplets size={24} className="animate-pulse" /> Log Period</button></div>
+      <AnimatePresence>{showSuccess && <motion.div initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }} className="fixed bottom-24 left-1/2 z-[200] bg-emerald-500 text-white px-8 py-4 rounded-3xl font-bold shadow-2xl flex items-center gap-3"><CheckCircle2 size={24} /> Records Updated Successfully!</motion.div>}</AnimatePresence>
     </div>
   );
 };
 
 const StatRow = ({ icon, label, value, highlight }) => (
   <div className="flex justify-between items-center group cursor-default">
-      <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-slate-100 transition-colors">
-              {icon}
-          </div>
-          <span className="text-xs font-medium text-slate-400">{label}</span>
-      </div>
+      <div className="flex items-center gap-3"><div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-slate-100 transition-colors">{icon}</div><span className="text-xs font-medium text-slate-400">{label}</span></div>
       <span className={`text-xs font-bold ${highlight ? 'text-rose-500' : 'text-slate-700'}`}>{value}</span>
   </div>
 );
 
-const LegendItem = ({ color, label }) => (
-  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-      <div className={`w-3 h-3 rounded-md ${color}`} />
-      <span>{label}</span>
-  </div>
-);
-
 const Droplets = ({ size, className }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M7 16.3c2.2 0 4-1.8 4-4 0-1.5-1.5-4.1-2.9-5.9a1.1 1.1 0 0 0-2.2 0C4.5 8.2 3 10.8 3 12.3c0 2.2 1.8 4 4 4z"></path>
-        <path d="M15.7 18.5c1.8 0 3.3-1.5 3.3-3.3 0-1.3-1.3-3.4-2.4-4.9a0.9 0.9 0 0 0-1.8 0c-1.1 1.5-2.4 3.6-2.4 4.9 0 1.8 1.5 3.3 3.3 3.3z"></path>
-    </svg>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M7 16.3c2.2 0 4-1.8 4-4 0-1.5-1.5-4.1-2.9-5.9a1.1 1.1 0 0 0-2.2 0C4.5 8.2 3 10.8 3 12.3c0 2.2 1.8 4 4 4z"></path><path d="M15.7 18.5c1.8 0 3.3-1.5 3.3-3.3 0-1.3-1.3-3.4-2.4-4.9a0.9 0.9 0 0 0-1.8 0c-1.1 1.5-2.4 3.6-2.4 4.9 0 1.8 1.5 3.3 3.3 3.3z"></path></svg>
 );
 
 export default BloomPage;

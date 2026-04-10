@@ -16,8 +16,8 @@ public class MongoService
     private readonly IMongoCollection<SystemLog> _systemLogsCollection;
     private readonly IMongoCollection<Resource> _resourcesCollection;
     private readonly IMongoCollection<BloomPeriod> _bloomPeriodsCollection;
-    private readonly IMongoCollection<BloomDailyLog> _bloomDailyLogsCollection;
     private readonly IMongoCollection<BloomSettings> _bloomSettingsCollection;
+    private readonly IMongoCollection<BloomDailyLog> _bloomDailyLogsCollection;
 
     private static readonly DateTime _serverStartTime = DateTime.UtcNow;
 
@@ -47,8 +47,8 @@ public class MongoService
         _resourcesCollection = _database.GetCollection<Resource>(resourcesCollectionName);
 
         _bloomPeriodsCollection = _database.GetCollection<BloomPeriod>("BloomPeriods");
-        _bloomDailyLogsCollection = _database.GetCollection<BloomDailyLog>("BloomDailyLogs");
         _bloomSettingsCollection = _database.GetCollection<BloomSettings>("BloomSettings");
+        _bloomDailyLogsCollection = _database.GetCollection<BloomDailyLog>("BloomDailyLogs");
     }
 
     // --- Collections ---
@@ -82,7 +82,6 @@ public class MongoService
         return result.DeletedCount > 0;
     }
 
-    // ✅ FIXED (ONLY ONE METHOD)
     public async Task<User?> GetUserByIdAsync(string id) =>
         await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
 
@@ -208,8 +207,17 @@ public class MongoService
             Builders<BloomDailyLog>.Filter.Eq(l => l.UserId, userId),
             Builders<BloomDailyLog>.Filter.Eq(l => l.Date, date.Date)
         );
-        var options = new ReplaceOptions { IsUpsert = true };
-        await _bloomDailyLogsCollection.ReplaceOneAsync(filter, log, options);
+
+        var update = Builders<BloomDailyLog>.Update
+            .Set(l => l.Flow, log.Flow)
+            .Set(l => l.Mood, log.Mood)
+            .Set(l => l.Note, log.Note)
+            .Set(l => l.Symptoms, log.Symptoms)
+            .Set(l => l.UpdatedAt, DateTime.UtcNow)
+            .SetOnInsert(l => l.UserId, userId)
+            .SetOnInsert(l => l.Date, date.Date);
+
+        await _bloomDailyLogsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
     }
 
     public async Task<bool> DeleteBloomDailyLogAsync(string userId, DateTime date)
@@ -228,7 +236,10 @@ public class MongoService
     public async Task SaveBloomSettingsAsync(BloomSettings settings)
     {
         var filter = Builders<BloomSettings>.Filter.Eq(s => s.UserId, settings.UserId);
-        var options = new ReplaceOptions { IsUpsert = true };
-        await _bloomSettingsCollection.ReplaceOneAsync(filter, settings, options);
+        var update = Builders<BloomSettings>.Update
+            .Set(s => s.PeriodDuration, settings.PeriodDuration)
+            .SetOnInsert(s => s.UserId, settings.UserId);
+
+        await _bloomSettingsCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
     }
-}
+}
