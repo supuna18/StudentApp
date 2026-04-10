@@ -13,6 +13,7 @@ import HabitImpactPage from './HabitImpactPage';
 
 import SetLimitForm from '../components/Wellbeing/SetLimitForm';
 import MusicPlayerPage from './MusicPlayerPage';
+import BloomPage from './BloomPage';
 
 const stats = [
   { label: "Focus Time", value: "4h 32m", sub: "↑ 18% vs yesterday", subColor: "text-emerald-500" },
@@ -198,6 +199,9 @@ const StudentDashboard = () => {
           <Route path="resources" element={<StudentResourceManager />} />
           <Route path="profile" element={<ProfileManagement />} />
           <Route path="set-limit" element={<SetLimitForm />} />
+
+          <Route path="bloom" element={<BloomPage />} />
+
           <Route path="habit-impact" element={<HabitImpactPage />} />
 
 
