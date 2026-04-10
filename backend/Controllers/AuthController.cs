@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentApp.Api.Models;
 using StudentApp.Api.Services;
+using StudentApp.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims; // IMPORTANT for ClaimTypes
 
@@ -11,10 +12,12 @@ namespace StudentApp.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
+    private readonly MongoService _mongoService;
 
-    public AuthController(AuthService authService)
+    public AuthController(AuthService authService, MongoService mongoService)
     {
         _authService = authService;
+        _mongoService = mongoService;
     }
 
     // 1. Register Endpoint
@@ -38,7 +41,10 @@ public class AuthController : ControllerBase
         var result = await _authService.RegisterAsync(user, request.Password);
 
         if (result == "Success")
+        {
+            await _mongoService.LogActivityAsync("User Registration", $"New user registered: {request.Email} ({user.Role})");
             return Ok(new { message = "User registered successfully!" });
+        }
 
         return BadRequest(new { message = result });
     }
@@ -50,8 +56,12 @@ public class AuthController : ControllerBase
         var token = await _authService.LoginAsync(request.Email, request.Password);
 
         if (token == null)
+        {
+            await _mongoService.LogActivityAsync("Login Failed", $"Failed login attempt for email: {request.Email}", "Warning");
             return Unauthorized(new { message = "Invalid email or password" });
+        }
 
+        await _mongoService.LogActivityAsync("User Login", $"User logged in: {request.Email}");
         return Ok(new { token });
     }
 

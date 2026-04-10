@@ -64,15 +64,16 @@ export default function Features() {
         </motion.div>
 
         {/* Heading Row */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-14">
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="heading-serif text-4xl md:text-5xl text-slate-900 leading-tight max-w-xl"
+            className="heading-serif text-3xl md:text-5xl text-slate-900 leading-tight max-w-xl"
           >
             Everything you need to{" "}
+            <br className="md:hidden" />
             <span className="text-blue-600 italic">stay productive.</span>
           </motion.h2>
 
@@ -81,7 +82,7 @@ export default function Features() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="self-start md:self-auto inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3 rounded-full shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5"
+            className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3.5 rounded-full shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5"
           >
             Explore All Features
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none">

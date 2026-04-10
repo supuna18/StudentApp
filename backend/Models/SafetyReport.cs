@@ -19,7 +19,7 @@ public class SafetyReport
 
     [Required]
     public string ReportedBy { get; set; } = string.Empty;
-
+    public string UserId { get; set; } = string.Empty;
     public DateTime ReportedAt { get; set; } = DateTime.UtcNow;
 
     public string Status { get; set; } = "Pending"; // Pending, Verified, Blocked
