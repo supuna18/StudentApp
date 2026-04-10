@@ -253,7 +253,7 @@ const SchedulerPage = () => {
                     </form>
                 </motion.div>
 
-                {/* PREMIUM SIDEBAR AGENDA */}
+                {/* PREMIUM SIDEBAR. AGENDA */}
                 <motion.div
                     initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
