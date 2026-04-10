@@ -1,8 +1,17 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Collections.Generic;
+
 namespace StudentApp.Api.Models;
 
+[BsonIgnoreExtraElements] // Indha line romba mukkiyam
 public class StudyGroup
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
+
     public string GroupName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Subject { get; set; } = string.Empty;
@@ -15,9 +24,10 @@ public class StudyGroup
 public class MemberDetail {
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
-    public DateTime JoinedAt { get; set; } // Indha line irukkannu confirm pannunga
+    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 }
-// Controller-la irundhu delete panna matha classes-ah inga vachukonga
+
+// Request models-ah inga vechukonga
 public class JoinRequest {
     public string Email { get; set; } = string.Empty;
     public string JoinCode { get; set; } = string.Empty;

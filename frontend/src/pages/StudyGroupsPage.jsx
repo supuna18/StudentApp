@@ -72,35 +72,51 @@ const StudyGroupsPage = () => {
     let userEmail = '';
     let userName = '';
     if (token) {
-        try {
-            const decoded = jwtDecode(token);
-            userName = decoded.unique_name || 'Student';
-            const identity = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || decoded.email || decoded.unique_name;
-            userEmail = identity && identity.includes('@') ? identity : `${userName.toLowerCase()}@gmail.com`;
-        } catch (e) { console.error('JWT Error'); }
-    }
+    try {
+        const decoded = jwtDecode(token);
+        // Standardize: Email-ah lowecase-ku mathuroam
+        const identity = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || decoded.email || decoded.unique_name;
+        userEmail = identity.includes('@') ? identity.toLowerCase() : `${decoded.unique_name.toLowerCase()}@gmail.com`;
+    } catch (e) { console.error('JWT Error'); }
+}
 
     useEffect(() => { if (userEmail) fetchUserGroups(); }, [userEmail]);
 
-    const fetchUserGroups = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.get(`${API_URL}/user/${userEmail}`, { headers: { Authorization: `Bearer ${token}` } });
-            setOwnedGroups(res.data.filter((g) => (g.createdByEmail || g.CreatedByEmail) === userEmail));
-            setJoinedGroups(res.data.filter((g) => (g.createdByEmail || g.CreatedByEmail) !== userEmail));
-        } catch (err) { console.error('API Error'); }
-        finally { setLoading(false); }
-    };
+    // 2. fetchUserGroups function-la singular-ah typo irukkannu paarunga
+const fetchUserGroups = async () => {
+    setLoading(true);
+    try {
+        // API_URL variable use pannunga, hardcode pannadeenga
+        const res = await axios.get(`${API_URL}/user/${userEmail}`, { 
+            headers: { Authorization: `Bearer ${token}` } 
+        });
+        setOwnedGroups(res.data.filter((g) => (g.createdByEmail || g.CreatedByEmail || "").toLowerCase() === userEmail));
+        setJoinedGroups(res.data.filter((g) => (g.createdByEmail || g.CreatedByEmail || "").toLowerCase() !== userEmail));
+    } catch (err) { console.error('API Error'); }
+    finally { setLoading(false); }
+};
 
-    const handleCreate = async (e) => {
-        e.preventDefault();
-        try {
-            const payload = { GroupName: createForm.GroupName, Description: createForm.Description, Subject: createForm.GroupName, PhoneNumber: createForm.PhoneNumber, CreatedByEmail: userEmail, JoinCode: '', Members: [] };
-            const res = await axios.post(`${API_URL}/create`, payload, { headers: { Authorization: `Bearer ${token}` } });
-            alert(`Circle created! Access Code: ${res.data.otp}`);
-            setShowCreateModal(false); fetchUserGroups();
-        } catch { alert('Error creating circle.'); }
-    };
+// 3. handleCreate function
+const handleCreate = async (e) => {
+    e.preventDefault();
+    try {
+const payload = { 
+    groupName: createForm.GroupName, 
+    description: createForm.Description, 
+    subject: createForm.GroupName, 
+    phoneNumber: createForm.PhoneNumber, 
+    createdByEmail: userEmail.toLowerCase() // Standardize here too
+};
+        const res = await axios.post(`${API_URL}/create`, payload, { 
+            headers: { Authorization: `Bearer ${token}` } 
+        });
+        alert(`Circle created! Access Code: ${res.data.otp}`);
+        setShowCreateModal(false); 
+        fetchUserGroups();
+    } catch (err) { 
+        alert('Error creating circle.'); 
+    }
+};
 
     const handleJoin = async (e) => {
         e.preventDefault();

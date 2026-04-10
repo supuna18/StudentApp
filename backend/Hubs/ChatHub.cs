@@ -47,4 +47,14 @@ public class ChatHub : Hub
             throw new HubException($"SendMessage failed: {ex.Message}");
         }
     }
+
+    // ChatHub.cs kulla intha method-ah add pannunga
+// ChatHub.cs kulla intha method-ah add pannunga
+public async Task DeleteMessage(string groupId, string messageId)
+{
+    // Intha line thaan group-la ulla maththa members-oda screen-la irundhu andha message bubble-ah remove pannum
+    await Clients.Group(groupId).SendAsync("MessageDeleted", messageId);
 }
+}
+
+    
