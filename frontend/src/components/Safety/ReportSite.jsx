@@ -13,7 +13,10 @@ const ReportSite = () => {
     // 1. Fetch data
     const fetchReports = async () => {
         try {
-            const res = await fetch('http://localhost:5005/api/safety/my-reports');
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:5005/api/safety/my-reports', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setReports(data.reverse()); // Show newest first
@@ -66,8 +69,11 @@ const ReportSite = () => {
         const payload = {
             Url: formData.url, 
             Reason: formData.reason, 
+
             ReportedBy: 'Student_User',
             Status: 'UNDER REVIEW'
+            Status: 'Pending'
+
         };
         if (editId) payload.Id = editId;
 
@@ -75,9 +81,13 @@ const ReportSite = () => {
         const endpoint = editId ? `http://localhost:5005/api/safety/report/${editId}` : 'http://localhost:5005/api/safety/report';
 
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(endpoint, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -106,6 +116,23 @@ const ReportSite = () => {
         if (s === 'PENDING') return 'bg-blue-100 text-blue-700';
         if (s === 'UNDER REVIEW' || s === 'REJECTED') return 'bg-red-100 text-red-700';
         return 'bg-yellow-100 text-yellow-700';
+
+    // 3. Delete
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this report?")) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { 
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    fetchReports();
+                }
+            } catch (err) {
+                alert("Delete failed");
+            }
+ 
     };
 
     const formatDate = (dateString) => {

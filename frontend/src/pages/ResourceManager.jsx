@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, Image as ImageIcon, File, Download, 
-  Eye, Edit2, Trash2, Upload, X, Search, Filter 
+  Eye, Edit2, Trash2, Upload, X, Search, Filter,
+  CheckCircle
 } from 'lucide-react';
 
 const ResourceManager = () => {
@@ -50,6 +51,36 @@ const ResourceManager = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // --- Validations ---
+    if (!formData.title || formData.title.trim().length < 3) {
+      setError('Title must be at least 3 characters long.');
+      setLoading(false); return;
+    }
+    if (!/^[a-zA-Z0-9\s\-_.,!?()]+$/.test(formData.title)) {
+      setError('Title contains invalid special characters.');
+      setLoading(false); return;
+    }
+    if (!formData.category) {
+      setError('Please select a valid category.');
+      setLoading(false); return;
+    }
+    if (!formData.description || formData.description.trim().length < 10) {
+      setError('Description must be at least 10 characters long.');
+      setLoading(false); return;
+    }
+    if (!editingResource) {
+      if (!formData.file) {
+        setError('Please upload a document or image file.');
+        setLoading(false); return;
+      }
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (formData.file.size > maxSize) {
+        setError('File size must not exceed 10MB.');
+        setLoading(false); return;
+      }
+    }
+    // --- End Validations ---
 
     if (editingResource) {
         await handleUpdate();
@@ -131,6 +162,30 @@ const ResourceManager = () => {
     }
   };
 
+  const handleApprove = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/${id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isApproved: true })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setResources(resources.map(r => r.id === updated.id ? updated : r));
+      } else {
+        const err = await res.json();
+        setError(err.message || 'Approval failed');
+      }
+    } catch (err) {
+      console.error('Error approving resource:', err);
+      setError('An error occurred during approval.');
+    }
+  };
+
   const handleEdit = (resource) => {
     setEditingResource(resource);
     setFormData({
@@ -178,45 +233,47 @@ const ResourceManager = () => {
       {/* Upload Modal */}
       {showUploadForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-[#0F1C4D]">{editingResource ? 'Edit Resource' : 'Upload New Resource'}</h3>
-              <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
+              <h3 className="font-bold text-[#0F1C4D] text-lg">{editingResource ? 'Edit Resource' : 'Upload New Resource'}</h3>
+              <button onClick={resetForm} className="text-slate-400 hover:text-slate-600 transition-colors bg-white p-1.5 rounded-full border border-slate-200"><X size={18}/></button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {error && <div className="p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-600">{error}</div>}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {error && <div className="p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-600 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-500"/>{error}</div>}
               
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Title</label>
-                <input 
-                  type="text" name="title" value={formData.title} onChange={handleInputChange} required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="e.g. Introduction to React"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Title</label>
+                  <input 
+                    type="text" name="title" value={formData.title} onChange={handleInputChange} required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
+                    placeholder="e.g. Introduction to React"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Category</label>
+                  <select 
+                    name="category" value={formData.category} onChange={handleInputChange} required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-[#0F1C4D]"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Design">Design</option>
+                    <option value="Business">Business</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Category</label>
-                <select 
-                  name="category" value={formData.category} onChange={handleInputChange} required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                >
-                  <option value="">Select Category</option>
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="Physics">Physics</option>
-                  <option value="Design">Design</option>
-                  <option value="Business">Business</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Description</label>
                 <textarea 
                   name="description" value={formData.description} onChange={handleInputChange} rows="3"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="Provide a brief description..."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all placeholder:text-slate-400 resize-none"
+                  placeholder="Provide a brief description of the resource (minimum 10 characters)..."
                 />
               </div>
 
@@ -240,18 +297,18 @@ const ResourceManager = () => {
                 </div>
               )}
 
-              <div className="pt-2 flex gap-3">
+              <div className="pt-4 flex gap-4">
                 <button 
                   type="button" onClick={resetForm}
-                  className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all"
+                  className="flex-1 py-3.5 border border-slate-200 bg-slate-50 rounded-xl text-[13px] font-bold text-slate-500 hover:bg-slate-100 transition-all focus:ring-2 focus:ring-slate-300"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" disabled={loading}
-                  className="flex-2 bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-200 transition-all"
+                  className="flex-1 py-3.5 bg-blue-600 rounded-xl text-[13px] font-bold text-white hover:bg-blue-700 hover:shadow-lg transition-all focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2"
                 >
-                  {loading ? 'Processing...' : editingResource ? 'Update Resource' : 'Upload Resource'}
+                  {loading ? <span className="animate-pulse">Processing...</span> : editingResource ? 'Save Changes' : 'Upload Resource'}
                 </button>
               </div>
             </form>
@@ -282,6 +339,7 @@ const ResourceManager = () => {
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Category</th>
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Type</th>
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Size</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Status</th>
                 <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Actions</th>
               </tr>
             </thead>
@@ -311,7 +369,25 @@ const ResourceManager = () => {
                     <span className="text-[11px] font-600 text-slate-400">{(res.fileSize / 1024 / 1024).toFixed(2)} MB</span>
                   </td>
                   <td className="px-6 py-4">
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      res.isApproved 
+                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                        : 'bg-amber-50 text-amber-600 border border-amber-100'
+                    }`}>
+                      {res.isApproved ? 'APPROVED' : 'PENDING'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
+                        {!res.isApproved && (
+                            <button 
+                                onClick={() => handleApprove(res.id)}
+                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                title="Approve Resource"
+                            >
+                                <CheckCircle size={16} />
+                            </button>
+                        )}
                       <a 
                         href={`${STATIC_BASE_URL}${res.fileUrl}`} target="_blank" rel="noopener noreferrer"
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"

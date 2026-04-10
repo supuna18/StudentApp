@@ -117,7 +117,7 @@ public class MongoService
         var totalUsers = await _usersCollection.CountDocumentsAsync(new BsonDocument());
         var lastLogs = await _systemLogsCollection.Find(new BsonDocument())
                                                  .SortByDescending(l => l.Timestamp)
-                                                 .Limit(5)
+                                                 .Limit(10)
                                                  .ToListAsync();
 
         var uptime = DateTime.UtcNow - _serverStartTime;
@@ -130,6 +130,18 @@ public class MongoService
             totalUsers,
             recentLogs = lastLogs
         };
+    }
+
+    public async Task LogActivityAsync(string activity, string details, string severity = "Info")
+    {
+        var log = new SystemLog
+        {
+            Activity = activity,
+            Details = details,
+            Severity = severity,
+            Timestamp = DateTime.UtcNow
+        };
+        await _systemLogsCollection.InsertOneAsync(log);
     }
 
     // --- Admin Dashboard Stats ---
@@ -148,15 +160,90 @@ public class MongoService
         };
     }
 
-    public async Task<List<BsonDocument>> GetSystemUsageTrendsAsync()
+    public async Task<object> GetSystemUsageTrendsAsync()
     {
-        return await _userLimitsCollection.Aggregate()
+        var trendsDocs = await _userLimitsCollection.Aggregate()
             .Group(new BsonDocument { { "_id", "$domain" }, { "count", new BsonDocument("$sum", 1) } })
             .Sort(new BsonDocument("count", -1))
             .Limit(5)
             .ToListAsync();
+            
+        return trendsDocs.Select(doc => new {
+            domain = doc["_id"].IsBsonNull ? "Unknown" : doc["_id"].AsString,
+            count = doc["count"].AsInt32
+        }).ToList();
     }
 
+    public async Task<object> GetResourceDistributionAsync()
+    {
+        var approved = await _resourcesCollection.CountDocumentsAsync(r => r.IsApproved);
+        var pending = await _resourcesCollection.CountDocumentsAsync(r => !r.IsApproved);
+
+        // Also group by FileType or Category? Let's group by FileType
+        var byTypeDocs = await _resourcesCollection.Aggregate()
+            .Group(new BsonDocument { { "_id", "$FileType" }, { "count", new BsonDocument("$sum", 1) } })
+            .ToListAsync();
+
+        var byType = byTypeDocs.Select(doc => new {
+            _id = doc["_id"].IsBsonNull ? "Unknown" : doc["_id"].AsString,
+            count = doc["count"].AsInt32
+        }).ToList();
+
+        return new { approved, pending, byType };
+    }
+
+    public async Task<object> GetSafetyReportStatusDistributionAsync()
+    {
+        var pending = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Pending");
+        var approved = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Approved");
+        var blocked = await _safetyReportsCollection.CountDocumentsAsync(r => r.Status == "Blocked");
+        return new { pending, approved, blocked };
+    }
+
+    public async Task<List<object>> GetWeeklyActivityTrendsAsync(int weeks = 4)
+    {
+        var trends = new List<object>();
+        for (int i = weeks - 1; i >= 0; i--)
+        {
+            var end = DateTime.UtcNow.AddDays(-7 * i);
+            var start = end.AddDays(-7);
+
+            // Cumulative students up to 'end'
+            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt <= end);
+            var reportCount = await _safetyReportsCollection.CountDocumentsAsync(r => r.ReportedAt >= start && r.ReportedAt <= end);
+
+            trends.Add(new
+            {
+                label = end.ToString("MMM dd"), // Better label for weekly
+                students = (int)studentCount,
+                reports = (int)reportCount
+            });
+        }
+        return trends;
+    }
+
+    public async Task<List<object>> GetMonthlyActivityTrendsAsync(int months = 6)
+    {
+        var trends = new List<object>();
+        for (int i = months - 1; i >= 0; i--)
+        {
+            var date = DateTime.UtcNow.AddMonths(-i);
+            var monthStart = new DateTime(date.Year, date.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+
+            // Cumulative students up to 'monthEnd'
+            var studentCount = await _usersCollection.CountDocumentsAsync(u => u.Role == "Student" && u.CreatedAt <= monthEnd);
+            var reportCount = await _safetyReportsCollection.CountDocumentsAsync(r => r.ReportedAt >= monthStart && r.ReportedAt <= monthEnd);
+
+            trends.Add(new
+            {
+                label = date.ToString("MMM"),
+                students = (int)studentCount,
+                reports = (int)reportCount
+            });
+        }
+        return trends;
+    }
     // --- Resource Operations ---
     public async Task<List<Resource>> GetAllResourcesAsync() =>
         await _resourcesCollection.Find(_ => true).ToListAsync();
