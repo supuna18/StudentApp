@@ -353,11 +353,7 @@ const BloomPage = () => {
       </div>
 
       {/* Header */}
-      <div className="relative z-10 flex justify-between items-center mb-8 px-8 pt-8">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input type="text" placeholder="Search insights..." className="w-full bg-white border border-slate-100 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-rose-100 text-sm shadow-sm" />
-        </div>
+      <div className="relative z-10 flex justify-end items-center mb-8 px-8 pt-8">
         <div className="flex items-center gap-4">
           <button className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm" onClick={() => setIsSettingsOpen(true)}>
             <Settings size={20} />
