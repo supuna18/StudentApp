@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, Image as ImageIcon, File, Download, 
-  Eye, Edit2, Trash2, Upload, X, Search, Filter 
+  Eye, Edit2, Trash2, Upload, X, Search, Filter,
+  CheckCircle
 } from 'lucide-react';
 
 const ResourceManager = () => {
@@ -161,6 +162,30 @@ const ResourceManager = () => {
     }
   };
 
+  const handleApprove = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/${id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isApproved: true })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setResources(resources.map(r => r.id === updated.id ? updated : r));
+      } else {
+        const err = await res.json();
+        setError(err.message || 'Approval failed');
+      }
+    } catch (err) {
+      console.error('Error approving resource:', err);
+      setError('An error occurred during approval.');
+    }
+  };
+
   const handleEdit = (resource) => {
     setEditingResource(resource);
     setFormData({
@@ -314,6 +339,7 @@ const ResourceManager = () => {
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Category</th>
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Type</th>
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Size</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Status</th>
                 <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#E8EEFF]">Actions</th>
               </tr>
             </thead>
@@ -343,7 +369,25 @@ const ResourceManager = () => {
                     <span className="text-[11px] font-600 text-slate-400">{(res.fileSize / 1024 / 1024).toFixed(2)} MB</span>
                   </td>
                   <td className="px-6 py-4">
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      res.isApproved 
+                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                        : 'bg-amber-50 text-amber-600 border border-amber-100'
+                    }`}>
+                      {res.isApproved ? 'APPROVED' : 'PENDING'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
+                        {!res.isApproved && (
+                            <button 
+                                onClick={() => handleApprove(res.id)}
+                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                title="Approve Resource"
+                            >
+                                <CheckCircle size={16} />
+                            </button>
+                        )}
                       <a 
                         href={`${STATIC_BASE_URL}${res.fileUrl}`} target="_blank" rel="noopener noreferrer"
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
