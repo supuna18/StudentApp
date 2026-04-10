@@ -71,8 +71,8 @@ const ReportSite = () => {
             Reason: formData.reason, 
 
             ReportedBy: 'Student_User',
-            Status: 'UNDER REVIEW'
-            Status: 'Pending'
+            Status: 'UNDER REVIEW',
+            Status: 'Pending',
 
         };
         if (editId) payload.Id = editId;
@@ -132,6 +132,7 @@ const ReportSite = () => {
             } catch (err) {
                 alert("Delete failed");
             }
+        }
  
     };
 
@@ -350,5 +351,5 @@ const ReportSite = () => {
         </div>
     );
 };
-
+}
 export default ReportSite;
