@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Link as LinkIcon, ShieldAlert, HeartHandshake, ShieldCheck, RefreshCw, FileText, CheckSquare, Edit2, Trash2 } from 'lucide-react';
 
 const ReportSite = () => {
     const [reports, setReports] = useState([]);
@@ -15,7 +16,7 @@ const ReportSite = () => {
             const res = await fetch('http://localhost:5005/api/safety/my-reports');
             if (res.ok) {
                 const data = await res.json();
-                setReports(data);
+                setReports(data.reverse()); // Show newest first
             }
         } catch (err) {
             console.error("Fetch error:", err);
@@ -26,33 +27,35 @@ const ReportSite = () => {
         fetchReports();
     }, []);
 
-    // Animation Variants
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } }
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this report?")) {
+            try {
+                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    fetchReports();
+                } else {
+                    alert("Delete failed on server");
+                }
+            } catch (err) {
+                alert("Delete request failed");
+            }
+        }
     };
 
-    const itemVariants = {
-        hidden: { opacity: 0, y: 30, scale: 0.95 },
-        show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 20 } },
-        exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } }
-    };
-
-    // Validation Logic
+    // Validation
     const validateForm = () => {
         let errors = {};
         if (!formData.url.trim()) errors.url = "URL is required";
         else if (!formData.url.startsWith('http')) errors.url = "Invalid URL format (start with http)";
         
         if (!formData.reason.trim()) errors.reason = "Reason is required";
-        else if (formData.reason.length < 10) errors.reason = "Min 10 characters needed";
         else if (formData.reason.length > 100) errors.reason = "Max 100 characters allowed";
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
-    // 2. Submit or Update
+    // 2. Submit
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -64,7 +67,7 @@ const ReportSite = () => {
             Url: formData.url, 
             Reason: formData.reason, 
             ReportedBy: 'Student_User',
-            Status: 'Pending'
+            Status: 'UNDER REVIEW'
         };
         if (editId) payload.Id = editId;
 
@@ -79,178 +82,244 @@ const ReportSite = () => {
             });
 
             if (res.ok) {
-                setStatus(editId ? '✅ Report Updated!' : '✅ Report Submitted!');
+                setStatus(editId ? 'Report Updated!' : 'Report Submitted!');
                 setFormData({ url: '', reason: '' });
                 setEditId(null);
                 setFormErrors({});
                 await fetchReports();
                 setTimeout(() => setStatus(''), 3000);
             } else {
-                const errData = await res.text();
-                setStatus('❌ Server Error: ' + errData.substring(0, 30));
+                setStatus('Server Error');
+                setTimeout(() => setStatus(''), 3000);
             }
         } catch (err) {
-            setStatus('❌ Error connecting to server');
+            setStatus('Error connecting to server');
+            setTimeout(() => setStatus(''), 3000);
         } finally {
             setLoading(false);
         }
     };
 
-    // 3. Delete
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this report?")) {
-            try {
-                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    fetchReports();
-                }
-            } catch (err) {
-                alert("Delete failed");
-            }
-        }
+    const getStatusColor = (statusStr) => {
+        const s = (statusStr || '').toUpperCase();
+        if (s === 'APPROVED' || s === 'RESOLVED') return 'bg-green-100 text-green-700';
+        if (s === 'PENDING') return 'bg-blue-100 text-blue-700';
+        if (s === 'UNDER REVIEW' || s === 'REJECTED') return 'bg-red-100 text-red-700';
+        return 'bg-yellow-100 text-yellow-700';
     };
 
-    // 4. Edit mode
-    const startEdit = (report) => {
-        setEditId(report.id || report.Id);
-        setFormData({ 
-            url: report.url || report.Url, 
-            reason: report.reason || report.Reason 
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    const formatDate = (dateString) => {
+        if (!dateString) return "Just now";
+        const d = new Date(dateString);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
     return (
-        <div className="relative w-full min-h-screen py-16 px-6 lg:px-12 overflow-hidden bg-slate-50 flex flex-col items-center justify-center">
-            {/* Custom Background */}
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <motion.img 
-                    initial={{ scale: 1.1, opacity: 0 }} 
-                    animate={{ scale: 1.05, opacity: 1 }} 
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    src="/smart.jpg" 
-                    alt="Security Guard Background" 
-                    className="w-full h-full object-cover opacity-50 blur-[4px]"
-                />
-                <div className="absolute inset-0 bg-white/70" />
+        <div className="w-full min-h-screen bg-[#F8F9FB] p-8 lg:p-12 font-sans text-slate-800">
+            {/* Header */}
+            <div className="max-w-6xl mx-auto mb-10">
+                <h1 className="text-4xl font-extrabold tracking-tight mb-3">News Validator</h1>
+                <p className="text-slate-500 font-medium max-w-4xl text-[15px] leading-relaxed">
+                    Maintain the academic integrity of our community. Report suspicious links, misinformation, or predatory educational platforms to our security team.
+                </p>
             </div>
 
-            <motion.div 
-                initial={{ opacity: 0, y: 40 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-                className="relative z-10 w-full max-w-4xl space-y-10"
-            >
-                {/* --- INPUT FORM --- */}
-                <div className="bg-white/90 backdrop-blur-xl p-8 lg:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200 border border-slate-100 relative overflow-hidden">
-                    <div className="flex items-center space-x-4 mb-8 relative z-10">
-                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-[1.5rem] text-3xl shadow-sm text-blue-600">
-                            <motion.span animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="block drop-shadow-lg">🛡️</motion.span>
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+                
+                {/* Left Column: Form */}
+                <div className="lg:col-span-7 bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                            <Shield size={28} />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase">Security Guard</h2>
-                            <p className="text-[11px] text-blue-500 font-black uppercase tracking-[0.2em] mt-1">Report Suspicious Content</p>
+                            <h2 className="text-xl font-bold">Security Guard</h2>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time link scrutiny</p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-                        <input 
-                            type="url" placeholder="https://unsafe-link.com"
-                            className={`w-full p-5 bg-slate-50 border rounded-[1.5rem] text-slate-800 font-medium outline-none transition-all shadow-inner ${formErrors.url ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}`}
-                            value={formData.url} onChange={(e) => setFormData({...formData, url: e.target.value})}
-                        />
-                        {formErrors.url && <p className="text-red-500 text-[10px] font-bold pl-2">{formErrors.url}</p>}
-                        
-                        <textarea 
-                            placeholder="What makes this site suspicious? (Max 100)"
-                            maxLength={100}
-                            className={`w-full p-5 bg-slate-50 border rounded-[1.5rem] h-32 outline-none text-slate-800 font-medium shadow-inner resize-none ${formErrors.reason ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}`}
-                            value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})}
-                        />
-                        <div className="flex justify-between px-2">
-                            {formErrors.reason && <p className="text-red-500 text-[10px] font-bold">{formErrors.reason}</p>}
-                            <p className="text-[10px] text-slate-400 font-bold ml-auto">{formData.reason.length}/100</p>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-2">Suspicious URL</label>
+                            <div className="relative">
+                                <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input 
+                                    type="text" 
+                                    placeholder="https://example.com/suspicious-article"
+                                    className={`w-full bg-[#F8F9FA] pl-12 pr-4 py-4 rounded-xl text-sm outline-none font-medium transition-all ${formErrors.url ? 'border border-red-300 ring-2 ring-red-100' : 'border border-transparent focus:border-blue-200 focus:ring-2 focus:ring-blue-50'}`}
+                                    value={formData.url} 
+                                    onChange={(e) => setFormData({...formData, url: e.target.value})}
+                                />
+                            </div>
+                            {formErrors.url && <p className="text-red-500 text-[10px] font-bold mt-1">{formErrors.url}</p>}
                         </div>
 
-                        <motion.button 
-                            whileHover={{ scale: 1.01, y: -2 }}
-                            whileTap={{ scale: 0.97 }}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-widest">Reason for Suspicion</label>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Max 100 Characters</span>
+                            </div>
+                            <textarea 
+                                placeholder="e.g., Claims to be a certified peer-reviewed journal but contains numerous spelling errors and unverified data..."
+                                maxLength={100}
+                                className={`w-full bg-[#F8F9FA] p-4 rounded-xl text-sm outline-none font-medium h-32 resize-none transition-all ${formErrors.reason ? 'border border-red-300 ring-2 ring-red-100' : 'border border-transparent focus:border-blue-200 focus:ring-2 focus:ring-blue-50'}`}
+                                value={formData.reason} 
+                                onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                            />
+                            {formErrors.reason && <p className="text-red-500 text-[10px] font-bold mt-1">{formErrors.reason}</p>}
+                        </div>
+
+                        <button 
                             disabled={loading}
                             type="submit" 
-                            className="w-full bg-blue-600 shadow-xl shadow-blue-200 hover:bg-blue-700 text-white py-5 rounded-[1.5rem] font-black tracking-widest uppercase transition-all disabled:opacity-50 text-sm"
+                            className="w-full bg-[#1A65E6] hover:bg-blue-700 active:bg-blue-800 text-white py-4 rounded-full font-bold shadow-md shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-70"
                         >
-                            {loading ? 'PROCESSING...' : editId ? 'UPDATE REPORT' : 'SUBMIT SECURITY REPORT'}
-                        </motion.button>
-                        <AnimatePresence>
-                            {status && (
-                                <motion.p 
-                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                                    className="text-center font-black text-[10px] text-blue-600 uppercase tracking-[0.2em] bg-blue-50 backdrop-blur-md py-2.5 rounded-full border border-blue-200 w-max mx-auto px-8 shadow-md"
-                                >
-                                    {status}
-                                </motion.p>
-                            )}
-                        </AnimatePresence>
+                            <ShieldCheck size={20} /> 
+                            {loading ? 'Processing...' : editId ? 'Update Security Report' : 'Submit Security Report'}
+                        </button>
+                        {status && (
+                            <p className="text-center text-sm font-bold text-blue-600 mt-2">{status}</p>
+                        )}
                     </form>
                 </div>
 
-                {/* --- HISTORY SECTION --- */}
-                <div className="px-2">
-                    <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest italic flex items-center gap-3">
-                            Report History 
-                            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm not-italic font-black shadow-sm">{reports.length}</span>
-                        </h3>
-                        <motion.button 
-                            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                            onClick={fetchReports} 
-                            className="text-[10px] font-black tracking-widest uppercase text-slate-500 hover:text-blue-600 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 transition-all font-bold"
-                        >
-                            🔄 Refresh
-                        </motion.button>
+                {/* Right Column: Info Cards */}
+                <div className="lg:col-span-5 space-y-8">
+                    {/* Why Reporting Matters */}
+                    <div className="bg-[#E8EDFD] p-8 rounded-[2rem] border border-blue-100/50">
+                        <h3 className="text-[#3A5B8A] text-xl font-bold mb-6">Why Reporting Matters</h3>
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-4">
+                                <div className="mt-1 text-[#1A65E6]"><CheckSquare size={20} /></div>
+                                <p className="text-sm text-[#3A5B8A] font-medium leading-relaxed">Every report is reviewed by academic curators within 24 hours.</p>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <div className="mt-1 text-[#1A65E6]"><ShieldAlert size={20} /></div>
+                                <p className="text-sm text-[#3A5B8A] font-medium leading-relaxed">Prevents predatory publishers from accessing student data.</p>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <div className="mt-1 text-[#1A65E6]"><HeartHandshake size={20} /></div>
+                                <p className="text-sm text-[#3A5B8A] font-medium leading-relaxed">Contributes to the EduSync global trust database.</p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <motion.div 
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="show"
-                        className="grid gap-4 max-h-[500px] overflow-y-auto pr-6 custom-scrollbar pb-10"
-                    >
-                        <AnimatePresence mode="popLayout">
-                        {reports.length > 0 ? (
-                            reports.map((report) => (
-                                <motion.div 
-                                    variants={itemVariants}
-                                    layout
-                                    key={report.id || report.Id} 
-                                    className="group bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 hover:border-blue-400 flex flex-col md:flex-row md:items-center justify-between transition-all duration-300 gap-4"
-                                >
-                                    <div className="flex-1 min-w-0 pr-4">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                                            <p className="text-[15px] font-black text-slate-800 truncate tracking-tight">
-                                                {report.url || report.Url}
+
+                    {/* Image/Video Card */}
+                    <div className="relative h-40 rounded-[2rem] overflow-hidden shadow-sm flex items-end p-6 bg-slate-900 border border-slate-800">
+                        <video 
+                            src="/secvideo.mp4" 
+                            autoPlay 
+                            loop 
+                            muted 
+                            playsInline
+                            className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#010C24] via-transparent to-transparent opacity-90" />
+                        <div className="relative z-10 flex items-center justify-between w-full">
+                            <span className="text-white font-bold text-sm">System integrity: 99.9% secured</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* History Section */}
+            <div className="max-w-6xl mx-auto">
+                <div className="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 className="text-2xl font-extrabold mb-3">Report History</h2>
+                        <div className="flex items-center gap-3">
+                            <span className="bg-[#E6EBED] text-slate-600 text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full">
+                                Active Reports: {reports.length}
+                            </span>
+                            <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                            <span className="text-[11px] font-bold text-slate-800">
+                                Last updated: Just now
+                            </span>
+                        </div>
+                    </div>
+                    <button onClick={fetchReports} className="bg-[#EEEFF2] hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all">
+                        <RefreshCw size={14} /> Refresh List
+                    </button>
+                </div>
+
+                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                    {/* Header Row */}
+                    <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-slate-100 bg-[#FAFAFB]">
+                        <div className="col-span-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Resource URL</div>
+                        <div className="col-span-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Status</div>
+                        <div className="col-span-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Submission Date</div>
+                        <div className="col-span-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Action</div>
+                    </div>
+
+                    {/* List Items */}
+                    <div className="divide-y divide-slate-50">
+                        {reports.length === 0 ? (
+                            <div className="py-12 text-center text-slate-400 font-medium text-sm">No reports found in your history.</div>
+                        ) : (
+                            reports.map(report => {
+                                const urlObj = report.url || report.Url;
+                                // Simple trim for display
+                                const displayUrl = urlObj && urlObj.length > 40 ? urlObj.substring(0, 40) + '...' : urlObj;
+                                const statusValue = (report.status || report.Status || 'UNDER REVIEW').toUpperCase();
+
+                                return (
+                                    <div key={report.id || report.Id} className="grid grid-cols-12 gap-4 px-8 py-6 items-center hover:bg-slate-50/50 transition-all">
+                                        
+                                        <div className="col-span-5 pr-4">
+                                            <p className="font-bold text-sm text-slate-800 truncate mb-1">
+                                                {displayUrl || "Unknown URL"}
+                                            </p>
+                                            <p className="text-xs text-slate-500 truncate">
+                                                Reason: {report.reason || report.Reason}
                                             </p>
                                         </div>
-                                        <p className="text-[13px] text-slate-500 font-bold leading-relaxed line-clamp-2 pl-5">
-                                            {report.reason || report.Reason}
-                                        </p>
+
+                                        <div className="col-span-3 flex justify-center">
+                                            <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${getStatusColor(statusValue)}`}>
+                                                <span className="mr-1.5">•</span>{statusValue}
+                                            </span>
+                                        </div>
+
+                                        <div className="col-span-2 text-center">
+                                            <span className="text-[13px] font-bold text-slate-700">
+                                                {formatDate(report.createdAt || report.CreatedAt)}
+                                            </span>
+                                        </div>
+
+                                        <div className="col-span-2 flex justify-end gap-2">
+                                            {statusValue === 'APPROVED' ? (
+                                                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-slate-100 rounded-md">Locked</span>
+                                            ) : (
+                                                <>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditId(report.id || report.Id);
+                                                            setFormData({ url: report.url || report.Url, reason: report.reason || report.Reason });
+                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        }}
+                                                        className="text-[#1A65E6] p-2 hover:bg-blue-50 rounded-lg transition-all"
+                                                        title="Edit"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(report.id || report.Id)}
+                                                        className="text-rose-500 p-2 hover:bg-rose-50 rounded-lg transition-all"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex space-x-2">
-                                        <button onClick={() => startEdit(report)} className="p-3.5 bg-slate-50 text-blue-600 border border-slate-100 rounded-2xl hover:bg-blue-600 hover:text-white shadow-sm transition-all">✏️</button>
-                                        <button onClick={() => handleDelete(report.id || report.Id)} className="p-3.5 bg-slate-50 text-rose-500 border border-slate-100 rounded-2xl hover:bg-rose-500 hover:text-white shadow-sm transition-all">🗑️</button>
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <div className="py-24 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-                               <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">No threats detected in EduSyncDB.</p>
-                            </div>
+                                );
+                            })
                         )}
-                        </AnimatePresence>
-                    </motion.div>
+                    </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };
