@@ -10,9 +10,11 @@ import {
   LogOut,
   User,
   Users,
+  Target,
   Share2,
   Menu,
   X
+
 } from 'lucide-react';
 
 const menuSections = [
@@ -29,6 +31,7 @@ const menuSections = [
       { name: 'Security Guard',    path: '/student-dashboard/safety',     icon: <ShieldCheck size={15} strokeWidth={2} /> },
       { name: 'Mindfulness Zone',  path: '/student-dashboard/wellness',   icon: <Heart        size={15} strokeWidth={2} /> },
       { name: 'Usage Limits',      path: '/student-dashboard/set-limit',  icon: <Clock        size={15} strokeWidth={2} /> },
+      { name: 'Freedom Path',      path: '/student-dashboard/habit-impact', icon: <Target     size={15} strokeWidth={2} /> },
     ],
   },
   {
