@@ -1,223 +1,313 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Send, ArrowLeft, Users, ShieldCheck, Phone, Lock, Loader2, Paperclip, FileText, Download, X, Image as ImageIcon } from 'lucide-react';
-import { jwtDecode } from 'jwt-decode';
 import * as signalR from '@microsoft/signalr';
+import { jwtDecode } from 'jwt-decode';
 
-const ChatPage = () => {
+export default function ChatPage() {
     const { groupId } = useParams();
     const navigate = useNavigate();
-    const [group, setGroup] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null); // Attachment state
-    const [loading, setLoading] = useState(true);
     const [connection, setConnection] = useState(null);
-    const [status, setStatus] = useState("Connecting..."); // Added status tracking
-    const chatEndRef = useRef(null);
+    const [file, setFile] = useState(null);
+    const [ownerEmail, setOwnerEmail] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [contextMenu, setContextMenu] = useState(null); 
+
+    // --- FORWARD STATES ---
+    const [showForwardModal, setShowForwardModal] = useState(false);
+    const [userGroups, setUserGroups] = useState([]);
+    const [forwardLoading, setForwardLoading] = useState(false);
+    const [selectedGroups, setSelectedGroups] = useState([]); 
 
     const token = localStorage.getItem('token');
-    const API_URL = "http://localhost:5005/api/studygroups";
 
-    // --- SMART IDENTITY FINDER ---
-    let userEmail = "";
-    if (token) {
+    const getMyEmail = () => {
+        if (!token) return "";
         try {
             const decoded = jwtDecode(token);
-            const identity = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || decoded.email || decoded.unique_name;
-            userEmail = (identity && !identity.includes('@')) ? `${identity.toLowerCase()}@gmail.com` : identity;
-        } catch (e) { }
-    }
-    if (!userEmail) userEmail = "Anonymous_User"; // Safe fallback
-
-    const scrollToBottom = () => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
-
-    // --- FILE HANDLING LOGIC ---
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.size > 2 * 1024 * 1024) return alert("File too large! (Max 2MB allowed)");
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setSelectedFile({ data: reader.result, name: file.name, type: file.type });
-            };
-            reader.readAsDataURL(file);
-        }
+            const identity = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || decoded.email || decoded.unique_name;
+            if (identity && !identity.includes('@')) {
+                return `${identity.toLowerCase()}@gmail.com`;
+            }
+            return identity ? identity.toLowerCase() : "";
+        } catch (e) { return ""; }
     };
 
+    const myEmail = getMyEmail();
+    const chatEndRef = useRef(null);
+    const API_BASE = "http://localhost:5005/api";
+
     useEffect(() => {
-        const initChat = async () => {
+        if (!myEmail || !groupId) return;
+
+        const loadData = async () => {
+            setLoading(true);
             try {
-                // Fetch Group Details & History simultaneously
-                const [gRes, hRes] = await Promise.all([
-                    axios.get(`${API_URL}/${groupId}`, { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get(`${API_URL}/chat/history/${groupId}`)
-                ]);
-                setGroup(gRes.data);
-                
-                // Load historical messages from DB
-                setMessages(hRes.data.map(m => ({ 
-                    user: m.senderEmail, 
-                    message: m.message, 
-                    time: new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-                    fileData: m.fileData,
-                    fileName: m.fileName,
-                    fileType: m.fileType
-                })));
-                
-                setLoading(false);
-                setTimeout(scrollToBottom, 500);
-            } catch (err) { console.error("Connection failed"); setLoading(false); }
+                const gRes = await fetch(`${API_BASE}/studygroups/user/${myEmail}`, { headers: { Authorization: `Bearer ${token}` } });
+                if (gRes.ok) {
+                    const groups = await gRes.json();
+                    setUserGroups(groups);
+                    const group = groups.find(g => (g.id || g.Id) === groupId);
+                    if (group) setOwnerEmail((group.createdByEmail || group.CreatedByEmail || "").toLowerCase());
+                }
+
+                const hRes = await fetch(`${API_BASE}/studygroups/chat/history/${groupId}/${myEmail}`, { headers: { Authorization: `Bearer ${token}` } });
+                if (hRes.ok) {
+                    const data = await hRes.json();
+                    const mapped = data.map(m => ({
+                        id: m.id || m.Id,
+                        senderEmail: (m.senderEmail || m.SenderEmail || "").toLowerCase(),
+                        message: m.message || m.Message,
+                        timestamp: m.timestamp || m.Timestamp,
+                        fileData: m.fileData || m.FileData,
+                        fileName: m.fileName || m.FileName,
+                        fileType: m.fileType || m.FileType
+                    }));
+                    setMessages(mapped);
+                }
+            } catch (err) { console.error("Load error", err); }
+            finally { setLoading(false); }
         };
+        loadData();
 
-        // SignalR Setup
-        const newConnection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5005/chatHub")
-            .withAutomaticReconnect()
-            .build();
-
-        setConnection(newConnection);
-        initChat();
-    }, [groupId]);
+        const newConn = new signalR.HubConnectionBuilder().withUrl("http://localhost:5005/chathub").withAutomaticReconnect().build();
+        setConnection(newConn);
+        return () => { if (newConn) newConn.stop(); };
+    }, [groupId, myEmail]);
 
     useEffect(() => {
         if (connection) {
             connection.start().then(() => {
-                setStatus("Connected"); // Live status
                 connection.invoke("JoinGroup", groupId);
-                
-                // Real-time message listener
-                connection.on("ReceiveMessage", (user, message, time, fileData, fileName, fileType) => {
+                connection.on("ReceiveMessage", (user, msg, time, fData, fName, fType, msgId) => {
                     setMessages(prev => [...prev, { 
-                        user, message, 
-                        time: new Date(time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-                        fileData, fileName, fileType
+                        id: msgId,
+                        senderEmail: user.toLowerCase(),
+                        message: msg, 
+                        timestamp: time, 
+                        fileData: fData, 
+                        fileName: fName, 
+                        fileType: fType 
                     }]);
-                    scrollToBottom();
                 });
-            }).catch(e => {
-                setStatus("Connection Failed");
-                console.error("SignalR Connection Error:", e);
+                connection.on("MessageDeleted", (messageId) => {
+                    setMessages(prev => prev.filter(m => m.id !== messageId));
+                });
             });
-
-            connection.onreconnecting(() => setStatus("Reconnecting..."));
-            connection.onreconnected(() => setStatus("Connected"));
-            connection.onclose(() => setStatus("Disconnected"));
         }
     }, [connection, groupId]);
 
-    const sendMessage = async (e) => {
+    const handleContextMenu = (e, msg) => {
         e.preventDefault();
-        
-        // Guard for connection and required IDs
-        if (connection && groupId && (newMessage.trim() || selectedFile)) {
-            try {
-                console.log(`Sending message to group: ${groupId} as ${userEmail}`); // Added trace logging
-                
-                // Invoke backend SendMessage with all attachment fields
-                await connection.invoke("SendMessage", groupId, userEmail, newMessage, 
-                    selectedFile?.data || null, selectedFile?.name || null, selectedFile?.type || null);
-                
-                setNewMessage("");
-                setSelectedFile(null);
-            } catch (err) { 
-                console.error("SendMessage Invocation Error:", err); 
-                setStatus("Send Failed");
+        const screenWidth = window.innerWidth;
+        const menuWidth = 180;
+        let xPos = e.pageX;
+        if (xPos + menuWidth > screenWidth) { xPos = xPos - menuWidth; }
+        setContextMenu({ x: xPos, y: e.pageY, msg });
+    };
+
+    const deleteForEveryone = async () => {
+        if (!contextMenu) return;
+        try {
+            const res = await fetch(`${API_BASE}/studygroups/chat/delete-for-everyone/${contextMenu.msg.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            if (res.ok) { await connection.invoke("DeleteMessage", groupId, contextMenu.msg.id); setContextMenu(null); }
+        } catch (e) { alert("Delete failed"); }
+    };
+
+    const deleteForMe = async () => {
+        if (!contextMenu) return;
+        try {
+            await fetch(`${API_BASE}/studygroups/chat/delete-for-me?messageId=${contextMenu.msg.id}&userEmail=${myEmail}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            setMessages(prev => prev.filter(m => m.id !== contextMenu.msg.id));
+            setContextMenu(null);
+        } catch (e) { alert("Action failed"); }
+    };
+
+    // --- UPDATED MULTI-FORWARD FUNCTIONS ---
+    const openForwardModal = () => {
+        if (!contextMenu?.msg) return;
+        setSelectedGroups([]); 
+        setShowForwardModal(true);
+        // Context menu-voda position reset aanaalum 'contextMenu.msg' Modal-kulla irukkum
+    };
+
+    const toggleGroupSelection = (id) => {
+        if (selectedGroups.includes(id)) {
+            setSelectedGroups(prev => prev.filter(gid => gid !== id));
+        } else {
+            if (selectedGroups.length < 5) {
+                setSelectedGroups(prev => [...prev, id]);
+            } else {
+                alert("Maximum 5 groups is allowed");
             }
-        } else if (!groupId) {
-            console.error("Critical Error: GroupId is missing!");
         }
     };
 
-    const isOwner = userEmail?.toLowerCase() === group?.createdByEmail?.toLowerCase();
+    const handleMultiForward = async () => {
+        if (!contextMenu?.msg || selectedGroups.length === 0 || !connection) return;
+        
+        setForwardLoading(true);
+        const msgToForward = { ...contextMenu.msg }; // Object-ah deep copy panni safe-ah vachukkurom
+        
+        try {
+            // SignalR connection state-ah check pannuvom
+            if (connection.state !== signalR.HubConnectionState.Connected) {
+                await connection.start();
+            }
 
-    if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-600 animate-pulse bg-white">Entering Circle...</div>;
+            // Oru oru group-ka loop panni invoke pannuvom
+            for (const targetId of selectedGroups) {
+                await connection.invoke("SendMessage", 
+                    targetId, 
+                    myEmail.toLowerCase(), 
+                    `[Forwarded]: ${msgToForward.message || ""}`, 
+                    msgToForward.fileData || null, 
+                    msgToForward.fileName || null, 
+                    msgToForward.fileType || null
+                );
+            }
+
+            alert(`Message forwarded to ${selectedGroups.length} groups successfully!`);
+            setShowForwardModal(false);
+            setContextMenu(null); // Fully reset context menu
+        } catch (e) {
+            console.error("Forward Error Details:", e);
+            alert("Forward failed. Check if server is running.");
+        } finally {
+            setForwardLoading(false);
+        }
+    };
+
+    const sendMessage = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() && !file) return;
+        if (connection) {
+            try {
+                await connection.invoke("SendMessage", groupId, myEmail.toLowerCase(), newMessage, file?.data || null, file?.name || null, file?.type || null);
+                setNewMessage(""); setFile(null);
+                if(document.getElementById('fIn')) document.getElementById('fIn').value = "";
+            } catch (err) { console.error("Send failed"); }
+        }
+    };
+
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    if (loading) return <div className="h-screen flex items-center justify-center bg-[#E5DDD5] font-bold">Syncing Study Hub History...</div>;
 
     return (
-        <div className="flex h-screen bg-[#F0F2F5] font-sans overflow-hidden text-slate-800 tracking-tight">
-            {/* CHAT AREA (LEFT) */}
-            <div className="flex-1 flex flex-col bg-white shadow-xl">
-                <div className="p-6 border-b border-slate-100 flex items-center gap-4 shadow-sm z-10 bg-white">
-                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400"><ArrowLeft size={20}/></button>
+        <div className="flex flex-col h-screen bg-[#E5DDD5] relative" onClick={() => setContextMenu(null)}> 
+            <div className="bg-[#075E54] p-4 text-white flex items-center justify-between shadow-lg z-10">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => navigate(-1)} className="text-xl">←</button>
                     <div>
-                        <h2 className="text-xl font-black uppercase">{group?.groupName}</h2>
-                        <div className="flex items-center gap-3">
-                            <p className="text-[10px] font-bold text-indigo-500 uppercase flex items-center gap-1 tracking-widest"><ShieldCheck size={12}/> Academic Discussion Hub</p>
-                            <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase ${status === 'Connected' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600 animate-pulse'}`}>
-                                ● {status}
-                            </span>
-                        </div>
+                        <h2 className="font-bold">Study Circle</h2>
+                        <p className="text-[10px] opacity-70">Logged as: {myEmail}</p>
                     </div>
                 </div>
+            </div>
 
-                <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/40 custom-scroll">
-                    {messages.map((m, idx) => (
-                        <div key={idx} className={`flex flex-col ${m.user === userEmail ? 'items-end' : 'items-start'}`}>
-                            <span className="text-[9px] font-black text-slate-400 mb-1 px-2 uppercase">{m.user}</span>
-                            <div className={`max-w-md p-4 rounded-3xl shadow-sm text-sm font-medium ${m.user === userEmail ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'}`}>
-                                
-                                {/* ATTACHMENT RENDERING LOGIC */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 chat-scroll">
+                {messages.map((m, idx) => {
+                    const isMe = m.senderEmail.toLowerCase() === myEmail.toLowerCase();
+                    const isOwner = m.senderEmail.toLowerCase() === ownerEmail.toLowerCase();
+                    const senderDisplayName = m.senderEmail ? m.senderEmail.split('@')[0] : "User";
+
+                    return (
+                        <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            <div 
+                                onContextMenu={(e) => handleContextMenu(e, m)}
+                                className={`max-w-[75%] p-2 rounded-lg shadow-sm ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} cursor-context-menu hover:brightness-95 transition-all select-none`}
+                            >
+                                <p className={`text-[9px] font-bold mb-1 ${isMe ? 'text-emerald-700' : 'text-blue-600'}`}>
+                                    {senderDisplayName} {isOwner && "⭐"}
+                                </p>
+                                {m.message && <p className="text-sm text-gray-800 pr-4">{m.message}</p>}
                                 {m.fileData && (
-                                    <div className="mb-3">
-                                        {m.fileType?.startsWith('image/') ? (
-                                            <img src={m.fileData} className="rounded-2xl max-w-full border border-white/20 shadow-sm" alt="img" />
+                                    <div className="mt-2 border-t pt-2">
+                                        {m.fileType?.startsWith("image/") ? (
+                                            <img src={m.fileData} className="max-w-full rounded max-h-64" alt="shared" />
                                         ) : (
-                                            <div className="flex items-center gap-3 p-3 bg-black/5 rounded-2xl">
-                                                <FileText size={24} className={m.user === userEmail ? 'text-white' : 'text-indigo-600'} />
-                                                <div className="flex-1 truncate"><p className="text-[10px] font-bold truncate uppercase">{m.fileName}</p></div>
-                                                <a href={m.fileData} download={m.fileName} className="p-2 bg-white/20 rounded-xl hover:bg-white/40 transition-all"><Download size={16}/></a>
+                                            <div className="bg-gray-100 p-2 rounded flex items-center gap-2">
+                                                <span className="text-lg">📄</span>
+                                                <a href={m.fileData} download={m.fileName} className="text-blue-500 text-xs truncate underline">{m.fileName}</a>
                                             </div>
                                         )}
                                     </div>
                                 )}
-
-                                {m.message && <p className="leading-relaxed">{m.message}</p>}
-                                <p className={`text-[8px] mt-1 text-right opacity-50 ${m.user === userEmail ? 'text-white' : 'text-slate-400'}`}>{m.time}</p>
+                                <p className="text-[8px] text-right text-gray-400 mt-1">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                         </div>
-                    ))}
-                    <div ref={chatEndRef} />
-                </div>
-
-                {/* ATTACHMENT PREVIEW & INPUT */}
-                <div className="p-6 bg-white border-t border-slate-100 flex flex-col gap-3">
-                    {selectedFile && (
-                        <div className="flex items-center gap-3 bg-indigo-50 p-3 rounded-2xl border border-indigo-100 animate-in slide-in-from-bottom-2">
-                            <ImageIcon size={18} className="text-indigo-600"/>
-                            <span className="flex-1 text-xs font-black text-indigo-700 truncate uppercase">{selectedFile.name}</span>
-                            <button onClick={() => setSelectedFile(null)} className="text-slate-400 hover:text-red-500"><X size={18}/></button>
-                        </div>
-                    )}
-                    <form onSubmit={sendMessage} className="max-w-4xl w-full mx-auto flex gap-4">
-                        <label className="p-4 bg-slate-50 text-slate-400 rounded-2xl cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-inner">
-                            <Paperclip size={24}/>
-                            <input type="file" className="hidden" onChange={handleFileChange} />
-                        </label>
-                        <input className="flex-1 px-6 py-4 bg-slate-50 border-none rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:ring-indigo-500 shadow-inner" placeholder="Message or attach notes..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                        <button type="submit" className="p-4 bg-indigo-600 text-white rounded-2xl shadow-lg hover:bg-indigo-700 active:scale-95 transition-all"><Send size={24}/></button>
-                    </form>
-                </div>
+                    );
+                })}
+                <div ref={chatEndRef} />
             </div>
 
-            {/* PRIVACY SIDEBAR (RIGHT) */}
-            <div className="w-85 bg-white border-l border-slate-200 hidden lg:flex flex-col shadow-2xl overflow-hidden">
-                <div className="p-8 border-b border-slate-100 bg-indigo-50/20">
-                    <h3 className="text-sm font-black uppercase text-indigo-900 tracking-widest flex items-center gap-2"><Users size={18}/> Members</h3>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                    {isOwner ? group?.members?.map((m, i) => (
-                        <div key={i} className="p-4 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-sm">{(m.email || m.Email)?.charAt(0)}</div>
-                            <div className="truncate"><p className="text-[10px] font-black text-slate-800 italic uppercase">Student {i+1}</p><p className="text-xs font-black text-emerald-600 flex items-center gap-1 mt-1 font-mono tracking-wider"><Phone size={10}/> {m.phone || m.Phone}</p></div>
-                        </div>
-                    )) : (
-                        <div className="p-10 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 text-center"><Lock className="text-slate-200 mx-auto mb-2" size={32}/><p className="text-[10px] font-black text-slate-400 uppercase leading-relaxed text-center">Member Privacy is ON. Only Admin can see contacts.</p></div>
+            {contextMenu && (
+                <div className="fixed bg-white shadow-xl border rounded-lg z-[9999] py-1 w-[180px]" style={{ top: contextMenu.y, left: contextMenu.x }} onClick={(e) => e.stopPropagation()}>
+                    <button onClick={deleteForMe} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"><span>🗑️</span> Delete for me</button>
+                    {contextMenu.msg.senderEmail.toLowerCase() === myEmail.toLowerCase() && (
+                        <button onClick={deleteForEveryone} className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"><span>🚫</span> Delete for everyone</button>
                     )}
+                    <button onClick={(e) => { e.stopPropagation(); openForwardModal(); }} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 border-t flex items-center gap-2"><span>➡️</span> Forward</button>
                 </div>
-            </div>
+            )}
+
+            {/* FORWARD MODAL UI */}
+            {showForwardModal && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000] p-4" onClick={() => setShowForwardModal(false)}>
+                    <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-[#075E54] p-4 text-white flex justify-between items-center">
+                            <div>
+                                <h3 className="font-bold">Forward to...</h3>
+                                <p className="text-[10px] opacity-80">Selected: {selectedGroups.length} / 5</p>
+                            </div>
+                            <button onClick={() => setShowForwardModal(false)}>✕</button>
+                        </div>
+                        <div className="p-2 max-h-[350px] overflow-y-auto bg-gray-50">
+                            {userGroups.filter(g => (g.id || g.Id) !== groupId).map((g, i) => {
+                                const isSelected = selectedGroups.includes(g.id || g.Id);
+                                return (
+                                    <button 
+                                        key={i} 
+                                        onClick={() => toggleGroupSelection(g.id || g.Id)}
+                                        className={`w-full text-left p-3 mb-1 rounded-lg flex items-center gap-3 transition-all ${isSelected ? 'bg-emerald-100 border-emerald-300 shadow-inner' : 'hover:bg-white border-transparent'} border`}
+                                    >
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-700'}`}>
+                                            {isSelected ? '✓' : (g.groupName || g.GroupName || "S").charAt(0)}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-gray-800">{g.groupName || g.GroupName}</p>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div className="p-3 bg-white border-t flex justify-between items-center">
+                            <button onClick={() => setShowForwardModal(false)} className="text-sm font-bold text-gray-500 px-4 py-2">Cancel</button>
+                            <button 
+                                onClick={handleMultiForward}
+                                disabled={selectedGroups.length === 0 || forwardLoading}
+                                className={`px-6 py-2 rounded-full text-sm font-bold shadow-md transition-all ${selectedGroups.length > 0 ? 'bg-[#128C7E] text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                            >
+                                {forwardLoading ? 'Sending...' : 'Send Message'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <form onSubmit={sendMessage} className="bg-[#F0F0F0] p-3 flex items-center gap-2 z-10">
+                <input type="file" id="fIn" className="hidden" onChange={(e) => {
+                    const f = e.target.files[0];
+                    if (f) { const r = new FileReader(); r.onloadend = () => setFile({ data: r.result, name: f.name, type: f.type }); r.readAsDataURL(f); }
+                }} />
+                <button type="button" onClick={() => document.getElementById('fIn').click()} className="text-xl p-1 hover:bg-gray-200 rounded-full">📎</button>
+                <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." className="flex-1 p-2 rounded-full outline-none text-sm bg-white px-4 shadow-sm" />
+                <button type="submit" className={`p-2.5 rounded-full shadow-md transition-all ${ (newMessage.trim() || file) ? 'bg-[#128C7E] text-white' : 'bg-gray-300 text-gray-500' }`}>➤</button>
+            </form>
         </div>
     );
-};
-
-export default ChatPage;
+}

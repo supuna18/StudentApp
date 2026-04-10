@@ -47,6 +47,8 @@ builder.Services.AddScoped<WellbeingService>();
 builder.Services.AddScoped<HabitService>();
 
 
+builder.Services.AddHostedService<SessionMonitor>(); 
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -122,3 +124,4 @@ app.MapHub<ChatHub>("/chatHub");
 
 // Run application
 app.Run("http://0.0.0.0:5005");
+

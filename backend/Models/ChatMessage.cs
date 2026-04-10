@@ -22,4 +22,5 @@ public class ChatMessage
     public string? FileType { get; set; }
 
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public List<string> DeletedForUsers { get; set; } = new();
 }
