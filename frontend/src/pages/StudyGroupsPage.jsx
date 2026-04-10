@@ -444,7 +444,7 @@ const payload = {
                     </form>
                 </Modal>
 
-                {/* ════════════ EDIT MODAL ════════════ */}
+                {/* ════════════ EDIT MODAL. ════════════ */}
                 <Modal open={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Circle" subtitle="Update your study circle details" accentColor="amber">
                     <form onSubmit={handleUpdate} className="flex flex-col gap-4">
                         <div>

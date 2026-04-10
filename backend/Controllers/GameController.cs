@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentApp.Api.Models;
-
 [ApiController]
 [Route("api/[controller]")]
 public class GameController : ControllerBase

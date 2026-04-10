@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import UsageChart from './UsageChart';
 import UsagePieChart from './UsagePieChart';
 import LimitsChart from './LimitsChart';
@@ -271,19 +272,32 @@ const SetLimitForm = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className={`hidden lg:flex flex-col items-end px-4 py-2 rounded-xl border ${dark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'}`}>
+            {/* Animated pill dark mode toggle */}
+            <motion.button
+              onClick={() => setDark(d => !d)}
+              className={`relative w-14 h-7 rounded-full transition-colors duration-300 flex items-center px-1 ${
+                dark ? 'bg-indigo-600' : 'bg-slate-200'
+              }`}
+              whileTap={{ scale: 0.95 }}
+              title="Toggle dark mode"
+            >
+              <motion.div
+                className={`w-5 h-5 rounded-full flex items-center justify-center shadow-md ${
+                  dark ? 'bg-white text-indigo-600' : 'bg-white text-amber-500'
+                }`}
+                animate={{ x: dark ? 26 : 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              >
+                {dark ? <Moon size={11} /> : <Sun size={11} />}
+              </motion.div>
+            </motion.button>
+
+            <div className={`hidden lg:flex flex-col items-end px-4 py-2 rounded-xl border ${
+              dark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'
+            }`}>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">System Status</p>
               <p className={`text-xs font-bold ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>📡 100% Operational</p>
             </div>
-            <button
-              onClick={() => setDark(d => !d)}
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl border transition-all shadow-sm active:scale-90
-                ${dark ? 'bg-slate-800 border-slate-700 text-yellow-400 hover:bg-slate-700 shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 shadow-md'}`}
-            >
-              <motion.span animate={{ rotate: dark ? 360 : 0 }} transition={{ duration: 0.5 }}>
-                {dark ? '🌙' : '☀️'}
-              </motion.span>
-            </button>
           </div>
         </div>
       </div>
@@ -595,19 +609,35 @@ const SetLimitForm = () => {
           >
             <motion.div
               initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9 }}
-              className="max-w-sm w-full p-10 rounded-2xl bg-white text-center shadow-2xl border border-slate-100"
+              className={`max-w-sm w-full p-10 rounded-2xl text-center shadow-2xl border transition-colors duration-300 ${
+                dark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'
+              }`}
               onClick={e => e.stopPropagation()}
             >
-              <div className="text-7xl mb-5 animate-bounce">{selectedBadge}</div>
-              <h3 className="text-2xl font-extrabold text-slate-800 mb-2">{BADGE_INFO[selectedBadge]?.name}</h3>
-              <p className="text-slate-500 italic mb-2">"{BADGE_INFO[selectedBadge]?.desc}"</p>
-              <p className="text-xs text-blue-600 font-bold uppercase tracking-widest mb-8">{BADGE_INFO[selectedBadge]?.req}</p>
-              <button
+              <motion.div
+                className="text-7xl mb-5"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
+              >
+                {selectedBadge}
+              </motion.div>
+              <h3 className={`text-2xl font-extrabold mb-2 ${dark ? 'text-white' : 'text-slate-800'}`}>
+                {BADGE_INFO[selectedBadge]?.name}
+              </h3>
+              <p className={`italic mb-2 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+                "{BADGE_INFO[selectedBadge]?.desc}"
+              </p>
+              <p className="text-xs text-blue-500 font-bold uppercase tracking-widest mb-8">
+                {BADGE_INFO[selectedBadge]?.req}
+              </p>
+              <motion.button
                 onClick={() => setSelectedBadge(null)}
                 className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-widest uppercase transition-all"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 Close
-              </button>
+              </motion.button>
             </motion.div>
           </motion.div>
         )}
@@ -619,11 +649,24 @@ const SetLimitForm = () => {
           {toasts.map(t => (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }}
-              className={`px-6 py-4 rounded-xl border shadow-lg pointer-events-auto flex items-center gap-3 bg-white
-                ${t.type === 'success' ? 'border-emerald-200 text-emerald-700' : 'border-rose-200 text-rose-700'}`}
+              initial={{ opacity: 0, x: 50, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 50, scale: 0.95 }}
+              className={`px-6 py-4 rounded-xl border shadow-xl pointer-events-auto flex items-center gap-3 transition-colors ${
+                dark
+                  ? t.type === 'success'
+                    ? 'bg-slate-800 border-emerald-700/50 text-emerald-400'
+                    : 'bg-slate-800 border-rose-700/50 text-rose-400'
+                  : t.type === 'success'
+                    ? 'bg-white border-emerald-200 text-emerald-700'
+                    : 'bg-white border-rose-200 text-rose-700'
+              }`}
             >
-              <div className={`w-2 h-2 rounded-full ${t.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+              <motion.div
+                className={`w-2 h-2 rounded-full ${t.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                animate={{ scale: [1, 1.4, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
               <span className="font-semibold text-sm">{t.message}</span>
             </motion.div>
           ))}
