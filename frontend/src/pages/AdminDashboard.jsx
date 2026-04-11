@@ -15,7 +15,7 @@ import {
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-import autoTable from 'jspdf-autotable';
+
 
 import UserManagement  from './UserManagement';
 import SafetyApprovals from './SafetyApprovals';
@@ -212,60 +212,99 @@ const AdminDashboard = () => {
       pdf.setTextColor(200, 200, 200);
       pdf.text(`Generated: ${new Date().toLocaleString()}`, 130, 28);
 
+      let yPos = 50;
       pdf.setTextColor(15, 28, 77); // Reset to dark colors for text
       
-      // 1. Key Statistics Table
+      // 1. Key Statistics
       pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Key Platform Statistics", 15, 50);
-      
-      autoTable(pdf, {
-        startY: 55,
-        head: [['Metric', 'Value']],
-        body: [
-          ['Total Students', stats.totalStudents.toString()],
-          ['Active Blocks', stats.activeBlocks.toString()],
-          ['Pending Reports', stats.pendingReports.toString()],
-          ['System Health', stats.systemHealth.toString()]
-        ],
-        theme: 'striped',
-        headStyles: { fillColor: [34, 85, 210] }, // #2255D2
-        margin: { left: 15, right: 15 }
+      pdf.text("Key Platform Statistics", 15, yPos);
+      yPos += 8;
+
+      // Manual Stats Table
+      const statsData = [
+        ['Metric', 'Value'],
+        ['Total Students', stats.totalStudents.toString()],
+        ['Active Blocks', stats.activeBlocks.toString()],
+        ['Pending Reports', stats.pendingReports.toString()],
+        ['System Health', stats.systemHealth.toString()]
+      ];
+
+      pdf.setFontSize(10);
+      statsData.forEach((row, idx) => {
+        if (idx === 0) {
+            pdf.setFillColor(34, 85, 210);
+            pdf.rect(15, yPos, 180, 8, 'F');
+            pdf.setTextColor(255);
+            pdf.setFont("helvetica", "bold");
+        } else {
+            pdf.setFillColor(idx % 2 === 0 ? 250 : 255);
+            pdf.rect(15, yPos, 180, 8, 'F');
+            pdf.setTextColor(50);
+            pdf.setFont("helvetica", "normal");
+        }
+        pdf.text(row[0], 20, yPos + 5.5);
+        pdf.text(row[1], 100, yPos + 5.5);
+        yPos += 8;
       });
 
-      // 2. Resource Distribution Table
-      const nextY2 = pdf.lastAutoTable.finalY + 15;
+      // 2. Resource Distribution
+      yPos += 15;
       pdf.setFontSize(14);
-      pdf.text("Resource Distribution by Type", 15, nextY2);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(15, 28, 77);
+      pdf.text("Resource Distribution by Type", 15, yPos);
+      yPos += 8;
+
+      const distroData = [['Resource Type', 'Count'], ...resourceByTypeData.map(r => [r.name || 'N/A', r.value.toString()])];
       
-      autoTable(pdf, {
-        startY: nextY2 + 5,
-        head: [['Resource Type', 'Count']],
-        body: resourceByTypeData.map(r => [r.name, r.value.toString()]),
-        theme: 'striped',
-        headStyles: { fillColor: [34, 85, 210] },
-        margin: { left: 15, right: 15 }
+      pdf.setFontSize(10);
+      distroData.forEach((row, idx) => {
+        if (idx === 0) {
+            pdf.setFillColor(34, 85, 210);
+            pdf.rect(15, yPos, 180, 8, 'F');
+            pdf.setTextColor(255);
+            pdf.setFont("helvetica", "bold");
+        } else {
+            pdf.setFillColor(idx % 2 === 0 ? 250 : 255);
+            pdf.rect(15, yPos, 180, 8, 'F');
+            pdf.setTextColor(50);
+            pdf.setFont("helvetica", "normal");
+        }
+        pdf.text(row[0], 20, yPos + 5.5);
+        pdf.text(row[1], 100, yPos + 5.5);
+        yPos += 8;
       });
 
-      // 3. Detailed Educational Resources Table
-      const nextY3 = pdf.lastAutoTable.finalY + 15;
+      // 3. Detailed Resources
+      yPos += 15;
       pdf.setFontSize(14);
-      pdf.text("Detailed Educational Resources", 15, nextY3);
-      
-      autoTable(pdf, {
-        startY: nextY3 + 5,
-        head: [['Title', 'Status', 'Ref No.', 'Owner', 'Type']],
-        body: tableRows.map(row => [
-          row.title || 'N/A', 
-          row.status || 'N/A', 
-          row.number || 'N/A', 
-          row.person || 'N/A', 
-          row.type || 'N/A'
-        ]),
-        theme: 'striped',
-        headStyles: { fillColor: [34, 85, 210] },
-        margin: { left: 15, right: 15 },
-        styles: { fontSize: 9 }
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(15, 28, 77);
+      pdf.text("Detailed Educational Resources", 15, yPos);
+      yPos += 8;
+
+      const detailedHeaders = ['Title', 'Status', 'Ref No.', 'Owner', 'Type'];
+      pdf.setFillColor(34, 85, 210);
+      pdf.rect(15, yPos, 180, 8, 'F');
+      pdf.setTextColor(255);
+      pdf.setFontSize(9);
+      detailedHeaders.forEach((h, i) => pdf.text(h, 20 + (i * 35), yPos + 5.5));
+      yPos += 8;
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(50);
+      tableRows.forEach((row, idx) => {
+        if (yPos > 275) { pdf.addPage(); yPos = 20; }
+        pdf.setFillColor(idx % 2 === 0 ? 250 : 255);
+        pdf.rect(15, yPos, 180, 8, 'F');
+        
+        const rData = [row.title, row.status, row.number, row.person, row.type];
+        rData.forEach((val, i) => {
+            const str = (val || 'N/A').toString();
+            pdf.text(pdf.splitTextToSize(str, 32), 20 + (i * 35), yPos + 5.5);
+        });
+        yPos += 8;
       });
 
       pdf.save(`EduSync_Analytics_Report_${Date.now()}.pdf`);
