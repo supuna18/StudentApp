@@ -33,7 +33,11 @@ const ReportSite = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this report?")) {
             try {
-                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { method: 'DELETE' });
+                const token = localStorage.getItem('token');
+                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                     fetchReports();
                 } else {
@@ -116,24 +120,6 @@ const ReportSite = () => {
         if (s === 'PENDING') return 'bg-blue-100 text-blue-700';
         if (s === 'UNDER REVIEW' || s === 'REJECTED') return 'bg-red-100 text-red-700';
         return 'bg-yellow-100 text-yellow-700';
-
-    // 3. Delete
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this report?")) {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { 
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    fetchReports();
-                }
-            } catch (err) {
-                alert("Delete failed");
-            }
-        }
- 
     };
 
     const formatDate = (dateString) => {
@@ -351,5 +337,4 @@ const ReportSite = () => {
         </div>
     );
 };
-}
 export default ReportSite;

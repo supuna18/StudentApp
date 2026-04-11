@@ -50,7 +50,13 @@ namespace StudentApp.Api.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return Unauthorized();
 
-            var reports = await _mongoService.SafetyReports.Find(r => r.UserId == userId).ToListAsync();
+            // Match records owned by this user, OR legacy records that have no UserId set
+            var filter = Builders<SafetyReport>.Filter.Or(
+                Builders<SafetyReport>.Filter.Eq(r => r.UserId, userId),
+                Builders<SafetyReport>.Filter.Eq(r => r.UserId, "")
+            );
+
+            var reports = await _mongoService.SafetyReports.Find(filter).ToListAsync();
             return Ok(reports);
         }
 
