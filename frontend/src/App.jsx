@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import WellbeingSection from "./components/WellbeingSection";
+import SafetySection from "./components/SafetySection";
 import Features from "./components/Features";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
@@ -30,7 +32,18 @@ function App() {
         <Routes>
 
           {/* 1. Public Pages */}
-          <Route path="/" element={<><Navbar /><main><Hero /><Features /></main><Footer /></>} />
+          <Route path="/" element={
+            <>
+              <Navbar />
+              <main>
+                <Hero />
+                <WellbeingSection />
+                <SafetySection />
+                <Features />
+              </main>
+              <Footer />
+            </>
+          } />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 

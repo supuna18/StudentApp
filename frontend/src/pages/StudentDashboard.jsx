@@ -91,16 +91,16 @@ const DashboardHome = () => {
       className="space-y-10 pb-20"
     >
       {/* HEADER SECTION */}
-      <header className="flex justify-between items-center">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Good Afternoon, Student! 👋</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Good Afternoon, Student! 👋</h1>
           <p className="text-slate-500 font-bold mt-1 uppercase tracking-widest text-[10px]">Your daily focus & wellbeing summary</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full md:w-auto">
           <div className="bg-white p-3 rounded-2xl border border-slate-200 text-slate-400 hover:text-blue-600 cursor-pointer transition-all shadow-sm">
             <Bell size={20} />
           </div>
-          <div className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 flex items-center gap-2 cursor-pointer hover:bg-blue-700 transition-all">
+          <div className="flex-1 md:flex-none bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-700 transition-all">
             <Clock size={16} /> Quick Action
           </div>
         </div>
@@ -183,7 +183,7 @@ const StudentDashboard = () => {
     <div className="flex min-h-screen bg-[#F8FAFF] font-sans">
       <Sidebar />
 
-      <div className="flex-1 ml-64 p-12 relative">
+      <div className="flex-1 lg:ml-64 p-4 md:p-12 relative mt-12 lg:mt-0">
         <Routes>
 
           <Route path="/" element={<DashboardHome />} />

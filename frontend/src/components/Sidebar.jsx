@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -10,6 +11,10 @@ import {
   User,
   Users,
   Target,
+  Share2,
+  Menu,
+  X
+
 } from 'lucide-react';
 
 const menuSections = [
@@ -33,6 +38,7 @@ const menuSections = [
     label: 'Community',
     items: [
       { name: 'Collaboration Hub', path: '/hub',                         icon: <Users        size={15} strokeWidth={2} /> },
+      { name: 'Shared Resources',  path: '/student-dashboard/resources', icon: <Share2       size={15} strokeWidth={2} /> },
     ],
   },
 ];
@@ -41,17 +47,16 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate  = useNavigate();
   const [user, setUser] = useState({ name: 'Guest', role: 'Student', initials: 'G' });
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        // Extract the username from the unique_name claim and the role from the role claim
         const username = decoded.unique_name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'User';
         const role = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Student';
         
-        // Get initials from username
         const initials = username
           .split(' ')
           .map((n) => n[0])
@@ -73,6 +78,8 @@ const Sidebar = () => {
     navigate('/', { replace: true });
   };
 
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
   return (
     <>
       {/* Font import */}
@@ -82,7 +89,32 @@ const Sidebar = () => {
         .sidebar-logo-text { font-family: 'DM Serif Display', serif; }
       `}</style>
 
-      <aside className="sidebar-root w-64 bg-white border-r border-[#E8EEFF] h-screen fixed left-0 top-0 flex flex-col z-50">
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={toggleSidebar}
+        className="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-white border border-[#E8EEFF] rounded-xl shadow-sm text-blue-600"
+      >
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Overlay for mobile */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside className={`
+        sidebar-root bg-white border-r border-[#E8EEFF] h-screen fixed left-0 top-0 flex flex-col z-50
+        transition-all duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-64'}
+      `}>
 
         {/* ── Logo ── */}
         <div className="flex items-center gap-2.5 px-5 py-6 border-b border-[#F0F4FF]">
@@ -110,6 +142,7 @@ const Sidebar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
+                    onClick={() => setIsOpen(false)}
                     className={`
                       relative flex items-center gap-2.5 px-3 py-2.5 rounded-[11px]
                       text-[13px] font-medium transition-all duration-150 mb-0.5

@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using StudentApp.Api.Data;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace StudentApp.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SafetyController : ControllerBase
@@ -20,47 +23,70 @@ namespace StudentApp.Api.Controllers
             _mongoService = mongoService;
         }
 
-        // 1. Create Report
         [HttpPost("report")]
         public async Task<IActionResult> CreateReport([FromBody] SafetyReport report)
         {
             if (report == null) return BadRequest();
+
+            // Extract user info from claims
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (userId == null) return Unauthorized(new { message = "User identity not found." });
+
+            report.UserId = userId;
+            report.ReportedBy = username ?? "Unknown Student";
             report.ReportedAt = DateTime.UtcNow;
             report.Status = "Pending";
+
             await _mongoService.SafetyReports.InsertOneAsync(report);
             return Ok(new { message = "Safety report submitted!" });
         }
 
-        // 2. Get All Reports
+        // 2. Get My Reports
         [HttpGet("my-reports")]
         public async Task<ActionResult<IEnumerable<SafetyReport>>> GetMyReports()
         {
-            var reports = await _mongoService.SafetyReports.Find(_ => true).ToListAsync();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Unauthorized();
+
+            var reports = await _mongoService.SafetyReports.Find(r => r.UserId == userId).ToListAsync();
             return Ok(reports);
         }
 
-        // 3. Update Report (PUT)
         [HttpPut("report/{id}")]
         public async Task<IActionResult> UpdateReport(string id, [FromBody] SafetyReport updatedReport)
         {
-            var filter = Builders<SafetyReport>.Filter.Eq(r => r.Id, id);
-            var existingReport = await _mongoService.SafetyReports.Find(filter).FirstOrDefaultAsync();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var filter = Builders<SafetyReport>.Filter.And(
+                Builders<SafetyReport>.Filter.Eq(r => r.Id, id),
+                Builders<SafetyReport>.Filter.Eq(r => r.UserId, userId)
+            );
             
-            if (existingReport == null) return NotFound(new { message = "Report not found" });
+            var existingReport = await _mongoService.SafetyReports.Find(filter).FirstOrDefaultAsync();
+            if (existingReport == null) return NotFound(new { message = "Report not found or permission denied." });
 
             updatedReport.Id = id; 
+            updatedReport.UserId = userId; // Ensure UserId is not changed
+            updatedReport.ReportedBy = existingReport.ReportedBy; // Preserve name
+            updatedReport.ReportedAt = existingReport.ReportedAt; // Preserve original time
+            updatedReport.Status = existingReport.Status; // Preserve status
+
             await _mongoService.SafetyReports.ReplaceOneAsync(filter, updatedReport);
             return Ok(new { message = "Report updated successfully!" });
         }
 
-        // 4. Delete Report (DELETE)
         [HttpDelete("report/{id}")]
         public async Task<IActionResult> DeleteReport(string id)
         {
-            var filter = Builders<SafetyReport>.Filter.Eq(r => r.Id, id);
-            var result = await _mongoService.SafetyReports.DeleteOneAsync(filter);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var filter = Builders<SafetyReport>.Filter.And(
+                Builders<SafetyReport>.Filter.Eq(r => r.Id, id),
+                Builders<SafetyReport>.Filter.Eq(r => r.UserId, userId)
+            );
 
-            if (result.DeletedCount == 0) return NotFound(new { message = "Report not found" });
+            var result = await _mongoService.SafetyReports.DeleteOneAsync(filter);
+            if (result.DeletedCount == 0) return NotFound(new { message = "Report not found or permission denied." });
             return Ok(new { message = "Report deleted successfully!" });
         }
 
