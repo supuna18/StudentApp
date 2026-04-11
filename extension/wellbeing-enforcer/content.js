@@ -23,6 +23,7 @@ function safeSendMessage(message, callback) {
 
 // --- Web App Sync Logic ---
 const isEduSyncApp = window.location.host.includes("localhost:5173") || 
+                     window.location.host.includes("127.0.0.1:5173") ||
                      document.title.toLowerCase().includes("edusync");
 
 if (isEduSyncApp) {
@@ -50,7 +51,11 @@ if (isEduSyncApp) {
                 if (userId && userId !== lastSentUserId) {
                     console.log("✅ Authenticated User Sync:", userId);
                     lastSentUserId = userId;
-                    safeSendMessage({ action: "LOGIN_SUCCESS", userId: userId });
+                    safeSendMessage({ action: "LOGIN_SUCCESS", userId: userId }, (res) => {
+                        if (res && res.success) {
+                            console.log("🔔 Session Sync Confirmed by Background Script.");
+                        }
+                    });
                 }
             } catch (e) { 
                 console.error("❌ Auth Parse Error", e); 

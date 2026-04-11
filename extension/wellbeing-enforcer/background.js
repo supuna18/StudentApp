@@ -1,4 +1,11 @@
 let userId = null;
+let LIMITS = { 
+    "facebook.com": 1, 
+    "youtube.com": 2, 
+    "instagram.com": 1, 
+    "twitter.com": 1,
+    "google.com": 5 
+}; // Default limits for testing
 let syncRetryCount = 0;
 const MAX_SYNC_RETRIES = 3;
 
@@ -66,6 +73,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.local.set({ userId: userId });
         console.log("🔑 LOGIN_SUCCESS: Dynamic User ID set to:", userId);
         syncLimits();
+        
+        chrome.notifications.create('login-sync', {
+            type: 'basic',
+            iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAACvElEQVR4nO2Yv0sbURTHPxcbuvVfEFvUKZNBWpNBWpPFIK3JSf9C0unmX6GTTv4VOurS/gkd27S/QmcddUqZtBmkNVkkY6eLId0uht7T7733kXv6HhyE5N1773u+973v3nsP8T8f4K8pA86BJWAZWARWAdWACmAJWAKWgGVgSUT9Xf0AnAI7wB7QCzQF9AI7wD7gFNgp9P8aYAPYB7SBXSAfOAnUB3aAfUAn3Vf1Bq0DO8A20A80Be0A28AOUAXWhWj/An8BvgK+An7C+ZfAX4BvgK8As8A+oAWYBb4CfsIn4CvgM/AnfAq+An4CHAnRPf75f6vAsmBfhAX7YlxwwT5YAr4K0X2+/89U8An4CvwE7IupZvw7eAnkBRf8U3C7mOqG38FTIC9YH++C68VUNvwBPAXygo8SXLrBfXgA9S3fS98O7scDmAO99A/S94F7MAD66B+m7wX3YQgM0P9I3w/uwyiYp/+Svid9P+oYAyv0X9L3pe8lHWMYRdM/Sd+Xvp90jCH0pXmFvy99P+mZMC6R9p8eNf6R9PykZ8G0REp/etT4R9Lzm54FkyKpffS9e/Qj6fnVzxR9m/Qe+v49+rH0/Olnkr5TegZ9vxt9XHr+9jNG3ym9A32vO31Uev73M0LfOb0rfa+HP0PPe7H3F7o64fC7M4GhcFh79vM08NUPCjInE2p8An8N0Z68WfS0L3Eym99n87v6AAn+C9InB4F9In160Of6E/w5SOf863P8OX4AOf4T0tceBPeJ9OWBH/En+AnIE9NnHscfUAK8AXL7S8AnQDfwAtBvPwGfANKAHY8DdsAnkAS68ThpA12PnzXQ8bhZwA0Pa/0F+P8f8Nf8AsZz3N19DofFAAAAAElFTkSuQmCC',
+            title: 'EduSync Connected! 🔗',
+            message: `Your session for ${userId} is now active. Limits are synced.`,
+            priority: 2
+        });
+
         sendResponse({ success: true });
         return true;
     }
