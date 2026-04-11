@@ -70,6 +70,8 @@ const SafetyApprovals = () => {
     }
   };
 
+  
+
   const filtered = reports.filter(r => 
     (r.url || "").toLowerCase().includes(search.toLowerCase()) ||
     (r.reason || "").toLowerCase().includes(search.toLowerCase()) ||

@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import {
   LayoutDashboard, Users, ShieldAlert, BookOpen, LogOut,
   Activity, MoreHorizontal, Filter, Search, TrendingUp,
-  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send, Heart, Download
+  TrendingDown, Minus, Edit2, Trash2, ExternalLink, Send, Heart, Download, Layers
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
@@ -46,6 +46,8 @@ const navItems = [
   { id: 'Resource Manager', icon: <BookOpen        size={14} />, section: 'General' },
   { id: 'Digital Wellbeing',icon: <Heart           size={14} />, section: 'General' },
   { id: 'System Health',    icon: <Activity        size={14} />, section: 'Other'   },
+  // navItems array kulla idhai add pannunga
+  { id: 'Collaboration Hub', icon: <Layers size={14} />, section: 'General' },
 ];
 
 /* ─── custom tooltip ─────────────────────────────────────────── */
@@ -58,6 +60,72 @@ const ChartTooltip = ({ active, payload, label }) =>
       ))}
     </div>
   ) : null;
+
+  /* ─── COLLABORATION HUB COMPONENT ─── */
+const CollaborationHubManager = ({ token }) => {
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch('http://localhost:5005/api/studygroups/all', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) setGroups(await res.json());
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    };
+    fetchGroups();
+  }, [token]);
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Study Groups Intelligence Report", 15, 20);
+    autoTable(doc, {
+      startY: 30,
+      head: [['Group Name', 'Subject', 'Owner', 'Members']],
+      body: groups.map(g => [g.groupName || g.GroupName, g.subject || g.Subject, g.createdByEmail || g.CreatedByEmail, (g.members || g.Members)?.length || 0]),
+      theme: 'striped'
+    });
+    doc.save("Hub_Report.pdf");
+  };
+
+  if (loading) return <div className="p-10 text-slate-400 font-bold animate-pulse text-xs">SCANNING HUB DATA...</div>;
+
+  return (
+    <div className="anim-up">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+        <div className="bg-white p-6 rounded-2xl border border-[#E8EEFF] shadow-sm flex items-center gap-4">
+           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><Layers size={24}/></div>
+           <div><p className="text-2xl font-black italic text-[#0F1C4D]">{groups.length}</p><p className="text-[10px] text-slate-400 font-bold uppercase">Active Circles</p></div>
+        </div>
+        <button onClick={downloadPDF} className="bg-[#0F1C4D] p-6 rounded-2xl text-white shadow-lg flex items-center justify-between hover:bg-blue-900 transition-all">
+          <div className="text-left"><p className="font-bold text-sm">Download Report</p><p className="text-[9px] opacity-60 uppercase font-black tracking-widest mt-1">Export PDF Intelligence</p></div>
+          <Download size={24}/>
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-[#E8EEFF] overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[#E8EEFF] bg-[#F8FAFF]"><p className="text-[13px] font-black italic text-[#0F1C4D] uppercase">Circle Monitoring Summary</p></div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead><tr className="text-[10px] font-black text-slate-300 uppercase tracking-widest border-b border-slate-50"><th className="p-4">Group/Subject</th><th className="p-4">Owner</th><th className="p-4 text-right">Population</th></tr></thead>
+            <tbody className="divide-y divide-slate-50">
+              {groups.map((g, i) => (
+                <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                  <td className="p-4"><p className="text-xs font-bold text-slate-700">{g.groupName || g.GroupName}</p><p className="text-[10px] text-blue-500 font-bold">{g.subject || g.Subject}</p></td>
+                  <td className="p-4 text-[11px] text-slate-500 font-mono italic">{g.createdByEmail || g.CreatedByEmail}</td>
+                  <td className="p-4 text-right font-black text-[#0F1C4D] text-sm">{(g.members || g.Members)?.length || 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /* ─── component ──────────────────────────────────────────────── */
 const AdminDashboard = () => {
@@ -272,6 +340,7 @@ const AdminDashboard = () => {
     } catch (err) { console.error("Error generating PDF:", err); }
   };
 
+  
   /* ── stat cards data ── */
   const statCards = [
     { val: stats.totalStudents.toLocaleString(), badge: '+12%', dir: 'up', lbl: 'Total Students'  },
@@ -510,6 +579,8 @@ const AdminDashboard = () => {
   const tabIcons = {
     'Analytics': <TrendingUp className="text-blue-500" size={20} />,
     'User Management': <Users className="text-indigo-500" size={20} />,
+    // tabIcons object kulla idhai add pannunga
+    'Collaboration Hub': <Layers className="text-emerald-500" size={20} />,
     'Safety Approvals': <ShieldAlert className="text-red-500" size={20} />,
     'Resource Manager': <BookOpen className="text-emerald-500" size={20} />,
     'System Health': <Activity className="text-amber-500" size={20} />,
@@ -522,6 +593,8 @@ const AdminDashboard = () => {
       case 'Safety Approvals':  return <SafetyApprovals />;
       case 'Resource Manager':  return <ResourceManager />;
       case 'Digital Wellbeing': return <WellbeingAdminPanel />;
+      // renderContent switch case kulla idhai add pannunga
+case 'Collaboration Hub': return <CollaborationHubManager token={localStorage.getItem('token')} />;
       case 'System Health':     return <SystemHealth />;
       default:                  return <div className="text-slate-400 text-sm mt-10 text-center">Coming Soon…</div>;
     }
