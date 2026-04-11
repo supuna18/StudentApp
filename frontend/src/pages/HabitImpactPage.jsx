@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView } from 'framer-motion';
-import { CheckCircle2, Leaf, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown, Hourglass, Sparkles, Moon, Sun } from 'lucide-react';
+import { CheckCircle2, Leaf, RotateCcw, Flame, Plus, Trash2, Edit3, Calendar, TrendingDown, Hourglass, Sparkles, Moon, Sun, Settings, X, AlertCircle, FileText, Download } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
+import confetti from 'canvas-confetti';
+import jsPDF from 'jspdf';
 
 const HEALTH_MILESTONES = [
     { label: '20 Mins', desc: 'Heart rate drops', icon: '❤️', hours: 0.33, color: 'rose' },
@@ -47,6 +49,21 @@ const AnimatedCounter = ({ value, className }) => {
     return <motion.span ref={ref} className={className}>{display}</motion.span>;
 };
 
+// ── Toast Notification ──
+const Toast = ({ message, type = 'success', onClose }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.9 }}
+        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border ${
+            type === 'success' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-rose-500 text-white border-rose-400'
+        }`}
+    >
+        {type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+        <span className="text-sm font-bold tracking-tight">{message}</span>
+    </motion.div>
+);
+
 // ── Floating Orb ──
 const FloatingOrb = ({ style, className }) => (
     <motion.div
@@ -62,6 +79,8 @@ const HabitImpactPage = () => {
     const [status, setStatus]       = useState(null);
     const [isSaving, setIsSaving]   = useState(false);
     const [isLogging, setIsLogging] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [toast, setToast] = useState(null);
     const [darkMode, setDarkMode]   = useState(() => localStorage.getItem('fp-dark') === 'true');
 
     const [form, setForm] = useState({ habitType: 'Smoking', cps: 15, years: 8, packPrice: 1500 });
@@ -97,6 +116,28 @@ const HabitImpactPage = () => {
 
     useEffect(() => { fetchStatus(); }, []);
 
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const triggerConfetti = () => {
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+        const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        const interval = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(interval);
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+    };
+
+    useEffect(() => { fetchStatus(); }, []);
+
     const fetchStatus = async () => {
         try {
             const res = await axios.get(`${API_URL}/${userName}`);
@@ -115,12 +156,15 @@ const HabitImpactPage = () => {
             if (!newStatus.id || newStatus.id === 'null') delete newStatus.id;
             await axios.post(API_URL, newStatus);
             setStatus(newStatus);
+            setShowSettings(false);
+            showToast(isStarting ? 'Journey Started! 🚀' : 'Baseline Updated! ✨');
+            if (isStarting) triggerConfetti();
             setTimeout(() => setIsSaving(false), 500);
-        } catch { alert('Failed to update projection.'); setIsSaving(false); }
+        } catch { showToast('Failed to sync. Please try again.', 'error'); setIsSaving(false); }
     };
 
     const handleSaveLog = async () => {
-        if (logForm.count < 0) return alert('Please enter a valid count.');
+        if (logForm.count < 0) return showToast('Please enter a valid count.', 'error');
         setIsLogging(true);
         try {
             const logEntry = { id: logForm.id || Math.random().toString(36).substr(2, 9), date: new Date(logForm.date).toISOString(), count: Number(logForm.count), unitPrice: Number(logForm.unitPrice) };
@@ -128,7 +172,8 @@ const HabitImpactPage = () => {
             await fetchStatus();
             setLogForm({ id: null, date: new Date().toISOString().split('T')[0], count: 0, unitPrice: 130 });
             setIsLogging(false);
-        } catch { alert('Failed to save log entry.'); setIsLogging(false); }
+            showToast('Log entry saved! 📝');
+        } catch { showToast('Failed to save log entry.', 'error'); setIsLogging(false); }
     };
 
     const handleMarkTodayClean = async () => {
@@ -138,13 +183,19 @@ const HabitImpactPage = () => {
             await axios.post(`${API_URL}/log/${userName}`, { id: Math.random().toString(36).substr(2, 9), date: new Date(today).toISOString(), count: 0, unitPrice: 0 });
             await fetchStatus();
             setIsLogging(false);
-        } catch { alert('Failed to mark today as clean.'); setIsLogging(false); }
+            showToast('Another clean day! Amazing! 🌿');
+            triggerConfetti();
+        } catch { showToast('Failed to mark today as clean.', 'error'); setIsLogging(false); }
     };
 
     const handleDeleteLog = async (logId) => {
         if (!window.confirm('Delete this entry?')) return;
-        try { await axios.delete(`${API_URL}/log/${userName}/${logId}`); fetchStatus(); }
-        catch { alert('Failed to delete log.'); }
+        try { 
+            await axios.delete(`${API_URL}/log/${userName}/${logId}`); 
+            fetchStatus(); 
+            showToast('Entry deleted successfully.');
+        }
+        catch { showToast('Failed to delete log.', 'error'); }
     };
 
     const handleEditLog = (log) => {
@@ -156,6 +207,101 @@ const HabitImpactPage = () => {
         if (!window.confirm('Are you sure you want to reset your streak?')) return;
         try { await axios.delete(`${API_URL}/${userName}`); setStatus(null); fetchStatus(); }
         catch { console.error('Reset failed'); }
+    };
+
+    const handleDownloadReport = () => {
+        const doc = new jsPDF();
+        const monthYear = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+        
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(225, 29, 72); // rose-600
+        doc.text('Freedom Path Recovery Report', 14, 22);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`User Index: ${userName}`, 14, 32);
+        doc.text(`Report Period: ${monthYear}`, 14, 37);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);
+
+        // Summary Cards
+        doc.setDrawColor(240);
+        doc.setFillColor(252, 252, 252);
+        doc.roundedRect(14, 50, 60, 25, 3, 3, 'FD');
+        doc.roundedRect(80, 50, 60, 25, 3, 3, 'FD');
+        doc.roundedRect(146, 50, 50, 25, 3, 3, 'FD');
+
+        doc.setFontSize(9);
+        doc.setTextColor(150);
+        doc.text('MONTHLY SPENDING', 19, 57);
+        doc.text('LIFE REGAINED', 85, 57);
+        doc.text('STREAK', 151, 57);
+
+        doc.setFontSize(14);
+        doc.setTextColor(30);
+        doc.text(`Rs. ${monthlySpending.toLocaleString()}`, 19, 67);
+        doc.text(`${lifeRegainedYears.toFixed(1)} Years`, 85, 67);
+        doc.text(`${streakDays} Days`, 151, 67);
+
+        // --- Custom Manual Table ---
+        let yPos = 85;
+        const headers = ['DATE', 'UNITS / AMOUNT', 'UNIT PRICE', 'TOTAL COST'];
+        const colWidths = [45, 45, 45, 45];
+        const startX = 14;
+
+        // Header Background
+        doc.setFillColor(31, 41, 55);
+        doc.roundedRect(startX, yPos, 182, 12, 1, 1, 'F');
+        
+        // Header Text
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        headers.forEach((h, i) => {
+            doc.text(h, startX + 5 + (i * 45), yPos + 8);
+        });
+
+        yPos += 12;
+        doc.setFont('helvetica', 'normal');
+        
+        const sortedLogs = [...monthLogs].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        sortedLogs.forEach((log, idx) => {
+            // Zebra Striping
+            if (idx % 2 === 0) {
+                doc.setFillColor(252, 252, 252);
+                doc.rect(startX, yPos, 182, 10, 'F');
+            }
+
+            doc.setTextColor(71, 85, 105); // slate-600
+            doc.setFontSize(9);
+            
+            const dateStr = new Date(log.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            doc.text(dateStr, startX + 5, yPos + 7);
+            doc.text(log.count.toString(), startX + 5 + 45, yPos + 7);
+            doc.text(`Rs. ${log.unitPrice}`, startX + 5 + 90, yPos + 7);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30, 41, 59); // slate-800
+            doc.text(`Rs. ${(log.count * log.unitPrice).toLocaleString()}`, startX + 5 + 135, yPos + 7);
+            doc.setFont('helvetica', 'normal');
+
+            yPos += 10;
+
+            // Page break check
+            if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+            }
+        });
+
+        const finalY = yPos;
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text('This report is generated by EduSync Wellness Monitoring.', 14, finalY + 15);
+
+        doc.save(`FreedomPath_Report_${monthYear.replace(' ', '_')}.pdf`);
+        showToast('Report generated successfully! 📑');
     };
 
     // ── Dark mode style helpers ──
@@ -239,6 +385,17 @@ const HabitImpactPage = () => {
                     </motion.div>
 
                     <motion.div className="flex items-center gap-3" variants={slideInRight}>
+                        {/* Settings Button */}
+                        <motion.button
+                            onClick={() => setShowSettings(true)}
+                            className={`p-3 rounded-2xl border ${card} ${cardBorder} ${textMuted} hover:${textPrimary} transition-all shadow-sm`}
+                            whileHover={{ scale: 1.1, rotate: 15 }}
+                            whileTap={{ scale: 0.9 }}
+                            title="Baseline Settings"
+                        >
+                            <Settings size={20} />
+                        </motion.button>
+
                         {/* Dark mode toggle */}
                         <motion.button
                             onClick={toggleDark}
@@ -254,11 +411,6 @@ const HabitImpactPage = () => {
                                 {darkMode ? <Moon size={11} /> : <Sun size={11} />}
                             </motion.div>
                         </motion.button>
-
-                        <div className={`hidden lg:flex flex-col items-end px-4 py-2 rounded-xl border ${card} ${cardBorder} shadow-sm`}>
-                            <p className={`text-[9px] font-black ${textMuted} uppercase tracking-widest`}>System Status</p>
-                            <p className="text-xs font-bold text-emerald-500">📡 100% Operational</p>
-                        </div>
                         <motion.div className={`w-12 h-12 rounded-2xl overflow-hidden border-2 ${cardBorder} shadow-sm cursor-pointer`} whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
                             <img src={`https://ui-avatars.com/api/?name=${userName}&background=ffe4e6&color=e11d48`} alt="Profile" className="w-full h-full object-cover" />
                         </motion.div>
@@ -314,13 +466,12 @@ const HabitImpactPage = () => {
                                 </motion.div>
                                 <h4 className={`text-2xl font-black ${textPrimary} mb-3 tracking-tight`}>Ready to break free?</h4>
                                 <p className={`text-sm ${textSecond} font-medium mb-8 leading-relaxed px-4`}>Set your baseline and take the first step towards a healthier, wealthier you.</p>
-                                <motion.button onClick={() => handleUpdateProjection(true)} className={`w-full py-4 ${d('bg-[#1f2937] text-white','bg-slate-100 text-slate-900')} font-bold rounded-2xl shadow-lg transition-all`} whileHover={{ scale:1.03, boxShadow:'0 10px 30px rgba(0,0,0,0.2)' }} whileTap={{ scale:0.97 }}>
-                                    Start Journey
+                                <motion.button onClick={() => setShowSettings(true)} className={`w-full py-4 ${d('bg-[#1f2937] text-white','bg-slate-100 text-slate-900')} font-bold rounded-2xl shadow-lg transition-all`} whileHover={{ scale:1.03, boxShadow:'0 10px 30px rgba(0,0,0,0.2)' }} whileTap={{ scale:0.97 }}>
+                                    Configure Dashboard
                                 </motion.button>
                             </div>
                         )}
                     </motion.div>
-
                     {/* Daily Log Form */}
                     <AnimatePresence>
                         {isJourneyActive && (
@@ -366,26 +517,6 @@ const HabitImpactPage = () => {
                             </motion.div>
                         )}
                     </AnimatePresence>
-
-                    {/* Baseline Settings */}
-                    <motion.div className={`${card} p-8 rounded-[2.5rem] border ${cardBorder}`} variants={cardVariants}>
-                        <h3 className={`text-[17px] font-black ${textPrimary} mb-6`}>Baseline Settings</h3>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className={`text-[9px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Daily Avg</label>
-                                    <input type="number" value={form.cps} onChange={e=>setForm({...form,cps:Number(e.target.value)})} className={`w-full h-12 ${inputBg} border-none rounded-xl px-4 text-sm font-bold ${textPrimary} outline-none`} />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className={`text-[9px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Pack Price</label>
-                                    <input type="number" value={form.packPrice} onChange={e=>setForm({...form,packPrice:Number(e.target.value)})} className={`w-full h-12 ${inputBg} border-none rounded-xl px-4 text-sm font-bold ${textPrimary} outline-none`} />
-                                </div>
-                            </div>
-                            <motion.button onClick={() => handleUpdateProjection(false)} className={`w-full h-12 ${d('bg-slate-100 hover:bg-slate-200 text-slate-700','bg-slate-700 hover:bg-slate-600 text-slate-200')} font-bold text-[11px] uppercase tracking-widest rounded-xl transition-all`} whileHover={{ scale:1.02 }} whileTap={{ scale:0.97 }}>
-                                {isSaving ? 'Processing...' : 'Update Baseline'}
-                            </motion.button>
-                        </div>
-                    </motion.div>
                 </motion.div>
 
                 {/* ──── RIGHT COLUMN ──── */}
@@ -516,9 +647,19 @@ const HabitImpactPage = () => {
                     <motion.div className={`${card} rounded-[2.5rem] p-10 ${cardShadow} border ${cardBorder}`} variants={cardVariants}>
                         <div className="flex items-center justify-between mb-10">
                             <h3 className={`text-2xl font-black ${textPrimary} tracking-tight`}>Logging History</h3>
-                            <motion.div className={`px-5 py-2 ${inputBg} rounded-2xl text-[10px] font-black uppercase tracking-widest ${textMuted}`} animate={{ opacity:[0.6,1,0.6] }} transition={{ duration:2, repeat:Infinity }}>
-                                Total: {status?.dailyLogs?.length || 0}
-                            </motion.div>
+                            <div className="flex items-center gap-3">
+                                <motion.button 
+                                    onClick={handleDownloadReport}
+                                    className={`p-2.5 ${inputBg} ${textMuted} hover:${textPrimary} rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border ${cardBorder}`}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Download size={14} /> PDF Report
+                                </motion.button>
+                                <motion.div className={`px-5 py-2 ${inputBg} rounded-2xl text-[10px] font-black uppercase tracking-widest ${textMuted}`} animate={{ opacity:[0.6,1,0.6] }} transition={{ duration:2, repeat:Infinity }}>
+                                    Total: {status?.dailyLogs?.length || 0}
+                                </motion.div>
+                            </div>
                         </div>
 
                         <div className="space-y-4">
@@ -563,6 +704,62 @@ const HabitImpactPage = () => {
                     </motion.div>
                 </motion.div>
             </div>
+
+            {/* ── Settings Modal ── */}
+            <AnimatePresence>
+                {showSettings && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+                        <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} onClick={() => setShowSettings(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity:0, scale:0.9, y:20 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.9, y:20 }} className={`${card} w-full max-w-lg p-10 rounded-[3rem] border ${cardBorder} shadow-2xl relative z-10 overflow-hidden`}>
+                             <div className="absolute top-0 right-0 p-6">
+                                <motion.button onClick={() => setShowSettings(false)} className={`p-3 rounded-full ${inputBg} ${textMuted} hover:${textPrimary} transition-all`} whileHover={{ rotate:90 }} whileTap={{ scale:0.9 }}>
+                                    <X size={20} />
+                                </motion.button>
+                            </div>
+
+                            <motion.div className="w-16 h-16 rounded-3xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-8" whileHover={{ rotate:10 }}>
+                                <Settings size={32} />
+                            </motion.div>
+
+                            <h2 className="text-3xl font-black tracking-tight mb-2">Journey Settings</h2>
+                            <p className={`${textMuted} text-sm font-medium mb-10`}>Configure your habit baseline to track impact more accurately.</p>
+
+                            <div className="space-y-8">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                        <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Daily Average</label>
+                                        <div className="relative group">
+                                            <input type="number" value={form.cps} onChange={e=>setForm({...form,cps:Number(e.target.value)})} className={`w-full h-16 ${inputBg} border-none rounded-2xl px-6 text-xl font-bold ${textPrimary} outline-none focus:ring-2 focus:ring-blue-500/20 transition-all`} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Pack Price (LKR)</label>
+                                        <div className="relative group">
+                                            <input type="number" value={form.packPrice} onChange={e=>setForm({...form,packPrice:Number(e.target.value)})} className={`w-full h-16 ${inputBg} border-none rounded-2xl px-6 text-xl font-bold ${textPrimary} outline-none focus:ring-2 focus:ring-blue-500/20 transition-all`} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Years Active</label>
+                                    <input type="number" value={form.years} onChange={e=>setForm({...form,years:Number(e.target.value)})} className={`w-full h-16 ${inputBg} border-none rounded-2xl px-6 text-xl font-bold ${textPrimary} outline-none focus:ring-2 focus:ring-blue-500/20 transition-all`} />
+                                </div>
+
+                                <motion.button onClick={() => handleUpdateProjection(!isJourneyActive)} disabled={isSaving} className="w-full h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 transition-all flex items-center justify-center gap-3" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}>
+                                    {isSaving ? (
+                                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+                                    ) : isJourneyActive ? 'Update Baseline' : 'Initialize Journey'}
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Toast Notifications ── */}
+            <AnimatePresence>
+                {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+            </AnimatePresence>
 
             <style>{`
                 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
