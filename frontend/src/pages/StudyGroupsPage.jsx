@@ -137,6 +137,8 @@ const payload = {
         } catch { alert('Delete failed.'); }
     };
 
+    
+
     const handleLeaveGroup = async (groupId) => {
         if (!window.confirm('Leave this collaboration hub?')) return;
         try {
@@ -146,7 +148,12 @@ const payload = {
     };
 
     const openEditModal = (group) => {
-        setEditForm({ id: group.id, GroupName: group.groupName || group.GroupName, Description: group.description || group.Description, PhoneNumber: group.phoneNumber || group.PhoneNumber });
+        setEditForm({ 
+            id: group.id || group.Id, // MongoDB ID correctly map panrom
+            GroupName: group.groupName || group.GroupName, 
+            Description: group.description || group.Description, 
+            PhoneNumber: group.phoneNumber || group.PhoneNumber 
+        });
         setShowEditModal(true);
     };
 

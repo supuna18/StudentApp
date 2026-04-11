@@ -14,11 +14,12 @@ export default function ChatPage() {
     const [loading, setLoading] = useState(true);
     const [contextMenu, setContextMenu] = useState(null); 
 
-    // --- FORWARD STATES ---
+    // --- FORWARD & REPLY STATES ---
     const [showForwardModal, setShowForwardModal] = useState(false);
     const [userGroups, setUserGroups] = useState([]);
     const [forwardLoading, setForwardLoading] = useState(false);
     const [selectedGroups, setSelectedGroups] = useState([]); 
+    const [replyingTo, setReplyingTo] = useState(null); // NEW: Reply state
 
     const token = localStorage.getItem('token');
 
@@ -107,6 +108,12 @@ export default function ChatPage() {
         setContextMenu({ x: xPos, y: e.pageY, msg });
     };
 
+    // --- REPLY ACTION ---
+    const handleReply = () => {
+        setReplyingTo(contextMenu.msg);
+        setContextMenu(null);
+    };
+
     const deleteForEveryone = async () => {
         if (!contextMenu) return;
         try {
@@ -124,12 +131,10 @@ export default function ChatPage() {
         } catch (e) { alert("Action failed"); }
     };
 
-    // --- UPDATED MULTI-FORWARD FUNCTIONS ---
     const openForwardModal = () => {
         if (!contextMenu?.msg) return;
         setSelectedGroups([]); 
         setShowForwardModal(true);
-        // Context menu-voda position reset aanaalum 'contextMenu.msg' Modal-kulla irukkum
     };
 
     const toggleGroupSelection = (id) => {
@@ -146,37 +151,17 @@ export default function ChatPage() {
 
     const handleMultiForward = async () => {
         if (!contextMenu?.msg || selectedGroups.length === 0 || !connection) return;
-        
         setForwardLoading(true);
-        const msgToForward = { ...contextMenu.msg }; // Object-ah deep copy panni safe-ah vachukkurom
-        
+        const msgToForward = { ...contextMenu.msg };
         try {
-            // SignalR connection state-ah check pannuvom
-            if (connection.state !== signalR.HubConnectionState.Connected) {
-                await connection.start();
-            }
-
-            // Oru oru group-ka loop panni invoke pannuvom
             for (const targetId of selectedGroups) {
-                await connection.invoke("SendMessage", 
-                    targetId, 
-                    myEmail.toLowerCase(), 
-                    `[Forwarded]: ${msgToForward.message || ""}`, 
-                    msgToForward.fileData || null, 
-                    msgToForward.fileName || null, 
-                    msgToForward.fileType || null
-                );
+                await connection.invoke("SendMessage", targetId, myEmail.toLowerCase(), `[Forwarded]: ${msgToForward.message || ""}`, msgToForward.fileData || null, msgToForward.fileName || null, msgToForward.fileType || null);
             }
-
-            alert(`Message forwarded to ${selectedGroups.length} groups successfully!`);
+            alert(`Message forwarded successfully!`);
             setShowForwardModal(false);
-            setContextMenu(null); // Fully reset context menu
-        } catch (e) {
-            console.error("Forward Error Details:", e);
-            alert("Forward failed. Check if server is running.");
-        } finally {
-            setForwardLoading(false);
-        }
+            setContextMenu(null);
+        } catch (e) { alert("Forward failed"); }
+        finally { setForwardLoading(false); }
     };
 
     const sendMessage = async (e) => {
@@ -184,8 +169,16 @@ export default function ChatPage() {
         if (!newMessage.trim() && !file) return;
         if (connection) {
             try {
-                await connection.invoke("SendMessage", groupId, myEmail.toLowerCase(), newMessage, file?.data || null, file?.name || null, file?.type || null);
-                setNewMessage(""); setFile(null);
+                let finalMsg = newMessage;
+                // Pack reply info into the string if replying
+                if (replyingTo) {
+                    const rUser = replyingTo.senderEmail.split('@')[0];
+                    const rSnippet = replyingTo.message ? replyingTo.message.substring(0, 40) : "File Attached";
+                    finalMsg = `|REPLY|${rUser}|${rSnippet}|${newMessage}`;
+                }
+
+                await connection.invoke("SendMessage", groupId, myEmail.toLowerCase(), finalMsg, file?.data || null, file?.name || null, file?.type || null);
+                setNewMessage(""); setFile(null); setReplyingTo(null); // Reset
                 if(document.getElementById('fIn')) document.getElementById('fIn').value = "";
             } catch (err) { console.error("Send failed"); }
         }
@@ -202,10 +195,7 @@ export default function ChatPage() {
             <div className="bg-[#075E54] p-4 text-white flex items-center justify-between shadow-lg z-10">
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate(-1)} className="text-xl">←</button>
-                    <div>
-                        <h2 className="font-bold">Study Circle</h2>
-                        <p className="text-[10px] opacity-70">Logged as: {myEmail}</p>
-                    </div>
+                    <div><h2 className="font-bold">Study Circle</h2><p className="text-[10px] opacity-70">Logged as: {myEmail}</p></div>
                 </div>
             </div>
 
@@ -215,16 +205,30 @@ export default function ChatPage() {
                     const isOwner = m.senderEmail.toLowerCase() === ownerEmail.toLowerCase();
                     const senderDisplayName = m.senderEmail ? m.senderEmail.split('@')[0] : "User";
 
+                    // --- PARSE REPLY ---
+                    const isReply = m.message && m.message.startsWith("|REPLY|");
+                    let quotedUser = "", quotedText = "", actualMsg = m.message;
+                    if (isReply) {
+                        const parts = m.message.split("|");
+                        quotedUser = parts[2]; quotedText = parts[3]; actualMsg = parts[4];
+                    }
+
                     return (
                         <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            <div 
-                                onContextMenu={(e) => handleContextMenu(e, m)}
-                                className={`max-w-[75%] p-2 rounded-lg shadow-sm ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} cursor-context-menu hover:brightness-95 transition-all select-none`}
-                            >
+                            <div onContextMenu={(e) => handleContextMenu(e, m)} className={`max-w-[75%] p-2 rounded-lg shadow-sm ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} cursor-context-menu select-none`}>
                                 <p className={`text-[9px] font-bold mb-1 ${isMe ? 'text-emerald-700' : 'text-blue-600'}`}>
                                     {senderDisplayName} {isOwner && "⭐"}
                                 </p>
-                                {m.message && <p className="text-sm text-gray-800 pr-4">{m.message}</p>}
+
+                                {isReply && (
+                                    <div className="bg-black/5 border-l-4 border-[#075E54] p-1.5 mb-2 rounded text-[10px] opacity-80">
+                                        <p className="font-bold text-[#075E54]">{quotedUser}</p>
+                                        <p className="truncate italic text-gray-500">{quotedText}</p>
+                                    </div>
+                                )}
+                                
+                                {actualMsg && <p className="text-sm text-gray-800 pr-4">{actualMsg}</p>}
+                                
                                 {m.fileData && (
                                     <div className="mt-2 border-t pt-2">
                                         {m.fileType?.startsWith("image/") ? (
@@ -247,51 +251,47 @@ export default function ChatPage() {
 
             {contextMenu && (
                 <div className="fixed bg-white shadow-xl border rounded-lg z-[9999] py-1 w-[180px]" style={{ top: contextMenu.y, left: contextMenu.x }} onClick={(e) => e.stopPropagation()}>
-                    <button onClick={deleteForMe} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"><span>🗑️</span> Delete for me</button>
+                    <button onClick={handleReply} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"><span>↩️</span> Reply</button>
+                    <button onClick={deleteForMe} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 border-t"><span>🗑️</span> Delete for me</button>
                     {contextMenu.msg.senderEmail.toLowerCase() === myEmail.toLowerCase() && (
                         <button onClick={deleteForEveryone} className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"><span>🚫</span> Delete for everyone</button>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); openForwardModal(); }} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 border-t flex items-center gap-2"><span>➡️</span> Forward</button>
+                    <button onClick={openForwardModal} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 border-t flex items-center gap-2"><span>➡️</span> Forward</button>
                 </div>
             )}
 
-            {/* FORWARD MODAL UI */}
+            {/* --- REPLY PREVIEW BAR --- */}
+            {replyingTo && (
+                <div className="bg-white/90 border-l-4 border-[#075E54] mx-3 mb-1 p-2 rounded shadow-md flex justify-between items-center animate-in slide-in-from-bottom-2">
+                    <div className="overflow-hidden">
+                        <p className="text-[10px] font-bold text-[#075E54]">Replying to {replyingTo.senderEmail.split('@')[0]}</p>
+                        <p className="text-xs text-gray-500 truncate">{replyingTo.message || "File Attached"}</p>
+                    </div>
+                    <button onClick={() => setReplyingTo(null)} className="text-gray-400 p-2">✕</button>
+                </div>
+            )}
+
             {showForwardModal && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000] p-4" onClick={() => setShowForwardModal(false)}>
-                    <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000] p-4">
+                    <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95">
                         <div className="bg-[#075E54] p-4 text-white flex justify-between items-center">
-                            <div>
-                                <h3 className="font-bold">Forward to...</h3>
-                                <p className="text-[10px] opacity-80">Selected: {selectedGroups.length} / 5</p>
-                            </div>
+                            <div><h3 className="font-bold">Forward to...</h3><p className="text-[10px] opacity-80">Selected: {selectedGroups.length} / 5</p></div>
                             <button onClick={() => setShowForwardModal(false)}>✕</button>
                         </div>
                         <div className="p-2 max-h-[350px] overflow-y-auto bg-gray-50">
                             {userGroups.filter(g => (g.id || g.Id) !== groupId).map((g, i) => {
                                 const isSelected = selectedGroups.includes(g.id || g.Id);
                                 return (
-                                    <button 
-                                        key={i} 
-                                        onClick={() => toggleGroupSelection(g.id || g.Id)}
-                                        className={`w-full text-left p-3 mb-1 rounded-lg flex items-center gap-3 transition-all ${isSelected ? 'bg-emerald-100 border-emerald-300 shadow-inner' : 'hover:bg-white border-transparent'} border`}
-                                    >
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-700'}`}>
-                                            {isSelected ? '✓' : (g.groupName || g.GroupName || "S").charAt(0)}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold text-gray-800">{g.groupName || g.GroupName}</p>
-                                        </div>
+                                    <button key={i} onClick={() => toggleGroupSelection(g.id || g.Id)} className={`w-full text-left p-3 mb-1 rounded-lg flex items-center gap-3 transition-all ${isSelected ? 'bg-emerald-100 border-emerald-300 shadow-inner' : 'hover:bg-white border-transparent'} border`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-700'}`}>{isSelected ? '✓' : (g.groupName || g.GroupName || "S").charAt(0)}</div>
+                                        <div className="flex-1"><p className="text-sm font-bold text-gray-800">{g.groupName || g.GroupName}</p><p className="text-[10px] text-gray-500 italic">{g.subject || g.Subject}</p></div>
                                     </button>
                                 );
                             })}
                         </div>
                         <div className="p-3 bg-white border-t flex justify-between items-center">
                             <button onClick={() => setShowForwardModal(false)} className="text-sm font-bold text-gray-500 px-4 py-2">Cancel</button>
-                            <button 
-                                onClick={handleMultiForward}
-                                disabled={selectedGroups.length === 0 || forwardLoading}
-                                className={`px-6 py-2 rounded-full text-sm font-bold shadow-md transition-all ${selectedGroups.length > 0 ? 'bg-[#128C7E] text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                            >
+                            <button onClick={handleMultiForward} disabled={selectedGroups.length === 0 || forwardLoading} className={`px-6 py-2 rounded-full text-sm font-bold shadow-md ${selectedGroups.length > 0 ? 'bg-[#128C7E] text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
                                 {forwardLoading ? 'Sending...' : 'Send Message'}
                             </button>
                         </div>
