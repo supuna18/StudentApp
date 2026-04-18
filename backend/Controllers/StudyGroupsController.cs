@@ -126,6 +126,8 @@ public class StudyGroupsController : ControllerBase
                 if (filterDate.HasValue) {
                     filter &= Builders<ChatMessage>.Filter.Gte(m => m.Timestamp, filterDate.Value);
                 }
+                
+                filter &= Builders<ChatMessage>.Filter.Not(Builders<ChatMessage>.Filter.AnyEq(m => m.DeletedForUsers, reqEmail));
 
                 var messages = await _chats.Find(filter).SortBy(m => m.Timestamp).ToListAsync();
                 return Ok(messages);

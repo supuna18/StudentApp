@@ -39,7 +39,7 @@ public class ChatHub : Hub
             await _chats.InsertOneAsync(chatMsg);
             
             // Broadcast to group
-            await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp, fileData, fileName, fileType);
+            await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message, chatMsg.Timestamp, fileData, fileName, fileType, chatMsg.Id);
         }
         catch (Exception ex)
         {

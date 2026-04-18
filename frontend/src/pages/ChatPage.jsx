@@ -20,6 +20,7 @@ export default function ChatPage() {
     const [forwardLoading, setForwardLoading] = useState(false);
     const [selectedGroups, setSelectedGroups] = useState([]); 
     const [replyingTo, setReplyingTo] = useState(null); // NEW: Reply state
+    const [forwardMsg, setForwardMsg] = useState(null); // NEW: Forward state
 
     const token = localStorage.getItem('token');
 
@@ -133,8 +134,10 @@ export default function ChatPage() {
 
     const openForwardModal = () => {
         if (!contextMenu?.msg) return;
+        setForwardMsg(contextMenu.msg);
         setSelectedGroups([]); 
         setShowForwardModal(true);
+        setContextMenu(null);
     };
 
     const toggleGroupSelection = (id) => {
@@ -150,16 +153,16 @@ export default function ChatPage() {
     };
 
     const handleMultiForward = async () => {
-        if (!contextMenu?.msg || selectedGroups.length === 0 || !connection) return;
+        if (!forwardMsg || selectedGroups.length === 0 || !connection) return;
         setForwardLoading(true);
-        const msgToForward = { ...contextMenu.msg };
+        const msgToForward = { ...forwardMsg };
         try {
             for (const targetId of selectedGroups) {
                 await connection.invoke("SendMessage", targetId, myEmail.toLowerCase(), `[Forwarded]: ${msgToForward.message || ""}`, msgToForward.fileData || null, msgToForward.fileName || null, msgToForward.fileType || null);
             }
             alert(`Message forwarded successfully!`);
             setShowForwardModal(false);
-            setContextMenu(null);
+            setForwardMsg(null);
         } catch (e) { alert("Forward failed"); }
         finally { setForwardLoading(false); }
     };
@@ -271,12 +274,30 @@ export default function ChatPage() {
                 </div>
             )}
 
+            {/* --- FILE PREVIEW BAR --- */}
+            {file && (
+                <div className="bg-white/90 border-l-4 border-blue-500 mx-3 mb-1 p-2 rounded shadow-md flex justify-between items-center animate-in slide-in-from-bottom-2">
+                    <div className="overflow-hidden flex items-center gap-2">
+                        {file.type?.startsWith("image/") ? (
+                            <img src={file.data} className="w-10 h-10 object-cover rounded" alt="Preview" />
+                        ) : (
+                            <span className="text-2xl">📄</span>
+                        )}
+                        <div>
+                            <p className="text-[10px] font-bold text-blue-600">Selected File</p>
+                            <p className="text-xs text-gray-500 truncate max-w-[200px]">{file.name}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => { setFile(null); if(document.getElementById('fIn')) document.getElementById('fIn').value = ""; }} className="text-gray-400 hover:text-gray-600 p-2 text-lg font-bold">✕</button>
+                </div>
+            )}
+
             {showForwardModal && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000] p-4">
                     <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95">
                         <div className="bg-[#075E54] p-4 text-white flex justify-between items-center">
                             <div><h3 className="font-bold">Forward to...</h3><p className="text-[10px] opacity-80">Selected: {selectedGroups.length} / 5</p></div>
-                            <button onClick={() => setShowForwardModal(false)}>✕</button>
+                            <button onClick={() => { setShowForwardModal(false); setForwardMsg(null); }}>✕</button>
                         </div>
                         <div className="p-2 max-h-[350px] overflow-y-auto bg-gray-50">
                             {userGroups.filter(g => (g.id || g.Id) !== groupId).map((g, i) => {
@@ -290,7 +311,7 @@ export default function ChatPage() {
                             })}
                         </div>
                         <div className="p-3 bg-white border-t flex justify-between items-center">
-                            <button onClick={() => setShowForwardModal(false)} className="text-sm font-bold text-gray-500 px-4 py-2">Cancel</button>
+                            <button onClick={() => { setShowForwardModal(false); setForwardMsg(null); }} className="text-sm font-bold text-gray-500 px-4 py-2">Cancel</button>
                             <button onClick={handleMultiForward} disabled={selectedGroups.length === 0 || forwardLoading} className={`px-6 py-2 rounded-full text-sm font-bold shadow-md ${selectedGroups.length > 0 ? 'bg-[#128C7E] text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
                                 {forwardLoading ? 'Sending...' : 'Send Message'}
                             </button>

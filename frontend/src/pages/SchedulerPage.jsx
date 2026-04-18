@@ -83,6 +83,10 @@ const SchedulerPage = () => {
   };
 
   const startFocus = async (session) => {
+    if (session.fromDate > todayStr) {
+      alert("This is a focused session scheduled for a future date. You can only initiate the protocol on the scheduled day!");
+      return;
+    }
 
     const isSeconds = session.duration.toString().includes('s');
     const durationValue = parseInt(session.duration);
