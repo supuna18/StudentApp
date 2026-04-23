@@ -19,5 +19,4 @@ jobs:
         run: sleep 30
 
       - name: Run Playwright Tests inside Docker
-        # මෙතනත් මැද ඉර අයින් කළා
-        run: docker compose run tests npx playwright test
+        run: docker compose --profile testing run tests npx playwright test

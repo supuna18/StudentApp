@@ -49,7 +49,8 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const res  = await fetch('http://localhost:5005/api/auth/login', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5005';
+      const res  = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -173,7 +174,7 @@ const Login = () => {
               <h1 className="serif-heading text-[26px] text-[#0F1C4D] italic leading-tight mb-1.5">Welcome back!</h1>
               <p className="text-[12.5px] text-slate-400 mb-7">Sign in to your EduSync account</p>
 
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleLogin} noValidate>
 
                 {/* Email */}
                 <div className="flex flex-col gap-1.5 mb-4">
