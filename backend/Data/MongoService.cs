@@ -21,6 +21,8 @@ public class MongoService
 
     private static readonly DateTime _serverStartTime = DateTime.UtcNow;
 
+    private readonly IMongoCollection<StudyEvent> _studyEventsCollection;
+
     public MongoService(IMongoClient client, IConfiguration config)
     {
         var databaseName = config.GetSection("StudentDatabase")["DatabaseName"] ?? "EduSyncDB";
@@ -33,6 +35,7 @@ public class MongoService
         _studyGroupsCollection = _database.GetCollection<StudyGroup>(groupsCollectionName);
 
         _studySessionsCollection = _database.GetCollection<StudySession>("StudySessions");
+        _studyEventsCollection = _database.GetCollection<StudyEvent>("StudyEvents");
         _chatMessagesCollection = _database.GetCollection<ChatMessage>("ChatMessages");
 
         var reportsCollectionName = config.GetSection("StudentDatabase")["ReportsCollectionName"] ?? "SafetyReports";
@@ -55,6 +58,7 @@ public class MongoService
     public IMongoCollection<User> Users => _usersCollection;
     public IMongoCollection<StudyGroup> StudyGroups => _studyGroupsCollection;
     public IMongoCollection<StudySession> StudySessions => _studySessionsCollection;
+    public IMongoCollection<StudyEvent> StudyEvents => _studyEventsCollection;
     public IMongoCollection<ChatMessage> ChatHistory => _chatMessagesCollection;
     public IMongoCollection<SafetyReport> SafetyReports => _safetyReportsCollection;
     public IMongoCollection<UserLimit> UserLimits => _userLimitsCollection;

@@ -10,10 +10,12 @@ namespace StudentApp.Api.Controllers;
 public class SchedulerController : ControllerBase
 {
     private readonly IMongoCollection<StudySession> _sessions;
+    private readonly IMongoCollection<StudyEvent> _events;
 
     public SchedulerController(MongoService mongoService)
     {
         _sessions = mongoService.StudySessions;
+        _events = mongoService.StudyEvents;
     }
 
     // 1. GET ALL SESSIONS FOR A USER: api/scheduler/{email}
@@ -29,20 +31,33 @@ public class SchedulerController : ControllerBase
         return Ok(new { message = "Session Scheduled Successfully" });
     }
 
+    // ════════════ NEW: GROUP CALENDAR EVENTS (Member 2) ════════════
+    
+    // GET: api/scheduler/group/{groupId}
+    [HttpGet("group/{groupId}")]
+    public async Task<ActionResult<List<StudyEvent>>> GetByGroup(string groupId) =>
+        await _events.Find(e => e.GroupId == groupId).ToListAsync();
+
+    // POST: api/scheduler
+    [HttpPost]
+    public async Task<IActionResult> CreateEvent(StudyEvent studyEvent)
+    {
+        if (string.IsNullOrEmpty(studyEvent.Description)) studyEvent.Description = "Group Study Session";
+        if (studyEvent.EndTime == default) studyEvent.EndTime = studyEvent.StartTime.AddHours(1);
+        
+        await _events.InsertOneAsync(studyEvent);
+        return Ok(new { message = "Group Event Scheduled Successfully" });
+    }
+
+    // ════════════ Existing Updates ════════════
+
     // 3. UPDATE SESSION (EDIT): api/scheduler/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(string id, StudySession updatedSession)
     {
         var filter = Builders<StudySession>.Filter.Eq(s => s.Id, id);
-        
-        // Database-la irukura pazhaya session-ah pudhu details vachi replace pannuvom
         var result = await _sessions.ReplaceOneAsync(filter, updatedSession);
-
-        if (result.MatchedCount == 0)
-        {
-            return NotFound(new { message = "Session not found" });
-        }
-
+        if (result.MatchedCount == 0) return NotFound(new { message = "Session not found" });
         return Ok(new { message = "Session Updated Successfully" });
     }
 
@@ -51,31 +66,18 @@ public class SchedulerController : ControllerBase
     public async Task<IActionResult> Delete(string id)
     {
         var result = await _sessions.DeleteOneAsync(s => s.Id == id);
-
-        if (result.DeletedCount == 0)
-        {
-            return NotFound(new { message = "Session not found" });
-        }
-
+        if (result.DeletedCount == 0) return NotFound(new { message = "Session not found" });
         return Ok(new { message = "Session Deleted Successfully" });
     }
 
-    // ════════════ 5. NEW: MARK SESSION AS STARTED/COMPLETE ════════════
-    // Frontend-la "Start Focus Session" click pannunaal indha API call aagum.
-    // Idhu database-la IsCompleted = true nu maathum, appo thaan reminder mail anuppadhu.
+    // 5. MARK SESSION AS STARTED/COMPLETE
     [HttpPut("complete/{id}")]
     public async Task<IActionResult> MarkComplete(string id)
     {
         var filter = Builders<StudySession>.Filter.Eq(s => s.Id, id);
         var update = Builders<StudySession>.Update.Set(s => s.IsCompleted, true);
-        
         var result = await _sessions.UpdateOneAsync(filter, update);
-
-        if (result.MatchedCount == 0)
-        {
-            return NotFound(new { message = "Session not found" });
-        }
-
+        if (result.MatchedCount == 0) return NotFound(new { message = "Session not found" });
         return Ok(new { message = "Focus Session Started!" });
     }
 }
