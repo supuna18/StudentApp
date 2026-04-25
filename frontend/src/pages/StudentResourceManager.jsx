@@ -95,7 +95,7 @@ const StudentResourceManager = () => {
 
   const getFileIcon = (type) => {
     if (type.includes('pdf')) return <FileText className="text-red-500" />;
-    if (type.includes('image')) return <ImageIcon className="text-blue-500" />;
+    if (type.includes('image')) return <ImageIcon className="text-primary" />;
     return <File className="text-slate-400" />;
   };
 
@@ -112,7 +112,7 @@ const StudentResourceManager = () => {
         </div>
         <button 
           onClick={() => setShowUploadForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95"
+          className="bg-primary hover:bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95"
         >
           <Upload size={16} /> Upload Resource
         </button>
@@ -129,13 +129,13 @@ const StudentResourceManager = () => {
             
             <form onSubmit={handleSubmit} className="p-8 space-y-5">
               {error && <div className="p-3.5 bg-red-50 text-red-600 text-[12px] rounded-xl border border-red-100 font-bold">{error}</div>}
-              {success && <div className="p-3.5 bg-emerald-50 text-emerald-600 text-[12px] rounded-xl border border-emerald-100 font-bold">{success}</div>}
+              {success && <div className="p-3.5 bg-secondary/10 text-secondary text-[12px] rounded-xl border border-emerald-100 font-bold">{success}</div>}
               
               <div className="space-y-1.5">
                 <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Resource Title</label>
                 <input 
                   type="text" name="title" value={formData.title} onChange={handleInputChange} required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13.5px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13.5px] focus:ring-2 focus:ring-blue-500/20 focus:border-primary outline-none transition-all placeholder:text-slate-300"
                   placeholder="e.g. Data Structures Cheat Sheet"
                 />
               </div>
@@ -144,7 +144,7 @@ const StudentResourceManager = () => {
                 <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Category</label>
                 <select 
                   name="category" value={formData.category} onChange={handleInputChange} required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13.5px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13.5px] focus:ring-2 focus:ring-blue-500/20 focus:border-primary outline-none transition-all"
                 >
                   <option value="">Select Category</option>
                   <option value="Computer Science">Computer Science</option>
@@ -159,7 +159,7 @@ const StudentResourceManager = () => {
                 <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Brief Description</label>
                 <textarea 
                   name="description" value={formData.description} onChange={handleInputChange} rows="2"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13.5px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13.5px] focus:ring-2 focus:ring-blue-500/20 focus:border-primary outline-none transition-all placeholder:text-slate-300"
                   placeholder="Describe what this resource covers..."
                 />
               </div>
@@ -172,8 +172,8 @@ const StudentResourceManager = () => {
                         className="absolute inset-0 opacity-0 cursor-pointer z-10"
                         accept=".pdf,.docx,.jpg,.jpeg,.png"
                     />
-                    <div className="w-full px-4 py-7 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover:border-blue-500 group-hover:bg-blue-50/30 transition-all">
-                        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-600">
+                    <div className="w-full px-4 py-7 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover:border-primary group-hover:bg-primary/10/30 transition-all">
+                        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-primary">
                             <Upload size={20} />
                         </div>
                         <span className="text-[12.5px] text-[#0F1C4D] font-bold">
@@ -193,7 +193,7 @@ const StudentResourceManager = () => {
                 </button>
                 <button 
                   type="submit" disabled={loading}
-                  className="flex-[2] bg-blue-600 text-white px-8 py-3 rounded-xl text-[13px] font-bold hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-100 transition-all active:scale-95"
+                  className="flex-[2] bg-primary text-white px-8 py-3 rounded-xl text-[13px] font-bold hover:bg-primary disabled:opacity-50 shadow-lg shadow-blue-100 transition-all active:scale-95"
                 >
                   {loading ? 'Uploading...' : 'Share Resource'}
                 </button>
@@ -215,12 +215,12 @@ const StudentResourceManager = () => {
                         <div>
                             <h4 className="text-[14.5px] font-bold text-[#0F1C4D] tracking-tight">{res.title}</h4>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">{res.category}</span>
+                                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md uppercase tracking-wider">{res.category}</span>
                                 <span className="text-[10px] text-slate-400 font-medium italic">{(res.fileSize / 1024 / 1024).toFixed(2)} MB</span>
                             </div>
                         </div>
                       </div>
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${res.isApproved ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${res.isApproved ? 'bg-secondary/10 text-secondary border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
                           {res.isApproved ? <CheckCircle size={10} /> : <Clock size={10} />}
                           {res.isApproved ? 'Approved' : 'Pending'}
                       </div>
@@ -232,14 +232,14 @@ const StudentResourceManager = () => {
                       <div className="flex items-center gap-2">
                           <a 
                             href={`${STATIC_BASE_URL}${res.fileUrl}`} target="_blank" rel="noopener noreferrer"
-                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                             title="Preview"
                           >
                             <Eye size={16} />
                           </a>
                           <a 
                             href={`${STATIC_BASE_URL}${res.fileUrl}`} download
-                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                             title="Download"
                           >
                             <Download size={16} />
@@ -281,3 +281,4 @@ const StudentResourceManager = () => {
 };
 
 export default StudentResourceManager;
+

@@ -104,12 +104,12 @@ const Login = () => {
           <div className="relative w-full md:w-[46%] flex-shrink-0 hidden md:flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
 
             {/* Ambient orbs */}
-            <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-blue-500/[0.08] blur-[80px] pointer-events-none" />
-            <div className="absolute bottom-[-40px] left-[-40px] w-[200px] h-[200px] rounded-full bg-blue-400/[0.07] blur-[60px] pointer-events-none" />
+            <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-primary/[0.08] blur-[80px] pointer-events-none" />
+            <div className="absolute bottom-[-40px] left-[-40px] w-[200px] h-[200px] rounded-full bg-primary/[0.07] blur-[60px] pointer-events-none" />
 
             {/* Brand */}
             <div className="flex items-center gap-2.5 mb-auto relative z-10">
-              <div className="w-[30px] h-[30px] bg-blue-600 rounded-[8px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.28)] flex-shrink-0">
+              <div className="w-[30px] h-[30px] bg-primary rounded-[8px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.28)] flex-shrink-0">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
@@ -121,7 +121,7 @@ const Login = () => {
             <div className="relative z-10 mb-7">
               <h2 className="serif-heading text-[clamp(26px,3vw,38px)] text-[#0F1C4D] leading-[1.12] font-normal">
                 Start your<br />
-                <em className="text-blue-600 not-italic italic">learning journey</em><br />
+                <em className="text-primary not-italic italic">learning journey</em><br />
                 today.
               </h2>
               <p className="text-[13px] text-slate-400 mt-3 leading-[1.65] max-w-[280px]">
@@ -134,7 +134,7 @@ const Login = () => {
               {features.map((f) => (
                 <div key={f} className="flex items-center gap-2.5 text-[12.5px] font-medium text-[#4A5570]">
                   <div className="w-[22px] h-[22px] rounded-[7px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
-                    <Check size={11} className="text-blue-600" strokeWidth={2.5} />
+                    <Check size={11} className="text-primary" strokeWidth={2.5} />
                   </div>
                   {f}
                 </div>
@@ -146,7 +146,7 @@ const Login = () => {
               {stats.map((s, i) => (
                 <div key={i} className={`flex-1 text-center ${i > 0 ? 'border-l border-[#E8EEFF]' : ''}`}>
                   <div className="text-[18px] font-extrabold text-[#0F1C4D] tracking-tight leading-none">
-                    {s.val}<span className="text-blue-600">{s.suffix}</span>
+                    {s.val}<span className="text-primary">{s.suffix}</span>
                   </div>
                   <div className="text-[9.5px] font-bold tracking-[1.5px] uppercase text-slate-400 mt-1">{s.label}</div>
                 </div>
@@ -184,7 +184,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                     className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-colors duration-150 placeholder:text-slate-400
-                      ${emailError ? 'border-red-400 focus:border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                      ${emailError ? 'border-red-400 focus:border-red-400' : 'border-[#E8EEFF] focus:border-primary'}`}
                     style={{ fontFamily: 'DM Sans' }}
                     required
                   />
@@ -195,7 +195,7 @@ const Login = () => {
                 <div className="flex flex-col gap-1.5 mb-2">
                   <div className="flex items-center justify-between">
                     <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Password</label>
-                    <Link to="/forgot-password" className="text-[11.5px] font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                    <Link to="/forgot-password" className="text-[11.5px] font-semibold text-primary hover:text-blue-800 transition-colors">
                       Forgot password?
                     </Link>
                   </div>
@@ -206,14 +206,14 @@ const Login = () => {
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
                       className={`w-full pl-3.5 pr-10 py-2.5 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-colors duration-150 placeholder:text-slate-400
-                        ${passwordError ? 'border-red-400 focus:border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                        ${passwordError ? 'border-red-400 focus:border-red-400' : 'border-[#E8EEFF] focus:border-primary'}`}
                       style={{ fontFamily: 'DM Sans' }}
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPass((p) => !p)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                     >
                       {showPass ? <EyeOff size={15} strokeWidth={2} /> : <Eye size={15} strokeWidth={2} />}
                     </button>
@@ -225,7 +225,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.35)] hover:shadow-[0_10px_28px_rgba(34,85,210,0.4)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                  className="w-full py-3 mt-6 bg-primary hover:bg-primary disabled:opacity-60 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.35)] hover:shadow-[0_10px_28px_rgba(34,85,210,0.4)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
                   style={{ fontFamily: 'DM Sans' }}
                 >
                   {loading ? (
@@ -250,3 +250,4 @@ const Login = () => {
 };
 
 export default Login;
+

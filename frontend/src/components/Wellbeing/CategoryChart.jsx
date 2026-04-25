@@ -60,3 +60,5 @@ const CategoryChart = ({ dark }) => {
 };
 
 export default CategoryChart;
+
+

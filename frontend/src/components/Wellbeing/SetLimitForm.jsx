@@ -253,14 +253,14 @@ const SetLimitForm = () => {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${dark ? 'text-blue-400' : 'text-blue-600'}`}>
+                <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${dark ? 'text-primary' : 'text-primary'}`}>
                   {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 18 ? 'Good Afternoon' : 'Good Evening'}
                 </p>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <div className="flex items-center gap-1.5">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
                   </span>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shield Active</span>
                 </div>
@@ -276,14 +276,14 @@ const SetLimitForm = () => {
             <motion.button
               onClick={() => setDark(d => !d)}
               className={`relative w-14 h-7 rounded-full transition-colors duration-300 flex items-center px-1 ${
-                dark ? 'bg-indigo-600' : 'bg-slate-200'
+                dark ? 'bg-primary' : 'bg-slate-200'
               }`}
               whileTap={{ scale: 0.95 }}
               title="Toggle dark mode"
             >
               <motion.div
                 className={`w-5 h-5 rounded-full flex items-center justify-center shadow-md ${
-                  dark ? 'bg-white text-indigo-600' : 'bg-white text-amber-500'
+                  dark ? 'bg-white text-primary' : 'bg-white text-amber-500'
                 }`}
                 animate={{ x: dark ? 26 : 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -296,7 +296,7 @@ const SetLimitForm = () => {
               dark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'
             }`}>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">System Status</p>
-              <p className={`text-xs font-bold ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>📡 100% Operational</p>
+              <p className={`text-xs font-bold ${dark ? 'text-secondary' : 'text-secondary'}`}>📡 100% Operational</p>
             </div>
           </div>
         </div>
@@ -305,8 +305,8 @@ const SetLimitForm = () => {
       {/* ── Stats Row ── */}
       <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         {[
-          { label: 'Focus Streak', value: `${streak} days`, sub: streak > 0 ? '↑ Personal best' : 'Start today!', subColor: 'text-emerald-500' },
-          { label: 'Sites Blocked', value: `${limitsCount}+`, sub: limitsCount > 0 ? `${limitsCount} active limits` : 'None yet', subColor: 'text-blue-500' },
+          { label: 'Focus Streak', value: `${streak} days`, sub: streak > 0 ? '↑ Personal best' : 'Start today!', subColor: 'text-secondary' },
+          { label: 'Sites Blocked', value: `${limitsCount}+`, sub: limitsCount > 0 ? `${limitsCount} active limits` : 'None yet', subColor: 'text-primary' },
           { label: 'Badges Earned', value: `${unlockedBadges.length} / 5`, sub: unlockedBadges.length < 5 ? 'Keep going!' : 'All unlocked!', subColor: 'text-amber-500' },
           { label: 'Wellbeing Score', value: `${Math.min(100, streak * 4 + limitsCount * 5)}%`, sub: '↑ Improving', subColor: 'text-violet-500' },
         ].map((s, i) => (
@@ -324,12 +324,12 @@ const SetLimitForm = () => {
         ${dark ? 'bg-slate-800/50 border-slate-700/50 backdrop-blur-xl' : 'bg-white border-slate-100'}`}>
         
         {/* Decorative background glow */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-md bg-blue-500 text-[10px] font-black text-white uppercase tracking-tighter">Level Up</span>
+              <span className="px-2 py-0.5 rounded-md bg-primary text-[10px] font-black text-white uppercase tracking-tighter">Level Up</span>
               <h2 className={`text-2xl font-black tracking-tight ${dark ? 'text-white' : 'text-slate-800'}`}>Mastery Achievements</h2>
             </div>
             <p className="text-sm text-slate-400 font-medium max-w-md">Unlock exclusive badges as you maintain your focus streak and build digital discipline.</p>
@@ -338,7 +338,7 @@ const SetLimitForm = () => {
           <div className="min-w-[200px]">
             <div className="flex justify-between items-end mb-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Progress</span>
-              <span className="text-sm font-black text-blue-500">{Math.round((unlockedBadges.length / 5) * 100)}%</span>
+              <span className="text-sm font-black text-primary">{Math.round((unlockedBadges.length / 5) * 100)}%</span>
             </div>
             <div className="h-3 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden p-0.5">
               <motion.div 
@@ -376,14 +376,14 @@ const SetLimitForm = () => {
               >
                 {/* Glow for unlocked */}
                 {isUnlocked && (
-                  <div className="absolute inset-0 bg-blue-400/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
                 
                 <span className="relative z-10">{icon}</span>
                 
                 {/* Status indicator */}
                 <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[10px] shadow-sm
-                  ${isUnlocked ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-500'}`}>
+                  ${isUnlocked ? 'bg-secondary text-white' : 'bg-slate-300 text-slate-500'}`}>
                   {isUnlocked ? '✓' : '🔒'}
                 </div>
               </motion.button>
@@ -434,7 +434,7 @@ const SetLimitForm = () => {
                 value={domain}
                 onChange={e => setDomain(e.target.value)}
                 required
-              className={`w-full px-4 h-12 border rounded-xl outline-none focus:border-blue-500 transition-all font-medium text-sm
+              className={`w-full px-4 h-12 border rounded-xl outline-none focus:border-primary transition-all font-medium text-sm
                 ${dark ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-400' : 'bg-[#f0f2f8] border-slate-200 text-slate-700 focus:bg-white'}`}
               />
             </div>
@@ -449,7 +449,7 @@ const SetLimitForm = () => {
                     onClick={() => setCategory(cat.name)}
                     className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold flex items-center gap-2 transition-all
                       ${category === cat.name
-                        ? 'border-blue-500 bg-blue-500/10 text-blue-500'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : dark ? 'border-slate-600 text-slate-400 hover:border-slate-500' : 'border-slate-100 text-slate-500 hover:border-slate-200'}`}
                   >
                     <span className="text-lg">{cat.icon}</span>
@@ -469,7 +469,7 @@ const SetLimitForm = () => {
                     onClick={() => setLimitMinutes(p.value.toString())}
                     className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all
                       ${limitMinutes === p.value.toString()
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                        ? 'bg-primary text-white shadow-md shadow-blue-200'
                         : dark ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-[#f0f2f8] text-slate-500 hover:bg-slate-200'}`}
                   >
                     {p.label}
@@ -499,11 +499,11 @@ const SetLimitForm = () => {
                 min="1"
                 max="1440"
                 required
-                className={`w-full px-4 h-12 border rounded-xl outline-none focus:border-blue-500 transition-all font-medium text-sm
+                className={`w-full px-4 h-12 border rounded-xl outline-none focus:border-primary transition-all font-medium text-sm
                 ${dark ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-400' : 'bg-[#f0f2f8] border-slate-200 text-slate-700 focus:bg-white'}`}
               />
               {limitMinutes && (
-                <p className="mt-2 text-[10px] font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
+                <p className="mt-2 text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
                   <span>⏱️</span>
                   <span>Estimated Time: {formatMinutes(limitMinutes)}</span>
                 </p>
@@ -513,7 +513,7 @@ const SetLimitForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-widest uppercase shadow-lg shadow-blue-200 active:scale-[0.98] transition-all"
+              className="w-full h-14 rounded-xl bg-primary hover:bg-primary text-white font-bold text-sm tracking-widest uppercase shadow-lg shadow-blue-200 active:scale-[0.98] transition-all"
             >
               {loading ? 'Activating…' : '🔒 Activate Limit'}
             </button>
@@ -538,8 +538,8 @@ const SetLimitForm = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`text-xs font-extrabold uppercase tracking-tight ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{item.label}</span>
                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest
-                      ${item.tag === 'SAFETY' ? 'bg-blue-100 text-blue-600'
-                        : item.tag === 'WELLNESS' ? 'bg-emerald-100 text-emerald-600'
+                      ${item.tag === 'SAFETY' ? 'bg-primary/10 text-primary'
+                        : item.tag === 'WELLNESS' ? 'bg-secondary/10 text-secondary'
                         : 'bg-violet-100 text-violet-600'}`}>
                       {item.tag}
                     </span>
@@ -550,7 +550,7 @@ const SetLimitForm = () => {
             ))}
           </div>
 
-          <div className="mt-6 p-5 rounded-xl bg-blue-600 text-white">
+          <div className="mt-6 p-5 rounded-xl bg-primary text-white">
             <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-70">Average impact</p>
             <p className="text-3xl font-extrabold">+20%</p>
             <p className="text-xs opacity-80 mt-1">cognitive focus per active limit</p>
@@ -569,7 +569,7 @@ const SetLimitForm = () => {
         <div className="absolute inset-0 flex flex-col justify-center px-12">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-blue-300 mb-2">📡 Live Analytics</p>
           <h2 className="text-4xl font-black text-white tracking-tight mb-1">
-            Focus <span className="text-blue-400">Telemetry</span>
+            Focus <span className="text-primary">Telemetry</span>
           </h2>
           <p className="text-slate-300 text-sm font-medium">Your real-time screen discipline dashboard</p>
         </div>
@@ -627,12 +627,12 @@ const SetLimitForm = () => {
               <p className={`italic mb-2 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
                 "{BADGE_INFO[selectedBadge]?.desc}"
               </p>
-              <p className="text-xs text-blue-500 font-bold uppercase tracking-widest mb-8">
+              <p className="text-xs text-primary font-bold uppercase tracking-widest mb-8">
                 {BADGE_INFO[selectedBadge]?.req}
               </p>
               <motion.button
                 onClick={() => setSelectedBadge(null)}
-                className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-widest uppercase transition-all"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-primary text-white font-bold text-sm tracking-widest uppercase transition-all"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -655,15 +655,15 @@ const SetLimitForm = () => {
               className={`px-6 py-4 rounded-xl border shadow-xl pointer-events-auto flex items-center gap-3 transition-colors ${
                 dark
                   ? t.type === 'success'
-                    ? 'bg-slate-800 border-emerald-700/50 text-emerald-400'
+                    ? 'bg-slate-800 border-secondary/50 text-secondary'
                     : 'bg-slate-800 border-rose-700/50 text-rose-400'
                   : t.type === 'success'
-                    ? 'bg-white border-emerald-200 text-emerald-700'
+                    ? 'bg-white border-emerald-200 text-secondary'
                     : 'bg-white border-rose-200 text-rose-700'
               }`}
             >
               <motion.div
-                className={`w-2 h-2 rounded-full ${t.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                className={`w-2 h-2 rounded-full ${t.type === 'success' ? 'bg-secondary' : 'bg-rose-500'}`}
                 animate={{ scale: [1, 1.4, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
               />
@@ -678,3 +678,4 @@ const SetLimitForm = () => {
 };
 
 export default SetLimitForm;
+

@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const API_URL = 'http://localhost:5005/api/studygroups';
 
 const inputCls =
-    'w-full px-4 py-2.5 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-colors duration-150 placeholder:text-slate-400 focus:border-blue-500';
+    'w-full px-4 py-2.5 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-colors duration-150 placeholder:text-slate-400 focus:border-primary';
 
 const labelCls = 'block text-[11.5px] font-bold text-[#0F1C4D] mb-1.5 tracking-[.2px]';
 
@@ -28,7 +28,7 @@ const Modal = ({ open, onClose, title, subtitle, accentColor = 'blue', children 
                 <motion.div
                     initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                    className={`bg-white w-full max-w-[480px] rounded-2xl overflow-hidden shadow-2xl border-t-[3px] ${accentColor === 'green' ? 'border-emerald-500' : accentColor === 'amber' ? 'border-amber-500' : 'border-blue-600'
+                    className={`bg-white w-full max-w-[480px] rounded-2xl overflow-hidden shadow-2xl border-t-[3px] ${accentColor === 'green' ? 'border-secondary' : accentColor === 'amber' ? 'border-amber-500' : 'border-primary'
                         }`}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -189,12 +189,12 @@ const payload = {
                     {/* Brand + search */}
                     <div className="px-5 pt-5 pb-4 border-b border-[#E8EEFF]">
                         <div className="flex items-center gap-2.5 mb-4">
-                            <div className="w-[32px] h-[32px] bg-blue-600 rounded-[9px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.25)] flex-shrink-0">
+                            <div className="w-[32px] h-[32px] bg-primary rounded-[9px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.25)] flex-shrink-0">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                             </div>
                             <div>
                                 <p className="serif-heading text-[17px] text-[#0F1C4D] italic leading-none">Study Hub</p>
-                                <p className="text-[9.5px] font-bold tracking-[1.8px] uppercase text-blue-600 mt-0.5">Collaboration Circles</p>
+                                <p className="text-[9.5px] font-bold tracking-[1.8px] uppercase text-primary mt-0.5">Collaboration Circles</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 px-3 py-2 bg-[#F0F4FF] border border-[#E8EEFF] rounded-[10px]">
@@ -218,7 +218,7 @@ const payload = {
                                 <span className="flex items-center gap-1.5 text-[9.5px] font-bold tracking-[1.8px] uppercase text-slate-400">
                                     <ShieldCheck size={11} strokeWidth={2.5} /> Managed by you
                                 </span>
-                                <span className="bg-[#EEF2FF] text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{ownedGroups.length}</span>
+                                <span className="bg-[#EEF2FF] text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">{ownedGroups.length}</span>
                             </div>
 
                             {loading ? (
@@ -230,7 +230,7 @@ const payload = {
                                     key={g.id}
                                     initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
                                     onClick={() => navigate(`/chat/${g.id}`)}
-                                    className="group relative bg-blue-600 text-white rounded-[14px] px-4 py-3.5 mb-2.5 cursor-pointer overflow-hidden hover:-translate-y-0.5 transition-all duration-200 shadow-[0_6px_18px_rgba(34,85,210,0.22)]"
+                                    className="group relative bg-primary text-white rounded-[14px] px-4 py-3.5 mb-2.5 cursor-pointer overflow-hidden hover:-translate-y-0.5 transition-all duration-200 shadow-[0_6px_18px_rgba(34,85,210,0.22)]"
                                 >
                                     <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-700" />
                                     <p className="text-[13px] font-bold leading-tight mb-2.5 relative">{g.groupName || g.GroupName}</p>
@@ -257,7 +257,7 @@ const payload = {
                                 <span className="flex items-center gap-1.5 text-[9.5px] font-bold tracking-[1.8px] uppercase text-slate-400" style={{ color: '#059669' }}>
                                     <Users size={11} strokeWidth={2.5} /> Joined peers
                                 </span>
-                                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{joinedGroups.length}</span>
+                                <span className="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">{joinedGroups.length}</span>
                             </div>
 
                             {filteredJoined.length === 0 && !loading && (
@@ -273,7 +273,7 @@ const payload = {
                                     <div className="truncate pr-2">
                                         <p className="text-[13px] font-semibold text-[#0F1C4D] leading-tight mb-1">{g.groupName || g.GroupName}</p>
                                         <div className="flex items-center gap-1 text-[10px] text-slate-400">
-                                            <Phone size={9} className="text-emerald-500" />
+                                            <Phone size={9} className="text-secondary" />
                                             {g.phoneNumber || g.PhoneNumber || 'Unverified'}
                                         </div>
                                     </div>
@@ -301,13 +301,13 @@ const payload = {
                         <div className="flex items-center gap-2.5">
                             <button
                                 onClick={() => setShowJoinModal(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50 transition-all duration-150"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-emerald-300 hover:text-secondary hover:bg-secondary/10 transition-all duration-150"
                             >
                                 <LogIn size={13} /> Join a Circle
                             </button>
                             <button
                                 onClick={() => setShowCreateModal(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-[0_4px_14px_rgba(34,85,210,0.25)] hover:shadow-[0_6px_20px_rgba(34,85,210,0.35)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary text-white text-[12.5px] font-semibold rounded-[10px] shadow-[0_4px_14px_rgba(34,85,210,0.25)] hover:shadow-[0_6px_20px_rgba(34,85,210,0.35)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
                             >
                                 <Plus size={13} strokeWidth={2.5} /> Create Circle
                             </button>
@@ -324,18 +324,18 @@ const payload = {
                                 className="relative rounded-[20px] bg-[#060D1F] px-10 py-9 overflow-hidden"
                             >
                                 {/* Orbs */}
-                                <div className="absolute top-[-60px] right-[-60px] w-[280px] h-[280px] rounded-full bg-blue-600/20 blur-[80px] pointer-events-none" />
-                                <div className="absolute bottom-[-40px] left-[40%] w-[200px] h-[200px] rounded-full bg-blue-400/10 blur-[60px] pointer-events-none" />
+                                <div className="absolute top-[-60px] right-[-60px] w-[280px] h-[280px] rounded-full bg-primary/20 blur-[80px] pointer-events-none" />
+                                <div className="absolute bottom-[-40px] left-[40%] w-[200px] h-[200px] rounded-full bg-primary/10 blur-[60px] pointer-events-none" />
                                 {/* Grid */}
                                 <div className="absolute inset-0 pointer-events-none opacity-[0.025]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)', backgroundSize: '40px 40px' }} />
 
                                 <div className="relative z-10">
                                     <div className="inline-flex items-center gap-1.5 bg-white/[0.07] border border-white/10 px-3.5 py-1.5 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase text-blue-300 mb-4">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400" style={{ boxShadow: '0 0 6px #60A5FA' }} />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary" style={{ boxShadow: '0 0 6px #60A5FA' }} />
                                         Academic Excellence
                                     </div>
                                     <h2 className="serif-heading text-[clamp(26px,3.5vw,40px)] text-white italic leading-[1.05] mb-3">
-                                        Collaborate,<br /><em className="text-blue-400">Excel</em>, Repeat.
+                                        Collaborate,<br /><em className="text-primary">Excel</em>, Repeat.
                                     </h2>
                                     <p className="text-[13px] text-blue-200/60 max-w-[380px] leading-[1.65]">
                                         Join thousands of students already achieving their goals through peer-driven study circles on EduSync.
@@ -344,7 +344,7 @@ const payload = {
                                         {[{ val: '50', suf: 'K+', lbl: 'Students' }, { val: '2.4', suf: 'K', lbl: 'Active Circles' }, { val: '98', suf: '%', lbl: 'Satisfaction' }].map((s, i) => (
                                             <div key={i} className={`flex-shrink-0 ${i > 0 ? 'border-l border-white/[0.08] ml-7 pl-7' : ''}`}>
                                                 <div className="text-[20px] font-extrabold text-white tracking-tight leading-none">
-                                                    {s.val}<span className="text-blue-400">{s.suf}</span>
+                                                    {s.val}<span className="text-primary">{s.suf}</span>
                                                 </div>
                                                 <div className="text-[9.5px] font-bold tracking-[1.5px] uppercase text-slate-500 mt-1">{s.lbl}</div>
                                             </div>
@@ -359,9 +359,9 @@ const payload = {
                                     {
                                         onClick: () => setShowJoinModal(true),
                                         topBar: 'from-emerald-400',
-                                        iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600',
+                                        iconBg: 'bg-secondary/10', iconColor: 'text-secondary',
                                         hoverBorder: 'hover:border-emerald-200', hoverShadow: 'hover:shadow-emerald-50',
-                                        arrowColor: 'text-emerald-600',
+                                        arrowColor: 'text-secondary',
                                         icon: <LogIn size={20} strokeWidth={2} />,
                                         title: 'Join a Circle',
                                         desc: 'Enter via a unique 6-digit access code shared by your group admin.',
@@ -370,9 +370,9 @@ const payload = {
                                     {
                                         onClick: () => setShowCreateModal(true),
                                         topBar: 'from-blue-500',
-                                        iconBg: 'bg-[#EEF2FF]', iconColor: 'text-blue-600',
+                                        iconBg: 'bg-[#EEF2FF]', iconColor: 'text-primary',
                                         hoverBorder: 'hover:border-blue-200', hoverShadow: 'hover:shadow-blue-50',
-                                        arrowColor: 'text-blue-600',
+                                        arrowColor: 'text-primary',
                                         icon: <Plus size={20} strokeWidth={2} />,
                                         title: 'Start a Hub',
                                         desc: 'Create your own study circle, invite peers, and manage your group.',
@@ -419,7 +419,7 @@ const payload = {
                             <label className={labelCls}>Contact Number</label>
                             <input type="tel" required placeholder="10-digit phone number" className={inputCls} style={{ fontFamily: 'DM Sans' }} value={createForm.PhoneNumber} onChange={(e) => setCreateForm({ ...createForm, PhoneNumber: e.target.value.replace(/\D/g, '').slice(0, 10) })} />
                         </div>
-                        <button type="submit" className="w-full py-3 mt-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-[13.5px] font-semibold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.3)] transition-all duration-200 hover:-translate-y-0.5" style={{ fontFamily: 'DM Sans' }}>
+                        <button type="submit" className="w-full py-3 mt-2 bg-primary hover:bg-primary active:scale-[0.98] text-white text-[13.5px] font-semibold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.3)] transition-all duration-200 hover:-translate-y-0.5" style={{ fontFamily: 'DM Sans' }}>
                             Create Discussion Hub →
                         </button>
                     </form>
@@ -440,12 +440,12 @@ const payload = {
                             <label className={labelCls}>Access Code</label>
                             <input
                                 type="text" maxLength={6} required placeholder="000000"
-                                className="w-full px-4 py-4 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[28px] font-extrabold tracking-[0.4em] text-emerald-600 text-center bg-emerald-50/50 outline-none transition-colors duration-150 placeholder:text-slate-300 focus:border-emerald-500"
+                                className="w-full px-4 py-4 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[28px] font-extrabold tracking-[0.4em] text-secondary text-center bg-secondary/10/50 outline-none transition-colors duration-150 placeholder:text-slate-300 focus:border-secondary"
                                 style={{ fontFamily: 'DM Sans' }}
                                 onChange={(e) => setJoinForm({ ...joinForm, joinCode: e.target.value })}
                             />
                         </div>
-                        <button type="submit" className="w-full py-3 mt-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-[13.5px] font-semibold rounded-full shadow-[0_6px_20px_rgba(5,150,105,0.25)] transition-all duration-200 hover:-translate-y-0.5" style={{ fontFamily: 'DM Sans' }}>
+                        <button type="submit" className="w-full py-3 mt-2 bg-secondary hover:bg-secondary active:scale-[0.98] text-white text-[13.5px] font-semibold rounded-full shadow-[0_6px_20px_rgba(5,150,105,0.25)] transition-all duration-200 hover:-translate-y-0.5" style={{ fontFamily: 'DM Sans' }}>
                             Join Session →
                         </button>
                     </form>
@@ -478,3 +478,4 @@ const payload = {
 };
 
 export default StudyGroupsPage;
+

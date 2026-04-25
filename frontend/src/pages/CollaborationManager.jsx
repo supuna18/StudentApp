@@ -59,14 +59,14 @@ export default function CollaborationManager() {
             {/* Top Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                 <div className="bg-white p-6 rounded-2xl border border-[#E8EEFF] shadow-sm flex items-center gap-4">
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Layers size={24}/></div>
+                    <div className="p-3 bg-primary/10 text-primary rounded-xl"><Layers size={24}/></div>
                     <div>
                         <p className="text-2xl font-bold text-[#0F1C4D] italic">{groups.length}</p>
                         <p className="text-[11px] text-slate-400 uppercase font-bold tracking-widest">Total Circles</p>
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-[#E8EEFF] shadow-sm flex items-center gap-4">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><Users size={24}/></div>
+                    <div className="p-3 bg-secondary/10 text-secondary rounded-xl"><Users size={24}/></div>
                     <div>
                         <p className="text-2xl font-bold text-[#0F1C4D] italic">{groups.reduce((a, b) => a + (b.members?.length || 0), 0)}</p>
                         <p className="text-[11px] text-slate-400 uppercase font-bold tracking-widest">Global Members</p>
@@ -135,14 +135,14 @@ export default function CollaborationManager() {
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {groups.map((g, i) => (
-                                <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                                <tr key={i} className="hover:bg-primary/10/30 transition-colors">
                                     <td className="p-4">
                                         <p className="text-xs font-bold text-slate-700">{g.groupName}</p>
-                                        <p className="text-[10px] text-blue-500 font-medium">{g.subject}</p>
+                                        <p className="text-[10px] text-primary font-medium">{g.subject}</p>
                                     </td>
                                     <td className="p-4 text-[11px] text-slate-500 font-mono">{g.createdByEmail}</td>
                                     <td className="p-4">
-                                        <span className="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md text-[10px] font-bold">
+                                        <span className="bg-secondary/10 text-secondary px-2 py-1 rounded-md text-[10px] font-bold">
                                             {g.members?.length || 0} active
                                         </span>
                                     </td>
@@ -159,3 +159,4 @@ export default function CollaborationManager() {
         </div>
     );
 }
+

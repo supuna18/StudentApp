@@ -36,7 +36,7 @@ export default function CalendarPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 p-8">
-            <Link to={`/hub/scheduler/${groupId}`} className="text-blue-600 font-bold mb-4 inline-block">← Back to Scheduler</Link>
+            <Link to={`/hub/scheduler/${groupId}`} className="text-primary font-bold mb-4 inline-block">← Back to Scheduler</Link>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-6xl mx-auto">
                 <div className="bg-white p-8 rounded-3xl shadow-sm border">
                     <h2 className="text-2xl font-bold mb-6">1. Pick a Date</h2>
@@ -47,10 +47,11 @@ export default function CalendarPage() {
                     <form onSubmit={handleSave} className="space-y-4">
                         <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Topic Name..." className="w-full border p-4 rounded-xl" required />
                         <input type="time" value={time} onChange={e=>setTime(e.target.value)} className="w-full border p-4 rounded-xl" required />
-                        <button className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl">Save to Calendar</button>
+                        <button className="w-full bg-primary text-white font-bold py-4 rounded-xl">Save to Calendar</button>
                     </form>
                 </div>
             </div>
         </div>
     );
 }
+

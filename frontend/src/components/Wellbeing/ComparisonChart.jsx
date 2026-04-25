@@ -47,7 +47,7 @@ const ComparisonChart = ({ dark }) => {
         <h3 className={`text-base font-bold ${dark ? 'text-white' : 'text-slate-800'}`}>Limit vs Usage <span className="text-teal-500">⚖️</span></h3>
         <div className="flex gap-3">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-primary" />
             <span className={`text-[10px] font-semibold ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Limit</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -75,3 +75,5 @@ const ComparisonChart = ({ dark }) => {
 };
 
 export default ComparisonChart;
+
+

@@ -36,7 +36,7 @@ const SystemHealth = () => {
   }, []);
 
   if (loading && !healthData) return (
-    <div className="flex flex-col items-center justify-center p-20 text-blue-600 font-bold">
+    <div className="flex flex-col items-center justify-center p-20 text-primary font-bold">
       <RefreshCw className="w-10 h-10 animate-spin mb-4" />
       <p className="animate-pulse">Initializing System Diagnostic...</p>
     </div>
@@ -82,10 +82,10 @@ const SystemHealth = () => {
           {/* Database Card */}
           <div className="bg-white border border-[#E8EEFF] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Database size={24} />
               </div>
-              <div className={`w-3 h-3 rounded-full ${healthData?.dbStatus === 'Online' ? 'bg-emerald-500 pulse-online' : 'bg-red-500 pulse-offline'}`} />
+              <div className={`w-3 h-3 rounded-full ${healthData?.dbStatus === 'Online' ? 'bg-secondary pulse-online' : 'bg-red-500 pulse-offline'}`} />
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Database Connectivity</p>
             <h3 className="text-2xl font-black text-[#0F1C4D] tracking-tight">{healthData?.dbStatus || 'Unknown'}</h3>
@@ -98,10 +98,10 @@ const SystemHealth = () => {
           {/* Uptime Card */}
           <div className="bg-white border border-[#E8EEFF] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Clock size={24} />
               </div>
-              <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded-md">LIVE</span>
+              <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-1 rounded-md">LIVE</span>
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Server Uptime</p>
             <h3 className="text-2xl font-black text-[#0F1C4D] tracking-tight">{healthData?.uptime || '0d 0h 0m'}</h3>
@@ -114,10 +114,10 @@ const SystemHealth = () => {
           {/* Users Card */}
           <div className="bg-white border border-[#E8EEFF] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
                 <Users size={24} />
               </div>
-              <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md">SYNCED</span>
+              <span className="text-[10px] font-bold bg-secondary/10 text-secondary px-2 py-1 rounded-md">SYNCED</span>
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Registered Users</p>
             <h3 className="text-2xl font-black text-[#0F1C4D] tracking-tight">{healthData?.totalUsers?.toLocaleString() || '0'}</h3>
@@ -132,7 +132,7 @@ const SystemHealth = () => {
         <div className="bg-white border border-[#E8EEFF] rounded-2xl overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-[#E8EEFF] bg-[#F8FAFF] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Activity size={16} className="text-indigo-600" />
+              <Activity size={16} className="text-primary" />
               <h3 className="text-[14px] font-bold text-[#0F1C4D]">Recent System Activities</h3>
             </div>
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Last 5 Events</span>
@@ -162,7 +162,7 @@ const SystemHealth = () => {
                         <div className="flex items-center gap-2 font-bold text-[13px] text-[#0F1C4D]">
                           <div className={`w-1.5 h-1.5 rounded-full ${
                             log.severity === 'Error' ? 'bg-red-500' : 
-                            log.severity === 'Warning' ? 'bg-amber-500' : 'bg-blue-500'
+                            log.severity === 'Warning' ? 'bg-amber-500' : 'bg-primary'
                           }`} />
                           {log.activity}
                         </div>
@@ -171,7 +171,7 @@ const SystemHealth = () => {
                       <td className="px-6 py-4">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           log.severity === 'Error' ? 'bg-red-50 text-red-600' : 
-                          log.severity === 'Warning' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                          log.severity === 'Warning' ? 'bg-amber-50 text-amber-600' : 'bg-primary/10 text-primary'
                         }`}>
                           {log.severity}
                         </span>
@@ -202,3 +202,5 @@ const SystemHealth = () => {
 };
 
 export default SystemHealth;
+
+

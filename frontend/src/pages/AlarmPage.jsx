@@ -23,7 +23,7 @@ export default function AlarmPage() {
     return (
         <div className="min-h-screen bg-slate-50 p-8">
             <div className="max-w-3xl mx-auto">
-                <Link to={`/hub/scheduler/${groupId}`} className="text-blue-600 font-bold mb-4 inline-block">← Back to Scheduler</Link>
+                <Link to={`/hub/scheduler/${groupId}`} className="text-primary font-bold mb-4 inline-block">← Back to Scheduler</Link>
                 <h1 className="text-3xl font-black mb-8">Session Alarms 🔔</h1>
                 
                 <div className="space-y-4">
@@ -46,3 +46,4 @@ export default function AlarmPage() {
         </div>
     );
 }
+

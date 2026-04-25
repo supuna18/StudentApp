@@ -206,7 +206,7 @@ const ResourceManager = () => {
 
   const getFileIcon = (type) => {
     if (type.includes('pdf')) return <FileText className="text-red-500" />;
-    if (type.includes('image')) return <ImageIcon className="text-blue-500" />;
+    if (type.includes('image')) return <ImageIcon className="text-primary" />;
     return <File className="text-slate-400" />;
   };
 
@@ -224,7 +224,7 @@ const ResourceManager = () => {
         </div>
         <button 
           onClick={() => setShowUploadForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all"
+          className="bg-primary hover:bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all"
         >
           <Upload size={16} /> {editingResource ? 'Edit Resource' : 'Add New Resource'}
         </button>
@@ -286,8 +286,8 @@ const ResourceManager = () => {
                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                             accept=".pdf,.docx,.jpg,.jpeg,.png"
                         />
-                        <div className="w-full px-4 py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover:border-blue-400 transition-all">
-                            <Upload className="text-slate-400 group-hover:text-blue-500" size={24} />
+                        <div className="w-full px-4 py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover:border-primary transition-all">
+                            <Upload className="text-slate-400 group-hover:text-primary" size={24} />
                             <span className="text-xs text-slate-500 font-500">
                                 {formData.file ? formData.file.name : 'Click to browse or drag and drop'}
                             </span>
@@ -306,7 +306,7 @@ const ResourceManager = () => {
                 </button>
                 <button 
                   type="submit" disabled={loading}
-                  className="flex-1 py-3.5 bg-blue-600 rounded-xl text-[13px] font-bold text-white hover:bg-blue-700 hover:shadow-lg transition-all focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 bg-primary rounded-xl text-[13px] font-bold text-white hover:bg-primary hover:shadow-lg transition-all focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2"
                 >
                   {loading ? <span className="animate-pulse">Processing...</span> : editingResource ? 'Save Changes' : 'Upload Resource'}
                 </button>
@@ -327,7 +327,7 @@ const ResourceManager = () => {
             />
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><Filter size={18}/></button>
+            <button className="p-2 text-slate-400 hover:text-primary transition-colors"><Filter size={18}/></button>
           </div>
         </div>
 
@@ -345,7 +345,7 @@ const ResourceManager = () => {
             </thead>
             <tbody className="divide-y divide-[#E8EEFF]">
               {filteredResources.length > 0 ? filteredResources.map((res) => (
-                <tr key={res.id} className="hover:bg-blue-50/30 transition-colors group">
+                <tr key={res.id} className="hover:bg-primary/10/30 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform">
@@ -358,7 +358,7 @@ const ResourceManager = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-lg uppercase tracking-wider border border-blue-100">
+                    <span className="px-2.5 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg uppercase tracking-wider border border-blue-100">
                       {res.category}
                     </span>
                   </td>
@@ -371,7 +371,7 @@ const ResourceManager = () => {
                   <td className="px-6 py-4">
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                       res.isApproved 
-                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                        ? 'bg-secondary/10 text-secondary border border-emerald-100' 
                         : 'bg-amber-50 text-amber-600 border border-amber-100'
                     }`}>
                       {res.isApproved ? 'APPROVED' : 'PENDING'}
@@ -382,7 +382,7 @@ const ResourceManager = () => {
                         {!res.isApproved && (
                             <button 
                                 onClick={() => handleApprove(res.id)}
-                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                                 title="Approve Resource"
                             >
                                 <CheckCircle size={16} />
@@ -390,14 +390,14 @@ const ResourceManager = () => {
                         )}
                       <a 
                         href={`${STATIC_BASE_URL}${res.fileUrl}`} target="_blank" rel="noopener noreferrer"
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                         title="View Resource"
                       >
                         <Eye size={16} />
                       </a>
                       <button 
                         onClick={() => handleEdit(res)}
-                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                        className="p-2 text-slate-400 hover:text-secondary hover:bg-secondary/10 rounded-lg transition-all"
                         title="Edit Resource"
                       >
                         <Edit2 size={16} />
@@ -411,7 +411,7 @@ const ResourceManager = () => {
                       </button>
                       <a 
                         href={`${STATIC_BASE_URL}${res.fileUrl}`} download
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                         title="Download"
                       >
                         <Download size={16} />
@@ -435,3 +435,4 @@ const ResourceManager = () => {
 };
 
 export default ResourceManager;
+

@@ -8,18 +8,18 @@ const HubPage = () => {
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 relative overflow-hidden">
             {/* BACKGROUND DECORATION */}
-            <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]"></div>
+            <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-primary/10 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-secondary/10 rounded-full blur-[100px]"></div>
 
             <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
                 
                 {/* HEADER SECTION */}
                 <div className="flex flex-col items-center text-center mb-10 md:mb-16">
-                    <div className="bg-indigo-600 p-3 md:p-4 rounded-[1.2rem] md:rounded-[1.5rem] shadow-xl shadow-indigo-200 mb-6 animate-bounce">
+                    <div className="bg-primary p-3 md:p-4 rounded-[1.2rem] md:rounded-[1.5rem] shadow-xl shadow-indigo-200 mb-6 animate-bounce">
                         <GraduationCap className="text-white" size={32} md:size={40} />
                     </div>
                     <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 mb-4 uppercase leading-tight">
-                        Collaboration <span className="text-indigo-600">Hub</span>
+                        Collaboration <span className="text-primary">Hub</span>
                     </h1>
                     <p className="text-slate-500 text-sm md:text-base font-medium max-w-lg leading-relaxed px-4">
                         Welcome back! Select a module below to start your productive study session. No distractions, just pure learning.
@@ -46,10 +46,10 @@ const HubPage = () => {
 
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <span className="text-[9px] md:text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-1 block">Module 01</span>
+                                <span className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1 block">Module 01</span>
                                 <h2 className="text-2xl md:text-3xl font-black text-slate-800 uppercase italic leading-none">Study Groups</h2>
                             </div>
-                            <div className="p-2.5 md:p-3 bg-indigo-50 text-indigo-600 rounded-xl md:rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <div className="p-2.5 md:p-3 bg-primary/10 text-primary rounded-xl md:rounded-2xl group-hover:bg-primary group-hover:text-white transition-all">
                                 <Users size={20} md:size={24} />
                             </div>
                         </div>
@@ -57,7 +57,7 @@ const HubPage = () => {
                             Create, join, and manage private study circles. Real-time chat and shared knowledge at your fingertips.
                         </p>
                         
-                        <div className="flex items-center gap-2 text-indigo-600 font-black text-xs md:text-sm uppercase tracking-widest group-hover:gap-4 transition-all">
+                        <div className="flex items-center gap-2 text-primary font-black text-xs md:text-sm uppercase tracking-widest group-hover:gap-4 transition-all">
                             Enter Hub <ArrowRight size={16} md:size={18} />
                         </div>
                     </div>
@@ -79,10 +79,10 @@ const HubPage = () => {
 
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <span className="text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-1 block">Module 02</span>
+                                <span className="text-[9px] md:text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-1 block">Module 02</span>
                                 <h2 className="text-2xl md:text-3xl font-black text-slate-800 uppercase italic leading-none">Scheduler</h2>
                             </div>
-                            <div className="p-2.5 md:p-3 bg-emerald-50 text-emerald-600 rounded-xl md:rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                            <div className="p-2.5 md:p-3 bg-secondary/10 text-secondary rounded-xl md:rounded-2xl group-hover:bg-secondary group-hover:text-white transition-all">
                                 <Calendar size={20} md:size={24} />
                             </div>
                         </div>
@@ -90,7 +90,7 @@ const HubPage = () => {
                             Plan your academic missions. Use the built-in calendar and stay on track with distraction-free focus modes.
                         </p>
 
-                        <div className="flex items-center gap-2 text-emerald-600 font-black text-xs md:text-sm uppercase tracking-widest group-hover:gap-4 transition-all">
+                        <div className="flex items-center gap-2 text-secondary font-black text-xs md:text-sm uppercase tracking-widest group-hover:gap-4 transition-all">
                             Go to Calendar <ArrowRight size={16} md:size={18} />
                         </div>
                     </div>
@@ -112,3 +112,4 @@ const HubPage = () => {
 };
 
 export default HubPage;
+

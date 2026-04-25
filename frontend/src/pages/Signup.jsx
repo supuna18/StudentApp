@@ -119,12 +119,12 @@ const Signup = () => {
                     {/* ══════════ LEFT PANEL ══════════ */}
                     <div className="relative w-[46%] hidden lg:flex flex-col p-8 bg-[#F0F4FF] border-r border-[#E8EEFF] overflow-hidden">
                         {/* Ambient orbs */}
-                        <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-blue-500/[0.08] blur-[80px] pointer-events-none" />
-                        <div className="absolute bottom-[-40px] left-[-40px] w-[200px] h-[200px] rounded-full bg-blue-400/[0.07] blur-[60px] pointer-events-none" />
+                        <div className="absolute top-[-80px] right-[-80px] w-[300px] h-[300px] rounded-full bg-primary/[0.08] blur-[80px] pointer-events-none" />
+                        <div className="absolute bottom-[-40px] left-[-40px] w-[200px] h-[200px] rounded-full bg-primary/[0.07] blur-[60px] pointer-events-none" />
 
                         {/* Brand */}
                         <div className="flex items-center gap-2.5 mb-auto relative z-10">
-                            <div className="w-[30px] h-[30px] bg-blue-600 rounded-[8px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.28)] flex-shrink-0">
+                            <div className="w-[30px] h-[30px] bg-primary rounded-[8px] flex items-center justify-center shadow-[0_4px_10px_rgba(34,85,210,0.28)] flex-shrink-0">
                                 <ShieldCheck size={16} className="text-white" strokeWidth={2.5} />
                             </div>
                             <span className="serif-heading text-[16px] text-[#0F1C4D] italic">EduSync</span>
@@ -134,7 +134,7 @@ const Signup = () => {
                         <div className="relative z-10 mb-7">
                             <h2 className="serif-heading text-[38px] text-[#0F1C4D] leading-[1.12] font-normal">
                                 Start your<br />
-                                <em className="text-blue-600 not-italic italic">learning journey</em><br />
+                                <em className="text-primary not-italic italic">learning journey</em><br />
                                 today.
                             </h2>
                             <p className="text-[13px] text-slate-400 mt-3 leading-[1.65] max-w-[280px]">
@@ -152,7 +152,7 @@ const Signup = () => {
                                     className="flex items-center gap-2.5 text-[12.5px] font-medium text-[#4A5570]"
                                 >
                                     <div className="w-[22px] h-[22px] rounded-[7px] bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                                        <Check size={11} className="text-blue-600" strokeWidth={3} />
+                                        <Check size={11} className="text-primary" strokeWidth={3} />
                                     </div>
                                     {f}
                                 </motion.div>
@@ -164,7 +164,7 @@ const Signup = () => {
                             {stats.map((s, i) => (
                                 <div key={i} className={`flex-1 text-center ${i > 0 ? 'border-l border-[#E8EEFF]' : ''}`}>
                                     <div className="text-[18px] font-extrabold text-[#0F1C4D] tracking-tight leading-none">
-                                        {s.val}<span className="text-blue-600">{s.suffix}</span>
+                                        {s.val}<span className="text-primary">{s.suffix}</span>
                                     </div>
                                     <div className="text-[9.5px] font-bold tracking-[1.5px] uppercase text-slate-400 mt-1">{s.label}</div>
                                 </div>
@@ -211,7 +211,7 @@ const Signup = () => {
                                                 value={username}
                                                 onChange={(e) => { setUsername(e.target.value); if(errors.username) delete errors.username; }}
                                                 className={`w-full pl-9 pr-3 py-2 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-all duration-200 placeholder:text-slate-400
-                                                    ${errors.username ? 'border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                                                    ${errors.username ? 'border-red-400' : 'border-[#E8EEFF] focus:border-primary'}`}
                                             />
                                             <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                         </div>
@@ -224,7 +224,7 @@ const Signup = () => {
                                         <select
                                             value={role}
                                             onChange={(e) => setRole(e.target.value)}
-                                            className="w-full px-3 py-2 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none focus:border-blue-500 transition-all duration-200 cursor-pointer appearance-none"
+                                            className="w-full px-3 py-2 border-[1.5px] border-[#E8EEFF] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none focus:border-primary transition-all duration-200 cursor-pointer appearance-none"
                                             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundPosition: 'right 10px center', backgroundRepeat: 'no-repeat' }}
                                         >
                                             <option value="Student">Student</option>
@@ -243,7 +243,7 @@ const Signup = () => {
                                             value={email}
                                             onChange={(e) => { setEmail(e.target.value); if(errors.email) delete errors.email; }}
                                             className={`w-full pl-9 pr-3 py-2 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-all duration-200 placeholder:text-slate-400
-                                                ${errors.email ? 'border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                                                ${errors.email ? 'border-red-400' : 'border-[#E8EEFF] focus:border-primary'}`}
                                         />
                                         <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     </div>
@@ -260,13 +260,13 @@ const Signup = () => {
                                             value={password}
                                             onChange={(e) => { setPassword(e.target.value); if(errors.password) delete errors.password; }}
                                             className={`w-full pl-9 pr-9 py-2 border-[1.5px] rounded-[10px] text-[13px] text-[#0F1C4D] bg-[#FAFBFF] outline-none transition-all duration-200 placeholder:text-slate-400
-                                                ${errors.password ? 'border-red-400' : 'border-[#E8EEFF] focus:border-blue-500'}`}
+                                                ${errors.password ? 'border-red-400' : 'border-[#E8EEFF] focus:border-primary'}`}
                                         />
                                         <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <button 
                                             type="button"
                                             onClick={() => setShowPass(!showPass)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                                         >
                                             {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
                                         </button>
@@ -278,7 +278,7 @@ const Signup = () => {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.3)] hover:shadow-[0_10px_28px_rgba(34,85,210,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                                        className="w-full py-3 bg-primary hover:bg-primary disabled:opacity-70 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-full shadow-[0_6px_20px_rgba(34,85,210,0.3)] hover:shadow-[0_10px_28px_rgba(34,85,210,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>
@@ -295,9 +295,9 @@ const Signup = () => {
                                 
                                 <p className="text-center text-[10.5px] text-slate-400 mt-4 px-4 leading-relaxed">
                                     By clicking "Get Started", you agree to our 
-                                    <a href="#" className="text-blue-600 font-semibold mx-1 hover:underline">Terms</a> 
+                                    <a href="#" className="text-primary font-semibold mx-1 hover:underline">Terms</a> 
                                     and 
-                                    <a href="#" className="text-blue-600 font-semibold mx-1 hover:underline">Privacy</a>.
+                                    <a href="#" className="text-primary font-semibold mx-1 hover:underline">Privacy</a>.
                                 </p>
                             </form>
                         </div>
@@ -309,3 +309,4 @@ const Signup = () => {
 };
 
 export default Signup;
+

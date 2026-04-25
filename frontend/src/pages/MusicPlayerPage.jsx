@@ -93,9 +93,9 @@ const MusicPlayerPage = () => {
     const mood = selectedTrack.mood;
     if (mood === "Focused") return "from-cyan-900/40 to-blue-900/40 border-cyan-500/30 glow-cyan-500";
     if (mood === "Calm") return "from-indigo-900/40 to-slate-900/40 border-indigo-500/30 glow-indigo-500";
-    if (mood === "Relaxed") return "from-emerald-900/40 to-teal-900/40 border-emerald-500/30 glow-emerald-500";
+    if (mood === "Relaxed") return "from-emerald-900/40 to-teal-900/40 border-secondary/30 glow-emerald-500";
     if (mood === "Energetic") return "from-fuchsia-900/40 to-rose-900/40 border-fuchsia-500/30 glow-fuchsia-500";
-    return "from-slate-900/40 to-blue-900/40 border-blue-500/30 glow-blue-500";
+    return "from-slate-900/40 to-blue-900/40 border-primary/30 glow-blue-500";
   }, [selectedTrack.mood]);
 
   const handleSubmit = (e) => {
@@ -167,7 +167,7 @@ const MusicPlayerPage = () => {
       <motion.div 
         animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
         transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
-        className="fixed -top-40 -right-40 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"
+        className="fixed -top-40 -right-40 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"
       />
       <motion.div 
         animate={{ x: [0, -50, 0], y: [0, 20, 0] }}
@@ -192,8 +192,8 @@ const MusicPlayerPage = () => {
                 </button>
                 <div>
                   <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    Music <span className="text-blue-500">Sanctuary</span>
-                    <Sparkles className="text-blue-400 animate-pulse" size={24} />
+                    Music <span className="text-primary">Sanctuary</span>
+                    <Sparkles className="text-primary animate-pulse" size={24} />
                   </h1>
                   <p className="text-slate-400 text-sm font-medium">Immersive focus environment for deep learning.</p>
                 </div>
@@ -208,7 +208,7 @@ const MusicPlayerPage = () => {
                 </button>
                 <button 
                   onClick={() => setShowForm(!showForm)}
-                  className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-blue-900/40 active:scale-95"
+                  className="bg-primary hover:bg-primary px-8 py-4 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-blue-900/40 active:scale-95"
                 >
                   <Sparkles size={20} /> Personalize
                 </button>
@@ -224,7 +224,7 @@ const MusicPlayerPage = () => {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowForm(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" />
               <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative glass-panel w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl space-y-8 border border-white/10">
                 <div>
-                  <h3 className="text-3xl font-black mb-1 text-blue-400 flex items-center gap-3"><Music2 /> Fine-tune Your Vibe</h3>
+                  <h3 className="text-3xl font-black mb-1 text-primary flex items-center gap-3"><Music2 /> Fine-tune Your Vibe</h3>
                   <p className="text-slate-400 font-medium">We'll adjust the recommendations based on your current study goals.</p>
                 </div>
                 
@@ -236,7 +236,7 @@ const MusicPlayerPage = () => {
                         <button key={g} type="button" onClick={() => {
                           const newGenres = preferences.genres.includes(g) ? preferences.genres.filter(i => i !== g) : [...preferences.genres, g];
                           setPreferences({...preferences, genres: newGenres});
-                        }} className={`px-6 py-4 rounded-2xl font-bold text-sm transition-all ${preferences.genres.includes(g) ? 'bg-blue-600 shadow-lg shadow-blue-900/40 text-white' : 'glass-panel text-slate-400'}`}>
+                        }} className={`px-6 py-4 rounded-2xl font-bold text-sm transition-all ${preferences.genres.includes(g) ? 'bg-primary shadow-lg shadow-blue-900/40 text-white' : 'glass-panel text-slate-400'}`}>
                           {g}
                         </button>
                       ))}
@@ -247,7 +247,7 @@ const MusicPlayerPage = () => {
                     <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Target Mood</p>
                     <div className="grid grid-cols-2 gap-4">
                       {["Focused", "Calm", "Relaxed", "Energetic"].map(m => (
-                        <button key={m} type="button" onClick={() => setPreferences({...preferences, mood: m})} className={`p-4 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all ${preferences.mood === m ? 'bg-blue-600 shadow-lg shadow-blue-900/40 text-white' : 'glass-panel text-slate-400'}`}>
+                        <button key={m} type="button" onClick={() => setPreferences({...preferences, mood: m})} className={`p-4 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all ${preferences.mood === m ? 'bg-primary shadow-lg shadow-blue-900/40 text-white' : 'glass-panel text-slate-400'}`}>
                           {m === "Focused" && <Zap size={18} />}
                           {m === "Calm" && <Compass size={18} />}
                           {m === "Relaxed" && <Wind size={18} />}
@@ -258,7 +258,7 @@ const MusicPlayerPage = () => {
                     </div>
                   </div>
 
-                  <button type="submit" className="w-full bg-white text-blue-950 py-5 rounded-2xl font-black text-lg hover:bg-blue-100 transition-all flex items-center justify-center gap-3">
+                  <button type="submit" className="w-full bg-white text-blue-950 py-5 rounded-2xl font-black text-lg hover:bg-primary/10 transition-all flex items-center justify-center gap-3">
                     <Save size={20} /> SYNCHRONIZE EXPERIENCE
                   </button>
                 </form>
@@ -308,7 +308,7 @@ const MusicPlayerPage = () => {
             <motion.div layout className={`flex items-end justify-between ${isZenMode ? 'px-8' : ''}`}>
                <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-500/30">
+                    <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-full border border-primary/30">
                       Now playing • {selectedTrack.mood}
                     </span>
                     <span className="w-1 h-1 bg-slate-700 rounded-full" />
@@ -343,7 +343,7 @@ const MusicPlayerPage = () => {
                       <button 
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${activeTab === tab ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        className={`flex-1 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${activeTab === tab ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                       >
                         {tab}
                       </button>
@@ -395,8 +395,8 @@ const MusicPlayerPage = () => {
                 </div>
 
                 {/* Zen Quote Card */}
-                <div className="glass-panel rounded-[2.5rem] p-8 border-blue-500/10 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-2xl rounded-full" />
+                <div className="glass-panel rounded-[2.5rem] p-8 border-primary/10 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-2xl rounded-full" />
                   <p className="text-slate-400 text-sm font-medium italic relative z-10 leading-relaxed">
                     "Music creates a bridge between silence and knowledge. Let the frequencies guide your focus."
                   </p>
@@ -411,9 +411,9 @@ const MusicPlayerPage = () => {
           <footer className="mt-auto pt-12 flex justify-between items-center text-[10px] font-black uppercase tracking-[3px] text-slate-600">
             <span>Adaptive Focus Engine v2.0</span>
             <div className="flex gap-8">
-              <span className="hover:text-blue-500 transition-colors cursor-pointer">Terms</span>
-              <span className="hover:text-blue-500 transition-colors cursor-pointer">Deep Focus Mode</span>
-              <span className="hover:text-blue-500 transition-colors cursor-pointer">Support</span>
+              <span className="hover:text-primary transition-colors cursor-pointer">Terms</span>
+              <span className="hover:text-primary transition-colors cursor-pointer">Deep Focus Mode</span>
+              <span className="hover:text-primary transition-colors cursor-pointer">Support</span>
             </div>
             <span>© 2026 StudentApp Space</span>
           </footer>
@@ -430,13 +430,13 @@ const TrackCard = ({ track, active, onSelect, onFavorite, isFavorite, index }) =
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
-      className={`group p-4 rounded-2xl flex items-center gap-4 border cursor-pointer transition-all duration-300 ${active ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/10' : 'bg-white/5 border-transparent hover:border-white/10 hover:bg-white/10'}`}
+      className={`group p-4 rounded-2xl flex items-center gap-4 border cursor-pointer transition-all duration-300 ${active ? 'bg-primary/20 border-primary/40 shadow-lg shadow-primary/10' : 'bg-white/5 border-transparent hover:border-white/10 hover:bg-white/10'}`}
       onClick={onSelect}
     >
       <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
          <img src={track.art} alt={track.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
          {active && (
-           <div className="absolute inset-0 bg-blue-600/40 flex items-center justify-center">
+           <div className="absolute inset-0 bg-primary/40 flex items-center justify-center">
               <Play size={16} fill="white" />
            </div>
          )}
@@ -446,7 +446,7 @@ const TrackCard = ({ track, active, onSelect, onFavorite, isFavorite, index }) =
         <div className="flex items-center gap-2">
           <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{track.genre}</span>
           <span className="w-1 h-1 bg-slate-700 rounded-full" />
-          <span className="text-[9px] font-bold text-blue-400/80">{track.mood}</span>
+          <span className="text-[9px] font-bold text-primary/80">{track.mood}</span>
         </div>
       </div>
       <button 
@@ -460,3 +460,4 @@ const TrackCard = ({ track, active, onSelect, onFavorite, isFavorite, index }) =
 };
 
 export default MusicPlayerPage;
+

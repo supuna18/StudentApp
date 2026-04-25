@@ -35,8 +35,8 @@ const UsageChart = ({ dark }) => {
   return (
     <div className="h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className={`text-base font-bold ${dark ? 'text-white' : 'text-slate-800'}`}>Real-time Usage <span className="text-indigo-500">📊</span></h3>
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${dark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>Minutes</span>
+        <h3 className={`text-base font-bold ${dark ? 'text-white' : 'text-slate-800'}`}>Real-time Usage <span className="text-primary">📊</span></h3>
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${dark ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'}`}>Minutes</span>
       </div>
       <div className="h-[260px] w-full">
         {data.length > 0 ? (
@@ -62,3 +62,4 @@ const UsageChart = ({ dark }) => {
 };
 
 export default UsageChart;
+

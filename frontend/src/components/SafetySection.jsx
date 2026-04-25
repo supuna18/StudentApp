@@ -15,7 +15,7 @@ const SafetySection = () => {
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-30 px-6">
         <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-cyan-50 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-indigo-50 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-primary/10 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
@@ -41,7 +41,7 @@ const SafetySection = () => {
               className="safety-heading text-3xl md:text-6xl font-normal text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight"
             >
               Browsing that protects <br className="hidden md:block" />
-              <em className="text-indigo-600">your integrity.</em>
+              <em className="text-primary">your integrity.</em>
             </motion.h2>
           </div>
 
@@ -115,12 +115,12 @@ const SafetySection = () => {
             <div className="bg-slate-900/5 backdrop-blur-md rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 lg:p-20 border border-white/50 relative overflow-hidden flex flex-col lg:flex-row items-center gap-10 md:gap-16">
                
                <div className="flex-1 space-y-8 md:space-y-10 relative z-20">
-                  <div className="w-12 h-12 md:w-14 md:h-14 bg-indigo-600 text-white rounded-[1rem] md:rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-indigo-200">
+                  <div className="w-12 h-12 md:w-14 md:h-14 bg-primary text-white rounded-[1rem] md:rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-indigo-200">
                     <Globe size={24} md:size={28} />
                   </div>
                   <h3 className="safety-heading text-2xl md:text-4xl font-normal text-slate-900 tracking-tight leading-tight">
                     A Global Safety Net <br className="hidden md:block" /> 
-                    <em className="text-indigo-600">for Modern Educators.</em>
+                    <em className="text-primary">for Modern Educators.</em>
                   </h3>
                   <p className="text-slate-500 text-base md:text-lg leading-relaxed font-medium">
                     Every report from our community of students and admins feeds back into our 
@@ -130,11 +130,11 @@ const SafetySection = () => {
                   
                   <div className="flex gap-8 md:gap-10">
                     <div>
-                      <h5 className="text-[9px] md:text-[10px] uppercase tracking-[2.5px] font-bold text-indigo-500 mb-2">Network Scans</h5>
+                      <h5 className="text-[9px] md:text-[10px] uppercase tracking-[2.5px] font-bold text-primary mb-2">Network Scans</h5>
                       <p className="text-xl md:text-2xl font-black text-slate-800">2.4M+</p>
                     </div>
                     <div>
-                      <h5 className="text-[9px] md:text-[10px] uppercase tracking-[2.5px] font-bold text-indigo-500 mb-2">Safeguards</h5>
+                      <h5 className="text-[9px] md:text-[10px] uppercase tracking-[2.5px] font-bold text-primary mb-2">Safeguards</h5>
                       <p className="text-xl md:text-2xl font-black text-slate-800">180K+</p>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ const SafetySection = () => {
                     alt="Global Security Map" 
                     className="w-full max-w-[320px] md:max-w-lg mx-auto drop-shadow-[0_20px_50px_rgba(79,70,229,0.3)] animate-in slide-in-from-right-10 duration-1000"
                  />
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-indigo-500/10 blur-[120px] rounded-full -z-10" />
+                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/10 blur-[120px] rounded-full -z-10" />
                </motion.div>
 
             </div>
@@ -167,3 +167,5 @@ const SafetySection = () => {
 };
 
 export default SafetySection;
+
+

@@ -216,7 +216,7 @@ export default function ChatPage() {
                     return (
                         <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div onContextMenu={(e) => handleContextMenu(e, m)} className={`max-w-[75%] p-2 rounded-lg shadow-sm ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} cursor-context-menu select-none`}>
-                                <p className={`text-[9px] font-bold mb-1 ${isMe ? 'text-emerald-700' : 'text-blue-600'}`}>
+                                <p className={`text-[9px] font-bold mb-1 ${isMe ? 'text-secondary' : 'text-primary'}`}>
                                     {senderDisplayName} {isOwner && "⭐"}
                                 </p>
 
@@ -236,7 +236,7 @@ export default function ChatPage() {
                                         ) : (
                                             <div className="bg-gray-100 p-2 rounded flex items-center gap-2">
                                                 <span className="text-lg">📄</span>
-                                                <a href={m.fileData} download={m.fileName} className="text-blue-500 text-xs truncate underline">{m.fileName}</a>
+                                                <a href={m.fileData} download={m.fileName} className="text-primary text-xs truncate underline">{m.fileName}</a>
                                             </div>
                                         )}
                                     </div>
@@ -282,8 +282,8 @@ export default function ChatPage() {
                             {userGroups.filter(g => (g.id || g.Id) !== groupId).map((g, i) => {
                                 const isSelected = selectedGroups.includes(g.id || g.Id);
                                 return (
-                                    <button key={i} onClick={() => toggleGroupSelection(g.id || g.Id)} className={`w-full text-left p-3 mb-1 rounded-lg flex items-center gap-3 transition-all ${isSelected ? 'bg-emerald-100 border-emerald-300 shadow-inner' : 'hover:bg-white border-transparent'} border`}>
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-700'}`}>{isSelected ? '✓' : (g.groupName || g.GroupName || "S").charAt(0)}</div>
+                                    <button key={i} onClick={() => toggleGroupSelection(g.id || g.Id)} className={`w-full text-left p-3 mb-1 rounded-lg flex items-center gap-3 transition-all ${isSelected ? 'bg-secondary/10 border-emerald-300 shadow-inner' : 'hover:bg-white border-transparent'} border`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isSelected ? 'bg-secondary text-white' : 'bg-secondary/10 text-secondary'}`}>{isSelected ? '✓' : (g.groupName || g.GroupName || "S").charAt(0)}</div>
                                         <div className="flex-1"><p className="text-sm font-bold text-gray-800">{g.groupName || g.GroupName}</p><p className="text-[10px] text-gray-500 italic">{g.subject || g.Subject}</p></div>
                                     </button>
                                 );
@@ -311,3 +311,4 @@ export default function ChatPage() {
         </div>
     );
 }
+

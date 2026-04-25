@@ -78,7 +78,7 @@ const SafetyApprovals = () => {
     (r.reportedBy || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div className="p-20 text-center text-blue-600 font-bold animate-pulse">Loading Safety Reports...</div>;
+  if (loading) return <div className="p-20 text-center text-primary font-bold animate-pulse">Loading Safety Reports...</div>;
   if (error) return <div className="p-20 text-center text-red-500 font-bold">Error: {error}</div>;
 
   return (
@@ -106,7 +106,7 @@ const SafetyApprovals = () => {
                 className="border-none bg-transparent outline-none text-[12.5px] text-[#0F1C4D] w-full placeholder:text-slate-400"
               />
             </div>
-            <button className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-blue-400 transition-all">
+            <button className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-primary transition-all">
               <Filter size={12} /> Filter
             </button>
           </div>
@@ -145,7 +145,7 @@ const SafetyApprovals = () => {
                           href={report.url.startsWith('http') ? report.url : `https://${report.url}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-[13px] font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                          className="text-[13px] font-semibold text-primary hover:underline flex items-center gap-1"
                         >
                           {report.url} <ExternalLink size={10} />
                         </a>
@@ -171,7 +171,7 @@ const SafetyApprovals = () => {
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold tracking-wide
                         ${report.status === 'Approved' 
-                          ? 'bg-emerald-50 text-emerald-700' 
+                          ? 'bg-secondary/10 text-secondary' 
                           : 'bg-amber-50 text-amber-700'}`}>
                         {report.status === 'Approved' ? <CheckCircle size={11} /> : <Clock size={11} />}
                         {report.status}
@@ -182,7 +182,7 @@ const SafetyApprovals = () => {
                         {report.status !== 'Approved' && (
                           <button 
                             onClick={() => handleApprove(report.id || report._id)}
-                            className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                            className="p-2 rounded-lg bg-secondary/10 text-secondary hover:bg-secondary/10 transition-colors"
                             title="Approve Report"
                           >
                             <CheckCircle size={15} />
@@ -210,3 +210,5 @@ const SafetyApprovals = () => {
 };
 
 export default SafetyApprovals;
+
+

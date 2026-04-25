@@ -25,13 +25,13 @@ const breathingExercises = [
   { id: 'box', name: 'Box', pattern: '4-4-4-4', desc: 'Relaxation', duration: '5 mins', accent: 'bg-purple-500', phases: [
     { type: 'Inhale', duration: 4 }, { type: 'Hold', duration: 4 }, { type: 'Exhale', duration: 4 }, { type: 'Hold', duration: 4 }
   ]},
-  { id: 'long', name: 'Long exhale', pattern: '4-7-8', desc: 'Sleep', duration: '5 mins', accent: 'bg-blue-500', phases: [
+  { id: 'long', name: 'Long exhale', pattern: '4-7-8', desc: 'Sleep', duration: '5 mins', accent: 'bg-primary', phases: [
     { type: 'Inhale', duration: 4 }, { type: 'Hold', duration: 7 }, { type: 'Exhale', duration: 8 }
   ]},
-  { id: 'equal', name: 'Equal', pattern: '5-0-5', desc: 'Focus', duration: '5 mins', accent: 'bg-indigo-500', phases: [
+  { id: 'equal', name: 'Equal', pattern: '5-0-5', desc: 'Focus', duration: '5 mins', accent: 'bg-primary', phases: [
     { type: 'Inhale', duration: 5 }, { type: 'Exhale', duration: 5 }
   ]},
-  { id: 'custom', name: 'Custom', pattern: 'Set your own', desc: 'Personalized', duration: '5 mins', accent: 'bg-emerald-500', phases: [
+  { id: 'custom', name: 'Custom', pattern: 'Set your own', desc: 'Personalized', duration: '5 mins', accent: 'bg-secondary', phases: [
     { type: 'Inhale', duration: 4 }, { type: 'Exhale', duration: 4 }
   ]}
 ];
@@ -76,7 +76,7 @@ const InfoModal = ({ isOpen, onClose }) => (
  
                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><Wind size={20}/></div>
+                     <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center"><Wind size={20}/></div>
                      <h3 className="text-xl font-bold text-slate-800">4-7-8 Breathing (Sleep)</h3>
                   </div>
                   <p className="text-slate-500 text-sm leading-relaxed">
@@ -86,7 +86,7 @@ const InfoModal = ({ isOpen, onClose }) => (
  
                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center"><Target size={20}/></div>
+                     <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center"><Target size={20}/></div>
                      <h3 className="text-xl font-bold text-slate-800">Equal Breathing (5-0-5)</h3>
                   </div>
                   <p className="text-slate-500 text-sm leading-relaxed">
@@ -95,7 +95,7 @@ const InfoModal = ({ isOpen, onClose }) => (
                </div>
             </div>
 
-            <button onClick={onClose} className="w-full py-4 bg-indigo-600 rounded-2xl font-black text-white hover:bg-indigo-700 transition-all shadow-lg">GOT IT</button>
+            <button onClick={onClose} className="w-full py-4 bg-primary rounded-2xl font-black text-white hover:bg-primary transition-all shadow-lg">GOT IT</button>
           </div>
         </motion.div>
       </div>
@@ -115,7 +115,7 @@ const ExerciseCard = ({ exercise, onSelect }) => (
     <div className="relative z-10">
       <h3 className="text-xl font-black text-slate-800 mb-1">{exercise.name}</h3>
       <p className="text-xs font-black tracking-widest text-slate-500 uppercase mb-1">{exercise.pattern}</p>
-      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{exercise.desc}</p>
+      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{exercise.desc}</p>
     </div>
     
     <div className="relative z-10 flex items-center justify-between text-slate-500">
@@ -125,9 +125,9 @@ const ExerciseCard = ({ exercise, onSelect }) => (
 
     <div className="absolute top-2 right-2 opacity-5 group-hover:opacity-10 transition-opacity">
       <div className="relative w-24 h-24">
-         <div className="absolute inset-0 bg-blue-600 rounded-full blur-xl translate-x-4 translate-y-4" />
-         <div className="absolute inset-0 border-2 border-blue-600 rounded-full scale-75" />
-         <div className="absolute inset-0 border-2 border-blue-400 rounded-full scale-50 -translate-x-4" />
+         <div className="absolute inset-0 bg-primary rounded-full blur-xl translate-x-4 translate-y-4" />
+         <div className="absolute inset-0 border-2 border-primary rounded-full scale-75" />
+         <div className="absolute inset-0 border-2 border-primary rounded-full scale-50 -translate-x-4" />
       </div>
     </div>
   </motion.div>
@@ -179,12 +179,12 @@ const BreathingTimer = ({ exercise, onBack }) => {
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center min-h-[600px] w-full"
     >
-      <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-slate-800 hover:text-blue-600 transition-colors group z-20">
+      <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-slate-800 hover:text-primary transition-colors group z-20">
         <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" /> <span className="font-black uppercase tracking-widest text-[10px]">Back to Hub</span>
       </button>
  
       <div className="text-center mb-12 drop-shadow-sm">
-        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-2">{exercise.name} <span className="text-blue-600">Sync</span></h2>
+        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-2">{exercise.name} <span className="text-primary">Sync</span></h2>
         <p className="text-slate-600 font-black tracking-[0.2em] uppercase text-xs">{isActive ? currentPhase.type : exercise.desc}</p>
       </div>
 
@@ -199,7 +199,7 @@ const BreathingTimer = ({ exercise, onBack }) => {
                 opacity: currentPhase.type === 'Inhale' ? 0.2 : 0.05
               }}
               transition={{ duration: currentPhase.duration, ease: "easeInOut" }}
-              className="absolute inset-0 rounded-full bg-blue-500 blur-3xl"
+              className="absolute inset-0 rounded-full bg-primary blur-3xl"
             />
           )}
         </AnimatePresence>
@@ -226,7 +226,7 @@ const BreathingTimer = ({ exercise, onBack }) => {
           {isActive && (
              <div className="mt-4 flex flex-col items-center">
                 <span className="text-slate-400 text-[10px] font-black uppercase tracking-tighter mb-1">Time Left</span>
-                <span className="text-blue-600 font-bold text-lg tabular-nums">{phaseTimeLeft}s</span>
+                <span className="text-primary font-bold text-lg tabular-nums">{phaseTimeLeft}s</span>
              </div>
           )}
         </motion.div>
@@ -234,7 +234,7 @@ const BreathingTimer = ({ exercise, onBack }) => {
 
       <div className="w-full max-w-sm flex flex-col gap-6">
         {!isActive ? (
-          <button onClick={startSession} className="w-full py-5 bg-blue-600 rounded-[2rem] font-black text-white text-lg shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] transform transition-all uppercase tracking-widest">
+          <button onClick={startSession} className="w-full py-5 bg-primary rounded-[2rem] font-black text-white text-lg shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] transform transition-all uppercase tracking-widest">
             {sessionTime < 300 ? 'Resume Session' : 'Activate Session'}
           </button>
         ) : (
@@ -255,13 +255,13 @@ const MindfulnessZone = () => {
 
   const MindfulnessTools = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-16">
-      <div onClick={() => navigate('/student-dashboard/music-player')} className="group p-8 rounded-[2.5rem] bg-white border border-slate-200 hover:border-blue-400 cursor-pointer shadow-sm hover:shadow-lg transition-all">
-        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
+      <div onClick={() => navigate('/student-dashboard/music-player')} className="group p-8 rounded-[2.5rem] bg-white border border-slate-200 hover:border-primary cursor-pointer shadow-sm hover:shadow-lg transition-all">
+        <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all">
           <Headphones size={24} />
         </div>
         <h3 className="text-xl font-black text-slate-800 mb-2">Immersion Beats</h3>
         <p className="text-slate-500 font-bold text-sm mb-4">Curated focus sounds.</p>
-        <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">Explore Hub <ArrowUpRight size={14}/></div>
+        <div className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">Explore Hub <ArrowUpRight size={14}/></div>
       </div>
       <div onClick={() => navigate('/student-dashboard/focus-games')} className="group p-8 rounded-[2.5rem] bg-white border border-slate-200 hover:border-purple-400 cursor-pointer shadow-sm hover:shadow-lg transition-all">
         <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
@@ -288,8 +288,8 @@ const MindfulnessZone = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/50 to-white/90 backdrop-blur-[2px]" />
       </div>
 
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100 rounded-full blur-[120px] -mr-64 -mt-64 opacity-50" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-50 rounded-full blur-[100px] -ml-48 -mb-48 opacity-50" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -mr-64 -mt-64 opacity-50" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] -ml-48 -mb-48 opacity-50" />
 
       <div className="max-w-4xl mx-auto relative z-10 py-8">
         <AnimatePresence mode="wait">
@@ -305,16 +305,16 @@ const MindfulnessZone = () => {
               <header className="flex justify-between items-start">
                 <div className="space-y-4">
                    <div className="flex items-center gap-3 text-slate-400">
-                      <ChevronLeft className="cursor-pointer hover:text-blue-600" onClick={() => navigate(-1)} />
+                      <ChevronLeft className="cursor-pointer hover:text-primary" onClick={() => navigate(-1)} />
                       <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900">Breathing Sync</h1>
                    </div>
                    <div className="info-section">
-                      <h2 className="text-3xl md:text-4xl font-black text-slate-800 max-w-md leading-tight">Choose an exercise to <span className="text-blue-600">Digital Focus</span>.</h2>
+                      <h2 className="text-3xl md:text-4xl font-black text-slate-800 max-w-md leading-tight">Choose an exercise to <span className="text-primary">Digital Focus</span>.</h2>
                    </div>
                 </div>
                 <div 
                   onClick={() => setIsAboutOpen(true)}
-                  className="p-3 bg-white rounded-2xl border border-slate-200 text-slate-400 cursor-pointer hover:text-blue-600 hover:border-blue-600 shadow-sm transition-all"
+                  className="p-3 bg-white rounded-2xl border border-slate-200 text-slate-400 cursor-pointer hover:text-primary hover:border-primary shadow-sm transition-all"
                 >
                    <Info size={24} />
                 </div>
@@ -334,14 +334,14 @@ const MindfulnessZone = () => {
                     </p>
                     <button 
                       onClick={() => setIsAboutOpen(true)}
-                      className="px-6 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 hover:border-blue-600 transition-all"
+                      className="px-6 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary hover:border-primary transition-all"
                     >
                       Learn More
                     </button>
                  </div>
                  <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-100 rounded-3xl flex items-center justify-center p-4 relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
                     <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=200&q=80" alt="Dandelion" className="w-full h-full object-cover rounded-2xl opacity-80 transition-all duration-700" />
-                    <div className="absolute inset-0 bg-blue-600/10 mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-primary/10 mix-blend-overlay" />
                  </div>
               </motion.div>
 
@@ -363,3 +363,4 @@ const MindfulnessZone = () => {
 };
 
 export default MindfulnessZone;
+

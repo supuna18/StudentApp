@@ -366,7 +366,7 @@ const SchedulerPage = () => {
           <div className="bg-indigo-950 p-10 rounded-[3.5rem] text-white shadow-2xl shadow-indigo-900/30 border-b-8 border-b-indigo-500 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10"><Layers size={80} /></div>
             <h2 className="text-3xl font-black flex items-center gap-4 uppercase tracking-tighter italic relative z-10">
-              <BellRing size={28} className="text-indigo-400" /> My Agenda
+              <BellRing size={28} className="text-primary" /> My Agenda
             </h2>
             <p className="text-indigo-200/50 text-[10px] font-black mt-2 opacity-70 tracking-[0.2em] uppercase relative z-10">Future Study Parameters</p>
           </div>
@@ -380,25 +380,25 @@ const SchedulerPage = () => {
                   className={`group p-8 rounded-[3.5rem] bg-white border border-slate-100 shadow-[0_15px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.05)] transition-all relative overflow-hidden ${s.fromDate === todayStr ? 'ring-2 ring-emerald-400' : ''}`}
                 >
                   {s.fromDate === todayStr && (
-                    <div className="absolute top-6 right-6 px-3 py-1 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest rounded-full animate-pulse">
+                    <div className="absolute top-6 right-6 px-3 py-1 bg-secondary text-white text-[8px] font-black uppercase tracking-widest rounded-full animate-pulse">
                       Active Today
                     </div>
                   )}
                   <div className="flex justify-between items-start mb-6">
                     <div className="max-w-[70%]">
-                      <h3 className="font-black text-indigo-950 text-xl leading-[1.1] mb-2 tracking-tight group-hover:text-indigo-600 transition-colors">{s.title}</h3>
+                      <h3 className="font-black text-indigo-950 text-xl leading-[1.1] mb-2 tracking-tight group-hover:text-primary transition-colors">{s.title}</h3>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <Layers size={14} /> {s.subject}
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleEdit(s)} className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm"><Pencil size={14} /></button>
+                      <button onClick={() => handleEdit(s)} className="p-3 bg-primary/10 text-primary rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm"><Pencil size={14} /></button>
                       <button onClick={() => handleDelete(s.id)} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm"><Trash2 size={14} /></button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6 mb-8 text-[11px] font-black text-indigo-400 uppercase tracking-[0.1em]">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-2xl border border-indigo-100/50 italic">
+                  <div className="flex items-center gap-6 mb-8 text-[11px] font-black text-primary uppercase tracking-[0.1em]">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-2xl border border-indigo-100/50 italic">
                       <Clock size={14} /> {s.startTime}
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100/50">
@@ -813,3 +813,5 @@ const styles = {
 };
 
 export default SchedulerPage;
+
+

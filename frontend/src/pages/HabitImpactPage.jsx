@@ -56,7 +56,7 @@ const Toast = ({ message, type = 'success', onClose }) => (
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.9 }}
         className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border ${
-            type === 'success' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-rose-500 text-white border-rose-400'
+            type === 'success' ? 'bg-secondary text-white border-secondary' : 'bg-rose-500 text-white border-rose-400'
         }`}
     >
         {type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
@@ -346,7 +346,7 @@ const HabitImpactPage = () => {
 
     return (
         <motion.div
-            className={`min-h-screen ${bg} ${textPrimary} font-sans selection:bg-blue-100 pb-20 relative overflow-hidden transition-colors duration-500`}
+            className={`min-h-screen ${bg} ${textPrimary} font-sans selection:bg-primary/10 pb-20 relative overflow-hidden transition-colors duration-500`}
             initial={false} animate={{ backgroundColor: darkMode ? '#0f111a' : '#fafafc' }}
         >
             {/* ── Floating Orbs ── */}
@@ -372,8 +372,8 @@ const HabitImpactPage = () => {
                                 <span className={`w-1 h-1 rounded-full ${d('bg-slate-300','bg-slate-600')}`} />
                                 <div className="flex items-center gap-1.5">
                                     <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75" />
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary" />
                                     </span>
                                     <span className={`text-[10px] font-bold ${textMuted} uppercase tracking-widest hidden sm:inline-block`}>Tracking Active</span>
                                 </div>
@@ -399,12 +399,12 @@ const HabitImpactPage = () => {
                         {/* Dark mode toggle */}
                         <motion.button
                             onClick={toggleDark}
-                            className={`relative w-14 h-7 rounded-full transition-colors duration-300 flex items-center px-1 ${darkMode ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                            className={`relative w-14 h-7 rounded-full transition-colors duration-300 flex items-center px-1 ${darkMode ? 'bg-primary' : 'bg-slate-200'}`}
                             whileTap={{ scale: 0.95 }}
                             title="Toggle dark mode"
                         >
                             <motion.div
-                                className={`w-5 h-5 rounded-full flex items-center justify-center shadow-md ${darkMode ? 'bg-white text-indigo-600' : 'bg-white text-amber-500'}`}
+                                className={`w-5 h-5 rounded-full flex items-center justify-center shadow-md ${darkMode ? 'bg-white text-primary' : 'bg-white text-amber-500'}`}
                                 animate={{ x: darkMode ? 26 : 0 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                             >
@@ -447,7 +447,7 @@ const HabitImpactPage = () => {
                     <motion.div className={`${card} p-8 rounded-[2.5rem] border ${cardBorder} ${cardShadow}`} variants={cardVariants}>
                         {isJourneyActive ? (
                             <div className="text-center">
-                                <motion.span className="text-[10px] font-black uppercase tracking-widest text-[#0F4C81] bg-blue-500/10 px-4 py-1.5 rounded-full mb-6 inline-block" initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.3, type:'spring' }}>
+                                <motion.span className="text-[10px] font-black uppercase tracking-widest text-[#0F4C81] bg-primary/10 px-4 py-1.5 rounded-full mb-6 inline-block" initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.3, type:'spring' }}>
                                     Active Journey
                                 </motion.span>
                                 <div className="flex items-baseline justify-center gap-2 mb-2">
@@ -476,9 +476,9 @@ const HabitImpactPage = () => {
                     <AnimatePresence>
                         {isJourneyActive && (
                             <motion.div initial={{ opacity:0, y:30, scale:0.95 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:-20, scale:0.95 }} transition={{ type:'spring', stiffness:100, damping:18 }} className={`${card} p-8 rounded-[2.5rem] border ${d('border-blue-100','border-blue-900/40')} shadow-[0_25px_60px_-20px_rgba(30,58,138,0.08)] relative overflow-hidden`}>
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
                                 <h3 className={`text-xl font-black ${textPrimary} mb-6 flex items-center gap-3`}>
-                                    <motion.div className="p-2 bg-blue-600 text-white rounded-lg" whileHover={{ rotate:90 }} transition={{ type:'spring', stiffness:200 }}>
+                                    <motion.div className="p-2 bg-primary text-white rounded-lg" whileHover={{ rotate:90 }} transition={{ type:'spring', stiffness:200 }}>
                                         <Plus size={18} strokeWidth={3} />
                                     </motion.div>
                                     Log Daily Usage
@@ -499,13 +499,13 @@ const HabitImpactPage = () => {
                                         <label className={`text-[10px] uppercase font-black ${textMuted} tracking-widest ml-1`}>Price Per Cigarette (LKR)</label>
                                         <div className="flex flex-wrap gap-2">
                                             {priceTiers.map(price => (
-                                                <motion.button key={price} onClick={() => setLogForm({...logForm, unitPrice:price})} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${logForm.unitPrice === price ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : `${inputBg} ${textSecond} hover:opacity-80`}`} whileHover={{ scale:1.08 }} whileTap={{ scale:0.95 }}>
+                                                <motion.button key={price} onClick={() => setLogForm({...logForm, unitPrice:price})} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${logForm.unitPrice === price ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : `${inputBg} ${textSecond} hover:opacity-80`}`} whileHover={{ scale:1.08 }} whileTap={{ scale:0.95 }}>
                                                     Rs.{price}
                                                 </motion.button>
                                             ))}
                                         </div>
                                     </div>
-                                    <motion.button onClick={handleSaveLog} disabled={isLogging} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50" whileHover={{ scale:1.02, boxShadow:'0 15px 30px rgba(37,99,235,0.3)' }} whileTap={{ scale:0.97 }}>
+                                    <motion.button onClick={handleSaveLog} disabled={isLogging} className="w-full h-14 bg-primary hover:bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 transition-all disabled:opacity-50" whileHover={{ scale:1.02, boxShadow:'0 15px 30px rgba(37,99,235,0.3)' }} whileTap={{ scale:0.97 }}>
                                         {isLogging ? 'Saving...' : (logForm.id ? 'Update Log Entry' : 'Add Log Entry')}
                                     </motion.button>
                                     {logForm.id && (
@@ -545,11 +545,11 @@ const HabitImpactPage = () => {
                         {/* Vitality Roadmap */}
                         <motion.div className={`${card} rounded-[2.5rem] p-10 ${cardShadow} border ${cardBorder} flex flex-col h-full`} whileHover={{ scale:1.02 }} transition={{ type:'spring', stiffness:200, damping:20 }}>
                             <div className="flex items-center justify-between mb-8">
-                                <motion.div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-sm" whileHover={{ rotate:10, scale:1.1 }}>
+                                <motion.div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm" whileHover={{ rotate:10, scale:1.1 }}>
                                     <Hourglass size={28} />
                                 </motion.div>
                                 <div className="text-right">
-                                    <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-1">Life Regained</p>
+                                    <p className="text-[11px] font-black text-primary uppercase tracking-widest mb-1">Life Regained</p>
                                     <h3 className={`text-4xl font-black ${textPrimary} tracking-tighter leading-none`}>
                                         {lifeRegainedYears.toFixed(1)} <span className={`text-sm font-bold ${d('opacity-30','opacity-40')}`}>Yrs</span>
                                     </h3>
@@ -569,7 +569,7 @@ const HabitImpactPage = () => {
                                                 <p className={`text-[13px] font-bold ${textSecond} leading-tight`}>{m.desc}</p>
                                             </div>
                                             {isAchieved && (
-                                                <motion.div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white" initial={{ scale:0, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ type:'spring', stiffness:200, delay:i*0.1 }}>
+                                                <motion.div className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-white" initial={{ scale:0, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ type:'spring', stiffness:200, delay:i*0.1 }}>
                                                     <CheckCircle2 size={12} />
                                                 </motion.div>
                                             )}
@@ -579,7 +579,7 @@ const HabitImpactPage = () => {
                             </div>
                             <div className={`pt-8 mt-8 border-t ${divider}`}>
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle2 size={14} className="text-emerald-500" />
+                                    <CheckCircle2 size={14} className="text-secondary" />
                                     <span className={`text-xs font-bold ${textSecond}`}>Biological recovery active</span>
                                 </div>
                             </div>
@@ -593,7 +593,7 @@ const HabitImpactPage = () => {
                                 <h3 className={`text-2xl font-black ${textPrimary} tracking-tight`}>Freedom Calendar</h3>
                                 <p className={`text-[10px] font-black uppercase tracking-widest ${textMuted} mt-1`}>{now.toLocaleString('default',{month:'long',year:'numeric'})}</p>
                             </div>
-                            <motion.button onClick={handleMarkTodayClean} disabled={isLogging} className="px-5 py-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-500/20 transition-all flex items-center gap-2" whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}>
+                            <motion.button onClick={handleMarkTodayClean} disabled={isLogging} className="px-5 py-2.5 bg-secondary/10 text-secondary rounded-xl text-[10px] font-black uppercase tracking-widest border border-secondary/20 hover:bg-secondary/20 transition-all flex items-center gap-2" whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}>
                                 <CheckCircle2 size={14} /> Mark Today Clean
                             </motion.button>
                         </div>
@@ -615,7 +615,7 @@ const HabitImpactPage = () => {
                                 let textClass = textMuted;
                                 let icon = null;
                                 if (log) {
-                                    if (log.count === 0) { cellClass = 'bg-emerald-500 shadow-lg shadow-emerald-500/20'; textClass = 'text-white'; icon = <Leaf size={8} />; }
+                                    if (log.count === 0) { cellClass = 'bg-secondary shadow-lg shadow-emerald-500/20'; textClass = 'text-white'; icon = <Leaf size={8} />; }
                                     else                 { cellClass = 'bg-rose-500 shadow-lg shadow-rose-500/20'; textClass = 'text-white'; icon = <Flame size={8} />; }
                                 } else if (isAfterQuit && !isFuture) {
                                     cellClass = `${inputBg} border border-dashed ${d('border-slate-200','border-slate-600')}`;
@@ -626,7 +626,7 @@ const HabitImpactPage = () => {
                                         <span className="text-xs font-black">{day}</span>
                                         {icon && <div className="mt-0.5">{icon}</div>}
                                         {isToday && !log && (
-                                            <motion.div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" animate={{ scale:[1,1.5,1], opacity:[1,0.5,1] }} transition={{ duration:1.5, repeat:Infinity }} />
+                                            <motion.div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" animate={{ scale:[1,1.5,1], opacity:[1,0.5,1] }} transition={{ duration:1.5, repeat:Infinity }} />
                                         )}
                                     </motion.div>
                                 );
@@ -634,7 +634,7 @@ const HabitImpactPage = () => {
                         </div>
 
                         <div className={`mt-8 pt-8 border-t ${divider} flex items-center justify-center gap-6`}>
-                            {[{color:'bg-emerald-500',label:'Clean Day'},{color:'bg-rose-500',label:'Usage Logged'},{color:`${inputBg} border border-dashed ${d('border-slate-300','border-slate-600')}`,label:'Pending'}].map(({color,label}) => (
+                            {[{color:'bg-secondary',label:'Clean Day'},{color:'bg-rose-500',label:'Usage Logged'},{color:`${inputBg} border border-dashed ${d('border-slate-300','border-slate-600')}`,label:'Pending'}].map(({color,label}) => (
                                 <div key={label} className="flex items-center gap-2">
                                     <div className={`w-3 h-3 rounded-full ${color}`} />
                                     <span className={`text-[10px] font-black uppercase ${textMuted} tracking-widest`}>{label}</span>
@@ -677,7 +677,7 @@ const HabitImpactPage = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <motion.button onClick={() => handleEditLog(log)} className={`p-3 ${card} border ${cardBorder} ${textMuted} hover:text-blue-500 hover:border-blue-500/20 rounded-xl transition-all shadow-sm`} whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }}>
+                                            <motion.button onClick={() => handleEditLog(log)} className={`p-3 ${card} border ${cardBorder} ${textMuted} hover:text-primary hover:border-primary/20 rounded-xl transition-all shadow-sm`} whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }}>
                                                 <Edit3 size={16} />
                                             </motion.button>
                                             <motion.button onClick={() => handleDeleteLog(log.id)} className={`p-3 ${card} border ${cardBorder} ${textMuted} hover:text-rose-500 hover:border-rose-500/20 rounded-xl transition-all shadow-sm`} whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }}>
@@ -717,7 +717,7 @@ const HabitImpactPage = () => {
                                 </motion.button>
                             </div>
 
-                            <motion.div className="w-16 h-16 rounded-3xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-8" whileHover={{ rotate:10 }}>
+                            <motion.div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-8" whileHover={{ rotate:10 }}>
                                 <Settings size={32} />
                             </motion.div>
 
@@ -745,7 +745,7 @@ const HabitImpactPage = () => {
                                     <input type="number" value={form.years} onChange={e=>setForm({...form,years:Number(e.target.value)})} className={`w-full h-16 ${inputBg} border-none rounded-2xl px-6 text-xl font-bold ${textPrimary} outline-none focus:ring-2 focus:ring-blue-500/20 transition-all`} />
                                 </div>
 
-                                <motion.button onClick={() => handleUpdateProjection(!isJourneyActive)} disabled={isSaving} className="w-full h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 transition-all flex items-center justify-center gap-3" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}>
+                                <motion.button onClick={() => handleUpdateProjection(!isJourneyActive)} disabled={isSaving} className="w-full h-16 bg-primary hover:bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}>
                                     {isSaving ? (
                                         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
                                     ) : isJourneyActive ? 'Update Baseline' : 'Initialize Journey'}
@@ -774,3 +774,5 @@ const HabitImpactPage = () => {
 };
 
 export default HabitImpactPage;
+
+

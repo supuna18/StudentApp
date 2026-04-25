@@ -76,7 +76,7 @@ const WellbeingAdminPanel = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center p-20">
-      <Activity className="text-blue-500 animate-spin mr-3" />
+      <Activity className="text-primary animate-spin mr-3" />
       <span className="font-bold text-slate-500">Loading Wellbeing Intelligence...</span>
     </div>
   );
@@ -88,16 +88,16 @@ const WellbeingAdminPanel = () => {
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-blue-500/5 flex items-center justify-center text-blue-600">
+            <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-primary/5 flex items-center justify-center text-primary">
               <ShieldCheck size={32} strokeWidth={2.5} />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 rounded-md bg-blue-600 text-[9px] font-black text-white uppercase tracking-tighter">Admin Console</span>
+                <span className="px-2 py-0.5 rounded-md bg-primary text-[9px] font-black text-white uppercase tracking-tighter">Admin Console</span>
                 <div className="flex items-center gap-1.5 ml-2">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
                   </span>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Intelligence Live</span>
                 </div>
@@ -118,7 +118,7 @@ const WellbeingAdminPanel = () => {
             </button>
             <button 
               onClick={downloadReport} 
-              className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+              className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-3.5 bg-primary hover:bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
             >
               <Download size={20} />
               <span>Generate Report</span>
@@ -129,8 +129,8 @@ const WellbeingAdminPanel = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
-            { label: 'Tracked Students', val: stats.totalStudents, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-            { label: 'Configured Limits', val: stats.totalLimits, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+            { label: 'Tracked Students', val: stats.totalStudents, icon: Users, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Configured Limits', val: stats.totalLimits, icon: ShieldCheck, color: 'text-secondary', bg: 'bg-secondary/10' },
             { label: 'Avg usage (Mins)', val: stats.avgUsage, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
             { label: 'Active Streaks', val: stats.activeStreaks, icon: Activity, color: 'text-rose-600', bg: 'bg-rose-100' }
           ].map((s, i) => (
@@ -151,7 +151,7 @@ const WellbeingAdminPanel = () => {
           {/* Usage Trend */}
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-              <TrendingUp size={20} className="text-blue-500" />
+              <TrendingUp size={20} className="text-primary" />
               High-Traffic Nodes
             </h3>
             <div className="h-[300px] w-full">
@@ -172,7 +172,7 @@ const WellbeingAdminPanel = () => {
           {/* Category Distribution */}
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-              <LayoutGrid size={20} className="text-emerald-500" />
+              <LayoutGrid size={20} className="text-secondary" />
               Resource Allocation
             </h3>
             <div className="h-[300px] w-full flex items-center justify-center">
@@ -208,7 +208,7 @@ const WellbeingAdminPanel = () => {
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
               <input type="text" placeholder="Search students..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-400 focus:bg-white transition-all text-sm font-medium" />
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all text-sm font-medium" />
             </div>
           </div>
 
@@ -226,14 +226,14 @@ const WellbeingAdminPanel = () => {
               <tbody className="divide-y divide-slate-50">
                 {filteredStudents.length > 0 ? (
                   filteredStudents.map((s, i) => (
-                    <tr key={i} className="hover:bg-blue-50/30 transition-all group">
+                    <tr key={i} className="hover:bg-primary/10/30 transition-all group">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-xs uppercase">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs uppercase">
                             {s.username.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors uppercase tracking-tight text-sm">{s.username}</div>
+                            <div className="font-bold text-slate-800 group-hover:text-primary transition-colors uppercase tracking-tight text-sm">{s.username}</div>
                             <div className="text-[10px] text-slate-400 flex items-center gap-1"><Mail size={10}/> {s.email}</div>
                           </div>
                         </div>
@@ -246,12 +246,12 @@ const WellbeingAdminPanel = () => {
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-2">
                           <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden max-w-[80px]">
-                            <div className="bg-blue-500 h-full" style={{width: `${Math.min(s.avgDailyMinutes, 100)}%`}} />
+                            <div className="bg-primary h-full" style={{width: `${Math.min(s.avgDailyMinutes, 100)}%`}} />
                           </div>
                           <span className="text-xs font-black text-slate-700">{s.avgDailyMinutes}m</span>
                         </div>
                       </td>
-                      <td className="px-8 py-6 font-black text-blue-600 text-sm italic">
+                      <td className="px-8 py-6 font-black text-primary text-sm italic">
                         🔥 {s.streak} Days
                       </td>
                       <td className="px-8 py-6">
@@ -280,3 +280,5 @@ const WellbeingAdminPanel = () => {
 };
 
 export default WellbeingAdminPanel;
+
+

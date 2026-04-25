@@ -152,7 +152,7 @@ const BloomPage = () => {
     };
     if (d <= 11) return { 
         name: "Follicular", 
-        color: "text-emerald-600", 
+        color: "text-secondary", 
         heroBg: "bg-gradient-to-br from-[#7A9D8C] to-[#5A7D6C]",
         glow: "shadow-emerald-500/20"
     };
@@ -164,7 +164,7 @@ const BloomPage = () => {
     };
     return { 
         name: "Luteal", 
-        color: "text-indigo-600", 
+        color: "text-primary", 
         heroBg: "bg-gradient-to-br from-[#7161EF] to-[#5244C3]",
         glow: "shadow-indigo-500/20"
     };
@@ -349,7 +349,7 @@ const BloomPage = () => {
       {/* Background elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
          <motion.div animate={{ x: [0, 40, 0], y: [0, -30, 0] }} transition={{ repeat: Infinity, duration: 15, ease: "linear" }} className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-rose-100/30 rounded-full blur-[120px]" />
-         <motion.div animate={{ x: [0, -50, 0], y: [0, 20, 0] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="absolute -bottom-60 -left-60 w-[800px] h-[800px] bg-indigo-100/20 rounded-full blur-[150px]" />
+         <motion.div animate={{ x: [0, -50, 0], y: [0, 20, 0] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="absolute -bottom-60 -left-60 w-[800px] h-[800px] bg-primary/10/20 rounded-full blur-[150px]" />
       </div>
 
       {/* Header */}
@@ -393,12 +393,12 @@ const BloomPage = () => {
 
             <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#E9E1FF] to-[#D4C4FF] rounded-[2.5rem] p-10 border border-[#DED4FF] flex flex-col justify-between overflow-hidden relative hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-default">
               <div className="relative z-10">
-                <span className="text-[10px] font-bold uppercase tracking-[2px] text-indigo-700 opacity-80 mb-2 block">Fertility window</span>
+                <span className="text-[10px] font-bold uppercase tracking-[2px] text-primary opacity-80 mb-2 block">Fertility window</span>
                 <h3 className="text-3xl font-bold mb-3 text-indigo-900 leading-tight">Fertile in {daysToFertile} days</h3>
-                <p className="text-indigo-600/70 text-sm leading-relaxed font-medium">Your typical duration: <b>{periodDuration} days</b>.</p>
+                <p className="text-primary/70 text-sm leading-relaxed font-medium">Your typical duration: <b>{periodDuration} days</b>.</p>
               </div>
               <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm self-start px-4 py-2 rounded-full border border-white/50 mt-6 relative z-10">
-                <div className={`w-2 h-2 ${cycleStats.day >= 11 && cycleStats.day <= 16 ? 'bg-indigo-600 animate-pulse' : 'bg-slate-300'} rounded-full`}></div>
+                <div className={`w-2 h-2 ${cycleStats.day >= 11 && cycleStats.day <= 16 ? 'bg-primary animate-pulse' : 'bg-slate-300'} rounded-full`}></div>
                 <span className="text-[11px] font-bold text-indigo-800">{cycleStats.day >= 11 && cycleStats.day <= 16 ? 'High Today' : 'Low chance'}</span>
               </div>
             </motion.div>
@@ -421,9 +421,9 @@ const BloomPage = () => {
                     const isToday = dayObj.fullDate.toDateString() === new Date().toDateString();
                     return (
                         <div key={i} className="flex items-center justify-center p-1 relative">
-                            <motion.div onClick={() => { setNewPeriodDate(dayObj.fullDate.toISOString().split('T')[0]); setIsModalOpen(true); }} className={`w-11 h-11 flex flex-col items-center justify-center rounded-2xl text-sm font-bold transition-all cursor-pointer relative ${!dayObj.isCurrentMonth ? 'text-slate-200 opacity-40' : 'text-slate-600'} ${dateType === 'period' ? 'bg-rose-500 text-white shadow-lg' : ''} ${dateType === 'predicted-period' ? 'border-2 border-dashed border-rose-300 bg-rose-50 text-rose-600' : ''} ${dateType === 'fertile' ? 'bg-indigo-100 text-indigo-700' : ''} ${isToday ? 'ring-2 ring-slate-800' : ''} ${!dateType && dayObj.isCurrentMonth ? 'hover:bg-slate-50' : ''}`}>
+                            <motion.div onClick={() => { setNewPeriodDate(dayObj.fullDate.toISOString().split('T')[0]); setIsModalOpen(true); }} className={`w-11 h-11 flex flex-col items-center justify-center rounded-2xl text-sm font-bold transition-all cursor-pointer relative ${!dayObj.isCurrentMonth ? 'text-slate-200 opacity-40' : 'text-slate-600'} ${dateType === 'period' ? 'bg-rose-500 text-white shadow-lg' : ''} ${dateType === 'predicted-period' ? 'border-2 border-dashed border-rose-300 bg-rose-50 text-rose-600' : ''} ${dateType === 'fertile' ? 'bg-primary/10 text-primary' : ''} ${isToday ? 'ring-2 ring-slate-800' : ''} ${!dateType && dayObj.isCurrentMonth ? 'hover:bg-slate-50' : ''}`}>
                                 {dayObj.day}
-                                {dateType === 'ovulation' && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
+                                {dateType === 'ovulation' && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-primary rounded-full" />}
                             </motion.div>
                         </div>
                     );
@@ -443,8 +443,8 @@ const BloomPage = () => {
                     <h3 className="text-2xl font-bold tracking-tight text-slate-800">Quick Stats</h3>
                 </div>
                 <div className="space-y-5 px-4">
-                    <StatRow icon={<Sparkles size={16} className="text-indigo-400" />} label="Fertile window" value={`${formatDate(cycleStats.fertileStart)} – ${formatDate(cycleStats.fertileEnd)}`} />
-                    <StatRow icon={<Smile size={16} className="text-indigo-500" />} label="Ovulation" value={formatDate(cycleStats.ovulation)} />
+                    <StatRow icon={<Sparkles size={16} className="text-primary" />} label="Fertile window" value={`${formatDate(cycleStats.fertileStart)} – ${formatDate(cycleStats.fertileEnd)}`} />
+                    <StatRow icon={<Smile size={16} className="text-primary" />} label="Ovulation" value={formatDate(cycleStats.ovulation)} />
                     <StatRow icon={<CalendarIcon size={16} className="text-rose-400" />} label="Next Period" value={formatDate(cycleStats.nextPeriod)} />
                     <StatRow icon={<Clock size={16} className="text-slate-400" />} label="Last Period log" value={formatDate(lastPeriodDate)} highlight />
                 </div>
@@ -500,16 +500,16 @@ const BloomPage = () => {
 
             <motion.section variants={itemVariants} className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
                 <div className="flex flex-col items-center gap-2 mb-6">
-                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 mb-2"><Smile size={24} /></div>
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2"><Smile size={24} /></div>
                     <h3 className="text-xl font-bold tracking-tight">Mood Analysis</h3>
                 </div>
                 <div className="space-y-6">
                     <div className="bg-slate-50 p-6 rounded-3xl text-center space-y-2">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Weekly Top Mood</span>
-                        <div className="text-3xl font-bold text-indigo-600">{weeklyMoodStats.topMood}</div>
+                        <div className="text-3xl font-bold text-primary">{weeklyMoodStats.topMood}</div>
                         <p className="text-xs text-slate-400 font-medium">Logged {weeklyMoodStats.count} times this week</p>
                     </div>
-                    {MOOD_ADVICE[weeklyMoodStats.topMood] && <div className="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50"><p className="text-xs text-indigo-900/70 leading-relaxed italic">"{MOOD_ADVICE[weeklyMoodStats.topMood]}"</p></div>}
+                    {MOOD_ADVICE[weeklyMoodStats.topMood] && <div className="p-5 bg-primary/10/50 rounded-2xl border border-indigo-100/50"><p className="text-xs text-indigo-900/70 leading-relaxed italic">"{MOOD_ADVICE[weeklyMoodStats.topMood]}"</p></div>}
                 </div>
             </motion.section>
         </div>
@@ -560,7 +560,7 @@ const BloomPage = () => {
                 <div className="flex justify-between items-center"><h3 className="text-2xl font-bold bloom-serif italic">Daily Wellness</h3><X className="text-slate-300 cursor-pointer" size={24} onClick={() => setIsDailyModalOpen(false)} /></div>
                 <div className="space-y-6">
                     <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Flow Intensity</label><div className="flex gap-2">{['None', 'Light', 'Normal', 'Heavy'].map(f => <button key={f} onClick={() => setSelectedDailyLog({ ...selectedDailyLog, flow: f })} className={`flex-1 py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.flow === f ? 'bg-rose-500 border-rose-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}>{f}</button>)}</div></div>
-                    <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Current Mood</label><div className="grid grid-cols-3 gap-2">{['Happy', 'Calm', 'Balanced', 'Tired', 'Anxious', 'Irritable'].map(m => <button key={m} onClick={() => setSelectedDailyLog({ ...selectedDailyLog, mood: m })} className={`py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.mood === m ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}>{m}</button>)}</div></div>
+                    <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Current Mood</label><div className="grid grid-cols-3 gap-2">{['Happy', 'Calm', 'Balanced', 'Tired', 'Anxious', 'Irritable'].map(m => <button key={m} onClick={() => setSelectedDailyLog({ ...selectedDailyLog, mood: m })} className={`py-3 rounded-xl text-[10px] font-bold border transition-all ${selectedDailyLog.mood === m ? 'bg-primary border-indigo-500 text-white shadow-lg' : 'bg-slate-50 border-transparent text-slate-400'}`}>{m}</button>)}</div></div>
                     <div className="space-y-3"><label className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">Mood Journal</label><textarea value={selectedDailyLog.note} onChange={(e) => setSelectedDailyLog({ ...selectedDailyLog, note: e.target.value })} placeholder="How are you feeling today?" className="w-full bg-slate-50 rounded-2xl p-5 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-slate-100 resize-none font-medium" /></div>
                     {selectedDailyLog.mood && <div className="p-6 bg-rose-50 rounded-2xl border border-rose-100 space-y-2"><div className="flex items-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider"><Sparkles size={14} /> <span>Bloom Advice</span></div><p className="text-xs text-rose-900/70 leading-relaxed font-medium">{MOOD_ADVICE[selectedDailyLog.mood]}</p></div>}
                 </div>
@@ -574,7 +574,7 @@ const BloomPage = () => {
       </AnimatePresence>
       
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"><button onClick={() => setIsModalOpen(true)} className="bg-[#B33045] text-white px-10 py-5 rounded-full font-bold shadow-2xl shadow-rose-900/20 hover:scale-110 active:scale-95 transition-all text-xl flex items-center gap-3"><Droplets size={24} className="animate-pulse" /> Log Period</button></div>
-      <AnimatePresence>{showSuccess && <motion.div initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }} className="fixed bottom-24 left-1/2 z-[200] bg-emerald-500 text-white px-8 py-4 rounded-3xl font-bold shadow-2xl flex items-center gap-3"><CheckCircle2 size={24} /> Records Updated Successfully!</motion.div>}</AnimatePresence>
+      <AnimatePresence>{showSuccess && <motion.div initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }} className="fixed bottom-24 left-1/2 z-[200] bg-secondary text-white px-8 py-4 rounded-3xl font-bold shadow-2xl flex items-center gap-3"><CheckCircle2 size={24} /> Records Updated Successfully!</motion.div>}</AnimatePresence>
     </div>
   );
 };
@@ -591,3 +591,5 @@ const Droplets = ({ size, className }) => (
 );
 
 export default BloomPage;
+
+

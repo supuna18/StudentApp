@@ -34,7 +34,7 @@ const initials    = (n) => (n || "U").split(' ').map((w) => w[0]).join('');
 // Resources table row data is now dynamic
 
 const statusConfig = {
-  Approved: { bg: 'bg-emerald-50', text: 'text-emerald-700', icon: '✓' },
+  Approved: { bg: 'bg-secondary/10', text: 'text-secondary', icon: '✓' },
   Pending:  { bg: 'bg-orange-50',  text: 'text-orange-600',  icon: '→' },
   Blocked:  { bg: 'bg-red-50',     text: 'text-red-500',     icon: '✕' },
 };
@@ -97,7 +97,7 @@ const CollaborationHubManager = ({ token }) => {
     <div className="anim-up">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
         <div className="bg-white p-6 rounded-2xl border border-[#E8EEFF] shadow-sm flex items-center gap-4">
-           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><Layers size={24}/></div>
+           <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center"><Layers size={24}/></div>
            <div><p className="text-2xl font-black italic text-[#0F1C4D]">{groups.length}</p><p className="text-[10px] text-slate-400 font-bold uppercase">Active Circles</p></div>
         </div>
         <button onClick={downloadPDF} className="bg-[#0F1C4D] p-6 rounded-2xl text-white shadow-lg flex items-center justify-between hover:bg-blue-900 transition-all">
@@ -113,8 +113,8 @@ const CollaborationHubManager = ({ token }) => {
             <thead><tr className="text-[10px] font-black text-slate-300 uppercase tracking-widest border-b border-slate-50"><th className="p-4">Group/Subject</th><th className="p-4">Owner</th><th className="p-4 text-right">Population</th></tr></thead>
             <tbody className="divide-y divide-slate-50">
               {groups.map((g, i) => (
-                <tr key={i} className="hover:bg-blue-50/30 transition-colors">
-                  <td className="p-4"><p className="text-xs font-bold text-slate-700">{g.groupName || g.GroupName}</p><p className="text-[10px] text-blue-500 font-bold">{g.subject || g.Subject}</p></td>
+                <tr key={i} className="hover:bg-primary/10/30 transition-colors">
+                  <td className="p-4"><p className="text-xs font-bold text-slate-700">{g.groupName || g.GroupName}</p><p className="text-[10px] text-primary font-bold">{g.subject || g.Subject}</p></td>
                   <td className="p-4 text-[11px] text-slate-500 font-mono italic">{g.createdByEmail || g.CreatedByEmail}</td>
                   <td className="p-4 text-right font-black text-[#0F1C4D] text-sm">{(g.members || g.Members)?.length || 0}</td>
                 </tr>
@@ -400,12 +400,12 @@ const AdminDashboard = () => {
           >
             <div className="flex items-center justify-between mb-3">
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full
-                ${dir === 'up' ? 'bg-emerald-50 text-emerald-700' : dir === 'dn' ? 'bg-red-50 text-red-500' : 'bg-[#EEF2FF] text-slate-400'}`}
+                ${dir === 'up' ? 'bg-secondary/10 text-secondary' : dir === 'dn' ? 'bg-red-50 text-red-500' : 'bg-[#EEF2FF] text-slate-400'}`}
               >
                 {dir === 'up' ? <TrendingUp size={9}/> : dir === 'dn' ? <TrendingDown size={9}/> : <Minus size={9}/>}
                 {badge}
               </span>
-              <button className="text-slate-400 hover:text-blue-600 transition-colors">
+              <button className="text-slate-400 hover:text-primary transition-colors">
                 <MoreHorizontal size={14}/>
               </button>
             </div>
@@ -421,7 +421,7 @@ const AdminDashboard = () => {
         <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[13px] font-700 text-[#0F1C4D]">Resource Distribution</span>
-            <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
+            <button className="text-slate-400 hover:text-primary transition-colors"><MoreHorizontal size={14}/></button>
           </div>
           <div className="flex-1 h-[200px] mt-2">
             <ResponsiveContainer width="100%" height={200}>
@@ -440,7 +440,7 @@ const AdminDashboard = () => {
         <div className="bg-white border border-[#E8EEFF] rounded-2xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[13px] font-700 text-[#0F1C4D]">Resources by Type</span>
-            <button className="text-slate-400 hover:text-blue-600 transition-colors"><MoreHorizontal size={14}/></button>
+            <button className="text-slate-400 hover:text-primary transition-colors"><MoreHorizontal size={14}/></button>
           </div>
           <div className="flex-1 h-[200px] mt-2">
             <ResponsiveContainer width="100%" height={200}>
@@ -478,7 +478,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[12px] text-white/70 mb-1">Approved Safe</p>
-                <p className="text-2xl font-bold leading-none text-emerald-400">{safetyApprovalsCount.approved}</p>
+                <p className="text-2xl font-bold leading-none text-secondary">{safetyApprovalsCount.approved}</p>
               </div>
               <div className="text-[11px] bg-white/10 px-2 py-1 rounded font-semibold text-emerald-300">
                 Action Required: {safetyApprovalsCount.pending > 0 ? 'Yes' : 'No'}
@@ -495,11 +495,11 @@ const AdminDashboard = () => {
             <div className="flex bg-[#F0F4FF] p-1 rounded-lg">
               <button 
                 onClick={() => setTrendType('monthly')}
-                className={`px-3 py-1 text-[10px] font-700 rounded-md transition-all ${trendType === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                className={`px-3 py-1 text-[10px] font-700 rounded-md transition-all ${trendType === 'monthly' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
               >Monthly</button>
               <button 
                 onClick={() => setTrendType('weekly')}
-                className={`px-3 py-1 text-[10px] font-700 rounded-md transition-all ${trendType === 'weekly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                className={`px-3 py-1 text-[10px] font-700 rounded-md transition-all ${trendType === 'weekly' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
               >Weekly</button>
             </div>
           </div>
@@ -510,7 +510,7 @@ const AdminDashboard = () => {
                   key={t} 
                   onClick={() => setTimeframe(t)}
                   className={`px-2.5 py-1 rounded-[6px] text-[10.5px] font-700 transition-all duration-150
-                    ${t === timeframe ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-blue-600'}`}
+                    ${t === timeframe ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-primary'}`}
                 >{t}</button>
               ))}
             </div>
@@ -542,7 +542,7 @@ const AdminDashboard = () => {
             <p className="text-[11.5px] text-slate-400 mt-0.5">Manage and review all platform resources</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] text-[11.5px] font-600 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-all duration-150">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] text-[11.5px] font-600 text-slate-500 hover:border-primary hover:text-primary transition-all duration-150">
               <Filter size={11}/> Filter
             </button>
             <div className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8EEFF] rounded-[8px] bg-[#F0F4FF] flex-1 md:min-w-[180px]">
@@ -594,11 +594,11 @@ const AdminDashboard = () => {
                     <td className="px-4 py-3.5 text-[10px] font-700 tracking-[.5px] uppercase text-slate-400">{row.type}</td>
                     <td className="pr-5 px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
-                        <button className="flex items-center gap-1 px-2.5 py-1.5 border border-[#E8EEFF] rounded-[7px] text-[10.5px] font-600 text-slate-500 hover:border-blue-400 hover:text-blue-600 bg-white transition-all duration-150 whitespace-nowrap">
+                        <button className="flex items-center gap-1 px-2.5 py-1.5 border border-[#E8EEFF] rounded-[7px] text-[10.5px] font-600 text-slate-500 hover:border-primary hover:text-primary bg-white transition-all duration-150 whitespace-nowrap">
                           <Send size={9}/> Revise
                         </button>
                         {[<Edit2 size={12}/>, <Trash2 size={12}/>, <ExternalLink size={12}/>].map((ic, j) => (
-                          <button key={j} className="w-7 h-7 rounded-[7px] border-none bg-transparent flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150">
+                          <button key={j} className="w-7 h-7 rounded-[7px] border-none bg-transparent flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-primary transition-all duration-150">
                             {ic}
                           </button>
                         ))}
@@ -616,12 +616,12 @@ const AdminDashboard = () => {
 
   /* ── render content ── */
   const tabIcons = {
-    'Analytics': <TrendingUp className="text-blue-500" size={20} />,
-    'User Management': <Users className="text-indigo-500" size={20} />,
+    'Analytics': <TrendingUp className="text-primary" size={20} />,
+    'User Management': <Users className="text-primary" size={20} />,
     // tabIcons object kulla idhai add pannunga
-    'Collaboration Hub': <Layers className="text-emerald-500" size={20} />,
+    'Collaboration Hub': <Layers className="text-secondary" size={20} />,
     'Safety Approvals': <ShieldAlert className="text-red-500" size={20} />,
-    'Resource Manager': <BookOpen className="text-emerald-500" size={20} />,
+    'Resource Manager': <BookOpen className="text-secondary" size={20} />,
     'System Health': <Activity className="text-amber-500" size={20} />,
   };
 
@@ -658,7 +658,7 @@ case 'Collaboration Hub': return <CollaborationHubManager token={localStorage.ge
         {/* ─── Mobile Sidebar Toggle ─── */}
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="lg:hidden fixed top-4 right-4 z-[60] p-2 bg-white border border-[#E8EEFF] rounded-xl shadow-md text-blue-600"
+          className="lg:hidden fixed top-4 right-4 z-[60] p-2 bg-white border border-[#E8EEFF] rounded-xl shadow-md text-primary"
         >
           {isSidebarOpen ? <Trash2 size={20} /> : <MoreHorizontal size={20} />}
         </button>
@@ -671,14 +671,14 @@ case 'Collaboration Hub': return <CollaborationHubManager token={localStorage.ge
 
           {/* Brand */}
           <div className="flex items-center gap-2.5 px-4 py-5 border-b border-[#E8EEFF]">
-            <div className="w-[34px] h-[34px] bg-blue-600 rounded-[9px] flex items-center justify-center shadow-[0_4px_12px_rgba(34,85,210,0.25)] flex-shrink-0">
+            <div className="w-[34px] h-[34px] bg-primary rounded-[9px] flex items-center justify-center shadow-[0_4px_12px_rgba(34,85,210,0.25)] flex-shrink-0">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
             <div>
               <span className="serif-heading block text-[17px] text-[#0F1C4D] italic leading-tight">EduSync</span>
-              <span className="block text-[8.5px] font-700 tracking-[1.8px] uppercase text-blue-600 mt-0.5">Admin Portal</span>
+              <span className="block text-[8.5px] font-700 tracking-[1.8px] uppercase text-primary mt-0.5">Admin Portal</span>
             </div>
           </div>
 
@@ -697,8 +697,8 @@ case 'Collaboration Hub': return <CollaborationHubManager token={localStorage.ge
                         flex items-center gap-2.5 w-full px-3 py-2.5 rounded-[10px]
                         text-[12.5px] font-500 transition-all duration-150 mb-0.5 text-left
                         ${isActive
-                          ? 'bg-blue-600 text-white font-600 shadow-[0_4px_12px_rgba(34,85,210,0.25)]'
-                          : 'text-slate-500 hover:bg-[#EEF2FF] hover:text-blue-600'}
+                          ? 'bg-primary text-white font-600 shadow-[0_4px_12px_rgba(34,85,210,0.25)]'
+                          : 'text-slate-500 hover:bg-[#EEF2FF] hover:text-primary'}
                       `}
                     >
                       <span className={isActive ? 'opacity-100' : 'opacity-70'}>{item.icon}</span>
@@ -754,13 +754,13 @@ case 'Collaboration Hub': return <CollaborationHubManager token={localStorage.ge
               {activeTab === 'Analytics' && (
                 <button 
                   onClick={downloadReport}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] text-[12px] font-bold shadow-[0_4px_12px_rgba(34,85,210,0.25)] hover:shadow-[0_6px_16px_rgba(34,85,210,0.35)] transition-all active:scale-[0.98]"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary text-white rounded-[10px] text-[12px] font-bold shadow-[0_4px_12px_rgba(34,85,210,0.25)] hover:shadow-[0_6px_16px_rgba(34,85,210,0.35)] transition-all active:scale-[0.98]"
                 >
                   <Download size={14} strokeWidth={2.5}/> Download Report
                 </button>
               )}
-              <div className="flex items-center gap-1.5 px-4 py-2 bg-[#EEF2FF] border border-blue-200/50 rounded-[10px] text-[10px] md:text-[11.5px] font-700 text-blue-600 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" style={{ animation: 'pulse 2s infinite' }}/>
+              <div className="flex items-center gap-1.5 px-4 py-2 bg-[#EEF2FF] border border-blue-200/50 rounded-[10px] text-[10px] md:text-[11.5px] font-700 text-primary shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" style={{ animation: 'pulse 2s infinite' }}/>
                 System Live
               </div>
             </div>
@@ -777,3 +777,4 @@ case 'Collaboration Hub': return <CollaborationHubManager token={localStorage.ge
 };
 
 export default AdminDashboard;
+

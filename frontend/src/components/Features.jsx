@@ -6,8 +6,8 @@ const features = [
     title: "Usage Control",
     desc: "Set daily limits for distracting sites and monitor your screen time with detailed analytics.",
     icon: <Clock size={26} />,
-    iconColor: "text-blue-600",
-    iconBg: "bg-blue-50",
+    iconColor: "text-primary",
+    iconBg: "bg-primary/10",
     border: "hover:border-blue-200",
     glow: "hover:shadow-blue-100",
   },
@@ -15,8 +15,8 @@ const features = [
     title: "Content Safety",
     desc: "AI-powered fake news detection and mindful break reminders within your browser.",
     icon: <ShieldAlert size={26} />,
-    iconColor: "text-emerald-600",
-    iconBg: "bg-emerald-50",
+    iconColor: "text-secondary",
+    iconBg: "bg-secondary/10",
     border: "hover:border-emerald-200",
     glow: "hover:shadow-emerald-100",
   },
@@ -58,7 +58,7 @@ export default function Features() {
           transition={{ duration: 0.4 }}
           className="mb-5"
         >
-          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
+          <span className="inline-block bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
             Core Modules
           </span>
         </motion.div>
@@ -74,7 +74,7 @@ export default function Features() {
           >
             Everything you need to{" "}
             <br className="md:hidden" />
-            <span className="text-blue-600 italic">stay productive.</span>
+            <span className="text-primary italic">stay productive.</span>
           </motion.h2>
 
           <motion.button
@@ -82,7 +82,7 @@ export default function Features() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3.5 rounded-full shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5"
+            className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary active:bg-blue-800 text-white text-sm font-semibold px-6 py-3.5 rounded-full shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5"
           >
             Explore All Features
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
@@ -136,3 +136,4 @@ export default function Features() {
     </section>
   );
 }
+

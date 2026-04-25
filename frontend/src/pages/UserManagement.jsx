@@ -4,8 +4,8 @@ import { Search, Filter, Plus, Eye, Edit2, Trash2, Users, X, Mail, Shield, Calen
 const AVATAR_COLORS = ['#2255D2', '#4A70F5', '#1843B8', '#6366F1', '#059669'];
 
 const roleConfig = {
-  Admin:     { bg: 'bg-[#EEF2FF]', text: 'text-blue-700'    },
-  Student:   { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  Admin:     { bg: 'bg-[#EEF2FF]', text: 'text-primary'    },
+  Student:   { bg: 'bg-secondary/10', text: 'text-secondary' },
 };
 
 const getInitials = (name) => {
@@ -186,7 +186,7 @@ const UserManagement = () => {
     }
   };
 
-  if (loading && users.length === 0) return <div className="p-20 text-center text-blue-600 font-bold animate-pulse">Connecting to EduSyncDB...</div>;
+  if (loading && users.length === 0) return <div className="p-20 text-center text-primary font-bold animate-pulse">Connecting to EduSyncDB...</div>;
   if (error && users.length === 0) return <div className="p-20 text-center text-red-500 font-bold">Error: {error}</div>;
 
   return (
@@ -224,7 +224,7 @@ const UserManagement = () => {
 
             <div className="flex items-center gap-2">
               {/* Filter */}
-              <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-all duration-150">
+              <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white border border-[#E8EEFF] rounded-[10px] text-[12.5px] font-semibold text-slate-500 hover:border-primary hover:text-primary transition-all duration-150">
                 <Filter size={12} /> Filter
               </button>
 
@@ -234,7 +234,7 @@ const UserManagement = () => {
                   setIsAddModalOpen(true);
                   setFormErrors({});
                 }}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary text-white text-[12.5px] font-semibold rounded-[10px] shadow-md shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 <Plus size={14} strokeWidth={2.5} /> Add User
               </button>
@@ -253,7 +253,7 @@ const UserManagement = () => {
                 Showing {filtered.length} of {users.length.toLocaleString()} users
               </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 bg-[#EEF2FF] text-blue-700 text-[11px] font-bold px-3 py-1.5 rounded-full">
+            <span className="inline-flex items-center gap-1.5 bg-[#EEF2FF] text-primary text-[11px] font-bold px-3 py-1.5 rounded-full">
               <Users size={10} strokeWidth={2.5} />
               {users.length.toLocaleString()} <span className="hidden sm:inline">Users</span>
             </span>
@@ -320,9 +320,9 @@ const UserManagement = () => {
                         {/* Status */}
                         <td className="px-4 py-3.5">
                           <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-semibold
-                            ${isActive ? 'text-emerald-600' : 'text-slate-400'}`}
+                            ${isActive ? 'text-secondary' : 'text-slate-400'}`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}/>
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-secondary' : 'bg-slate-400'}`}/>
                             Active
                           </span>
                         </td>
@@ -337,13 +337,13 @@ const UserManagement = () => {
                           <div className="flex items-center justify-end gap-1">
                             <button 
                               onClick={() => setViewUser(user)}
-                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
+                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-primary transition-all duration-150"
                             >
                               <Eye size={13}/>
                             </button>
                             <button 
                               onClick={() => handleEditRole(user)}
-                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-blue-600 transition-all duration-150"
+                              className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-slate-400 hover:bg-[#EEF2FF] hover:text-primary transition-all duration-150"
                             >
                               <Edit2 size={13}/>
                             </button>
@@ -404,8 +404,8 @@ const UserManagement = () => {
                   </div>
                   <div>
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Status</label>
-                    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-600">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"/>
+                    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-secondary">
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"/>
                       Active
                     </span>
                   </div>
@@ -466,7 +466,7 @@ const UserManagement = () => {
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Full Name</label>
                     <div className="relative group">
-                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.username ? 'text-red-400' : 'text-slate-400 group-focus-within:text-blue-500'}`}>
+                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.username ? 'text-red-400' : 'text-slate-400 group-focus-within:text-primary'}`}>
                         <Users size={16} />
                       </div>
                       <input 
@@ -485,7 +485,7 @@ const UserManagement = () => {
                         className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-sm text-[#0F1C4D] 
                           ${formErrors.username 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
-                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                            : 'border-slate-200 focus:border-primary focus:ring-blue-500/10'}`}
                       />
                     </div>
                     {formErrors.username && <p className="text-[10px] text-red-500 font-bold ml-1 mt-1 animate-in fade-in slide-in-from-top-1">{formErrors.username}</p>}
@@ -495,7 +495,7 @@ const UserManagement = () => {
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Email Address</label>
                     <div className="relative group">
-                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.email ? 'text-red-400' : 'text-slate-400 group-focus-within:text-blue-500'}`}>
+                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.email ? 'text-red-400' : 'text-slate-400 group-focus-within:text-primary'}`}>
                         <Mail size={16} />
                       </div>
                       <input 
@@ -509,7 +509,7 @@ const UserManagement = () => {
                         className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-sm text-[#0F1C4D]
                           ${formErrors.email 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
-                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                            : 'border-slate-200 focus:border-primary focus:ring-blue-500/10'}`}
                       />
                     </div>
                     {formErrors.email && <p className="text-[10px] text-red-500 font-bold ml-1 mt-1 animate-in fade-in slide-in-from-top-1">{formErrors.email}</p>}
@@ -519,7 +519,7 @@ const UserManagement = () => {
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Password</label>
                     <div className="relative group">
-                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.password ? 'text-red-400' : 'text-slate-400 group-focus-within:text-blue-500'}`}>
+                      <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${formErrors.password ? 'text-red-400' : 'text-slate-400 group-focus-within:text-primary'}`}>
                         <Lock size={16} />
                       </div>
                       <input 
@@ -533,7 +533,7 @@ const UserManagement = () => {
                         className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-sm text-[#0F1C4D]
                           ${formErrors.password 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
-                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/10'}`}
+                            : 'border-slate-200 focus:border-primary focus:ring-blue-500/10'}`}
                       />
                     </div>
                     {formErrors.password && <p className="text-[10px] text-red-500 font-bold ml-1 mt-1 animate-in fade-in slide-in-from-top-1">{formErrors.password}</p>}
@@ -543,13 +543,13 @@ const UserManagement = () => {
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Assign Role</label>
                     <div className="relative group">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                         <Shield size={16} />
                       </div>
                       <select 
                         value={formData.role}
                         onChange={(e) => setFormData({...formData, role: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D] appearance-none cursor-pointer"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm text-[#0F1C4D] appearance-none cursor-pointer"
                       >
                         <option value="Student">Student</option>
                         <option value="Admin">Admin</option>
@@ -575,7 +575,7 @@ const UserManagement = () => {
                   <button 
                     disabled={isSubmitting}
                     type="submit"
-                    className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3.5 bg-primary hover:bg-primary text-white font-bold text-[13px] rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? 'Registering...' : 'Add User'}
                   </button>
@@ -591,3 +591,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

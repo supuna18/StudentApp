@@ -30,21 +30,6 @@ const ReportSite = () => {
         fetchReports();
     }, []);
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this report?")) {
-            try {
-                const res = await fetch(`http://localhost:5005/api/safety/report/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    fetchReports();
-                } else {
-                    alert("Delete failed on server");
-                }
-            } catch (err) {
-                alert("Delete request failed");
-            }
-        }
-    };
-
     // Validation
     const validateForm = () => {
         let errors = {};
@@ -113,9 +98,10 @@ const ReportSite = () => {
     const getStatusColor = (statusStr) => {
         const s = (statusStr || '').toUpperCase();
         if (s === 'APPROVED' || s === 'RESOLVED') return 'bg-green-100 text-green-700';
-        if (s === 'PENDING') return 'bg-blue-100 text-blue-700';
+        if (s === 'PENDING') return 'bg-primary/10 text-primary';
         if (s === 'UNDER REVIEW' || s === 'REJECTED') return 'bg-red-100 text-red-700';
         return 'bg-yellow-100 text-yellow-700';
+    };
 
     // 3. Delete
     const handleDelete = async (id) => {
@@ -157,7 +143,7 @@ const ReportSite = () => {
                 {/* Left Column: Form */}
                 <div className="lg:col-span-7 bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                     <div className="flex items-center gap-4 mb-8">
-                        <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                             <Shield size={28} />
                         </div>
                         <div>
@@ -200,13 +186,13 @@ const ReportSite = () => {
                         <button 
                             disabled={loading}
                             type="submit" 
-                            className="w-full bg-[#1A65E6] hover:bg-blue-700 active:bg-blue-800 text-white py-4 rounded-full font-bold shadow-md shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+                            className="w-full bg-[#1A65E6] hover:bg-primary active:bg-blue-800 text-white py-4 rounded-full font-bold shadow-md shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-70"
                         >
                             <ShieldCheck size={20} /> 
                             {loading ? 'Processing...' : editId ? 'Update Security Report' : 'Submit Security Report'}
                         </button>
                         {status && (
-                            <p className="text-center text-sm font-bold text-blue-600 mt-2">{status}</p>
+                            <p className="text-center text-sm font-bold text-primary mt-2">{status}</p>
                         )}
                     </form>
                 </div>
@@ -326,7 +312,7 @@ const ReportSite = () => {
                                                             setFormData({ url: report.url || report.Url, reason: report.reason || report.Reason });
                                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                                         }}
-                                                        className="text-[#1A65E6] p-2 hover:bg-blue-50 rounded-lg transition-all"
+                                                        className="text-[#1A65E6] p-2 hover:bg-primary/10 rounded-lg transition-all"
                                                         title="Edit"
                                                     >
                                                         <Edit2 size={16} />
@@ -351,5 +337,6 @@ const ReportSite = () => {
         </div>
     );
 };
-}
+
 export default ReportSite;
+

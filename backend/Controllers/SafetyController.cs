@@ -91,6 +91,7 @@ namespace StudentApp.Api.Controllers
         }
 
         // 5. Check URL - DATABASE එකේ තියෙන සම්පූර්ණ URL පවා හඳුනාගත හැකි පරිදි සකසා ඇත
+        [AllowAnonymous]
         [HttpGet("check-url")]
         public async Task<IActionResult> CheckUrl([FromQuery] string url)
         {

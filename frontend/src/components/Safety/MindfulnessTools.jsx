@@ -55,7 +55,7 @@ const MindfulnessTools = () => {
       {/* --- Music Player Section --- */}
       <div className="bg-white p-8 rounded-[40px] shadow-xl border border-blue-50">
         <h2 className="text-2xl font-black text-blue-900 mb-6 flex items-center gap-2">
-          <Volume2 className="text-blue-500" /> Relaxing Audio
+          <Volume2 className="text-primary" /> Relaxing Audio
         </h2>
         
         <div className="space-y-4">
@@ -63,7 +63,7 @@ const MindfulnessTools = () => {
             <button 
               key={index}
               onClick={() => { setCurrentTrack(index); setPlaying(false); audio.pause(); }}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${currentTrack === index ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-gray-50 text-gray-600 hover:bg-blue-100'}`}
+              className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${currentTrack === index ? 'bg-primary text-white shadow-lg scale-105' : 'bg-gray-50 text-gray-600 hover:bg-primary/10'}`}
             >
               <div className="flex items-center gap-4">
                 <span className="text-2xl">{track.icon}</span>
@@ -76,7 +76,7 @@ const MindfulnessTools = () => {
 
         <button 
           onClick={togglePlay}
-          className="mt-8 w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xl hover:bg-blue-700 shadow-lg shadow-blue-200"
+          className="mt-8 w-full bg-primary text-white py-4 rounded-2xl font-black text-xl hover:bg-primary shadow-lg shadow-blue-200"
         >
           {playing ? 'PAUSE MUSIC' : 'PLAY RELAXING SOUND'}
         </button>
@@ -118,3 +118,4 @@ const MindfulnessTools = () => {
 };
 
 export default MindfulnessTools;
+

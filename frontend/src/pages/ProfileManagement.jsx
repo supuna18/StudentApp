@@ -234,7 +234,7 @@ const ProfileManagement = () => {
         return (
             <div className="flex items-center justify-center min-h-[300px]">
                 <div className="flex flex-col items-center gap-3">
-                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     <p className="text-[13px] text-slate-400" style={{ fontFamily: 'DM Sans' }}>Loading profile…</p>
                 </div>
             </div>
@@ -242,8 +242,8 @@ const ProfileManagement = () => {
     }
 
     const roleBadge = user.role === 'Admin'
-        ? { bg: 'bg-[#EEF2FF]', text: 'text-blue-700' }
-        : { bg: 'bg-emerald-50', text: 'text-emerald-700' };
+        ? { bg: 'bg-[#EEF2FF]', text: 'text-primary' }
+        : { bg: 'bg-secondary/10', text: 'text-secondary' };
 
     return (
         <>
@@ -256,14 +256,14 @@ const ProfileManagement = () => {
 
             <div className="pm-root min-h-screen bg-[#F0F6FF] relative overflow-hidden">
                 {/* Decorative background blobs for depth */}
-                <div className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full bg-blue-500/[0.03] blur-[100px] pointer-events-none" />
-                <div className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] rounded-full bg-blue-600/[0.03] blur-[100px] pointer-events-none" />
+                <div className="absolute top-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px] pointer-events-none" />
 
                 <div className="relative z-10 max-w-6xl mx-auto px-6 py-8">
 
                     {/* ── Breadcrumb ── */}
                     <div className="flex items-center gap-1.5 text-[11.5px] text-slate-400 mb-6">
-                        <button onClick={() => navigate(-1)} className="text-blue-600 font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ fontFamily: 'DM Sans' }}>
+                        <button onClick={() => navigate(-1)} className="text-primary font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ fontFamily: 'DM Sans' }}>
                             Dashboard
                         </button>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
@@ -302,8 +302,8 @@ const ProfileManagement = () => {
                                         onClick={() => setActiveNav(item.id)}
                                         className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-[10px] text-[12.5px] font-medium transition-all duration-150 mb-0.5 text-left
                         ${activeNav === item.id
-                                                ? 'bg-[#EEF2FF] text-blue-700 font-semibold'
-                                                : 'text-slate-500 hover:bg-[#F0F4FF] hover:text-blue-600'}`}
+                                                ? 'bg-[#EEF2FF] text-primary font-semibold'
+                                                : 'text-slate-500 hover:bg-[#F0F4FF] hover:text-primary'}`}
                                     >
                                         {item.icon}
                                         {item.label}
@@ -324,12 +324,12 @@ const ProfileManagement = () => {
                                         <div className="flex items-center justify-between gap-2.5 mb-1">
                                             <div className="flex items-center gap-2.5">
                                                 <div className="w-[34px] h-[34px] rounded-[10px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
-                                                    <User size={16} className="text-blue-600" strokeWidth={2} />
+                                                    <User size={16} className="text-primary" strokeWidth={2} />
                                                 </div>
                                                 <p className="text-[14px] font-bold text-[#0F1C4D]">Account Information</p>
                                             </div>
                                             {!isEditing ? (
-                                                <button onClick={handleEdit} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] border border-[#E8EEFF] bg-white hover:bg-[#EEF2FF] hover:border-blue-300 text-[12px] font-semibold text-slate-500 hover:text-blue-600 transition-all duration-150">
+                                                <button onClick={handleEdit} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] border border-[#E8EEFF] bg-white hover:bg-[#EEF2FF] hover:border-blue-300 text-[12px] font-semibold text-slate-500 hover:text-primary transition-all duration-150">
                                                     <Pencil size={12} strokeWidth={2.5} /> Edit
                                                 </button>
                                             ) : (
@@ -337,7 +337,7 @@ const ProfileManagement = () => {
                                                     <button onClick={handleCancel} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] border border-[#E8EEFF] bg-white hover:bg-slate-50 text-[12px] font-semibold text-slate-500 transition-all duration-150">
                                                         <X size={12} strokeWidth={2.5} /> Cancel
                                                     </button>
-                                                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[12px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-60">
+                                                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[10px] bg-primary hover:bg-primary text-white text-[12px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-60">
                                                         <Check size={12} strokeWidth={2.5} /> {saving ? 'Saving…' : 'Save Changes'}
                                                     </button>
                                                 </div>
@@ -355,7 +355,7 @@ const ProfileManagement = () => {
                                                 <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Username</label>
                                                 <input type="text" maxLength={20} value={isEditing ? editForm.username : (user.username || '')} readOnly={!isEditing}
                                                     onChange={(e) => { const val = e.target.value; if (/[^a-zA-Z\s]/.test(val)) return; setEditForm((f) => ({ ...f, username: val })); if (formErrors.username) setFormErrors((errs) => ({ ...errs, username: '' })); }}
-                                                    className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${isEditing ? (formErrors.username ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100 cursor-text' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text') : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
+                                                    className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${isEditing ? (formErrors.username ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100 cursor-text' : 'border-primary bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text') : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
                                                     style={{ fontFamily: 'DM Sans' }} />
                                                 {formErrors.username ? <span className="text-[10.5px] text-red-500 font-medium">{formErrors.username}</span> : <span className="text-[10.5px] text-slate-400">Your unique EduSync identifier</span>}
                                             </div>
@@ -363,7 +363,7 @@ const ProfileManagement = () => {
                                                 <label className="text-[11.5px] font-bold text-[#0F1C4D] tracking-[.2px]">Email Address</label>
                                                 <input type="email" maxLength={50} value={isEditing ? editForm.email : (user.email || '')} readOnly={!isEditing}
                                                     onChange={(e) => { setEditForm((f) => ({ ...f, email: e.target.value })); if (formErrors.email) setFormErrors((errs) => ({ ...errs, email: '' })); }}
-                                                    className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${isEditing ? (formErrors.email ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100 cursor-text' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text') : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
+                                                    className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${isEditing ? (formErrors.email ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100 cursor-text' : 'border-primary bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100 cursor-text') : 'border-[#E8EEFF] text-slate-500 bg-[#F8FAFF] cursor-default'}`}
                                                     style={{ fontFamily: 'DM Sans' }} />
                                                 {formErrors.email ? <span className="text-[10.5px] text-red-500 font-medium">{formErrors.email}</span> : <span className="text-[10.5px] text-slate-400">Used for login and notifications</span>}
                                             </div>
@@ -372,7 +372,7 @@ const ProfileManagement = () => {
                                     {/* Meta strip */}
                                     <div className="flex items-center justify-between px-6 py-3.5 bg-[#FAFBFF] border-t border-[#E8EEFF]">
                                         <div className="flex items-center gap-2 text-[12px] text-slate-400">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                                            <span className="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0" />
                                             Member since {formatDate(user.createdAt)}
                                         </div>
                                         <span className={`text-[9.5px] font-bold tracking-[1px] uppercase px-2.5 py-1 rounded-full ${roleBadge.bg} ${roleBadge.text}`}>{user.role}</span>
@@ -409,7 +409,7 @@ const ProfileManagement = () => {
                                     <div className="px-6 pt-5 pb-0">
                                         <div className="flex items-center gap-2.5 mb-1">
                                             <div className="w-[34px] h-[34px] rounded-[10px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
-                                                <ShieldCheck size={16} className="text-blue-600" strokeWidth={2} />
+                                                <ShieldCheck size={16} className="text-primary" strokeWidth={2} />
                                             </div>
                                             <p className="text-[14px] font-bold text-[#0F1C4D]">Change Password</p>
                                         </div>
@@ -422,16 +422,16 @@ const ProfileManagement = () => {
                                     <div className="px-6 py-6 flex flex-col gap-5">
                                         {/* Success banner */}
                                         {secSuccess && (
-                                            <div className="flex items-center gap-2.5 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-[12px]">
-                                                <Check size={14} className="text-emerald-600 flex-shrink-0" strokeWidth={2.5} />
-                                                <span className="text-[12.5px] font-semibold text-emerald-700">{secSuccess}</span>
+                                            <div className="flex items-center gap-2.5 px-4 py-3 bg-secondary/10 border border-emerald-200 rounded-[12px]">
+                                                <Check size={14} className="text-secondary flex-shrink-0" strokeWidth={2.5} />
+                                                <span className="text-[12.5px] font-semibold text-secondary">{secSuccess}</span>
                                             </div>
                                         )}
 
                                         {/* Step 1: Request OTP */}
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
+                                                <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
                                                 <p className="text-[12.5px] font-bold text-[#0F1C4D]">Request OTP</p>
                                             </div>
                                             <p className="text-[11.5px] text-slate-400 mb-2">
@@ -440,7 +440,7 @@ const ProfileManagement = () => {
                                             <button
                                                 onClick={handleRequestOtp}
                                                 disabled={otpSending || otpSent}
-                                                className="self-start flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-55 disabled:cursor-not-allowed"
+                                                className="self-start flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-primary hover:bg-primary text-white text-[12.5px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-55 disabled:cursor-not-allowed"
                                             >
                                                 {otpSending ? (<><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending…</>) : otpSent ? (<><Check size={13} strokeWidth={2.5} /> OTP Sent</>) : 'Send OTP to Email'}
                                             </button>
@@ -452,7 +452,7 @@ const ProfileManagement = () => {
                                         {/* Step 2: Enter OTP & new password */}
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${otpSent ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'}`}>2</span>
+                                                <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${otpSent ? 'bg-primary text-white' : 'bg-slate-200 text-slate-400'}`}>2</span>
                                                 <p className={`text-[12.5px] font-bold ${otpSent ? 'text-[#0F1C4D]' : 'text-slate-400'}`}>Enter Code & New Password</p>
                                             </div>
 
@@ -464,7 +464,7 @@ const ProfileManagement = () => {
                                                         type="text" maxLength={6} placeholder="e.g. 483920"
                                                         value={secForm.otp} disabled={!otpSent}
                                                         onChange={(e) => { setSecForm((f) => ({ ...f, otp: e.target.value.replace(/\D/g, '') })); if (secErrors.otp) setSecErrors((e2) => ({ ...e2, otp: '' })); }}
-                                                        className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 tracking-[.15em] font-bold ${!otpSent ? 'border-[#E8EEFF] bg-[#F8FAFF] text-slate-400 cursor-not-allowed' : secErrors.otp ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100'}`}
+                                                        className={`w-full px-3.5 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 tracking-[.15em] font-bold ${!otpSent ? 'border-[#E8EEFF] bg-[#F8FAFF] text-slate-400 cursor-not-allowed' : secErrors.otp ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100' : 'border-primary bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100'}`}
                                                         style={{ fontFamily: 'DM Sans' }}
                                                     />
                                                     {secErrors.otp && <span className="text-[10.5px] text-red-500 font-medium">{secErrors.otp}</span>}
@@ -479,10 +479,10 @@ const ProfileManagement = () => {
                                                                 type={showNewPass ? 'text' : 'password'} placeholder="Min. 8 characters"
                                                                 value={secForm.newPassword} disabled={!otpSent}
                                                                 onChange={(e) => { setSecForm((f) => ({ ...f, newPassword: e.target.value })); if (secErrors.newPassword) setSecErrors((e2) => ({ ...e2, newPassword: '' })); }}
-                                                                className={`w-full px-3.5 pr-10 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${!otpSent ? 'border-[#E8EEFF] bg-[#F8FAFF] text-slate-400 cursor-not-allowed' : secErrors.newPassword ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100'}`}
+                                                                className={`w-full px-3.5 pr-10 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${!otpSent ? 'border-[#E8EEFF] bg-[#F8FAFF] text-slate-400 cursor-not-allowed' : secErrors.newPassword ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100' : 'border-primary bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100'}`}
                                                                 style={{ fontFamily: 'DM Sans' }}
                                                             />
-                                                            <button type="button" onClick={() => setShowNewPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors" tabIndex={-1}>
+                                                            <button type="button" onClick={() => setShowNewPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors" tabIndex={-1}>
                                                                 {showNewPass ? <EyeOff size={13} /> : <Eye size={13} />}
                                                             </button>
                                                         </div>
@@ -496,10 +496,10 @@ const ProfileManagement = () => {
                                                                 type={showConfirmPass ? 'text' : 'password'} placeholder="Re-enter password"
                                                                 value={secForm.confirmPassword} disabled={!otpSent}
                                                                 onChange={(e) => { setSecForm((f) => ({ ...f, confirmPassword: e.target.value })); if (secErrors.confirmPassword) setSecErrors((e2) => ({ ...e2, confirmPassword: '' })); }}
-                                                                className={`w-full px-3.5 pr-10 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${!otpSent ? 'border-[#E8EEFF] bg-[#F8FAFF] text-slate-400 cursor-not-allowed' : secErrors.confirmPassword ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100' : 'border-blue-400 bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100'}`}
+                                                                className={`w-full px-3.5 pr-10 py-2.5 border-[1.5px] rounded-[10px] text-[13px] outline-none transition-all duration-150 ${!otpSent ? 'border-[#E8EEFF] bg-[#F8FAFF] text-slate-400 cursor-not-allowed' : secErrors.confirmPassword ? 'border-red-400 bg-red-50/30 text-[#0F1C4D] focus:ring-2 focus:ring-red-100' : 'border-primary bg-white text-[#0F1C4D] focus:ring-2 focus:ring-blue-100'}`}
                                                                 style={{ fontFamily: 'DM Sans' }}
                                                             />
-                                                            <button type="button" onClick={() => setShowConfirmPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors" tabIndex={-1}>
+                                                            <button type="button" onClick={() => setShowConfirmPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors" tabIndex={-1}>
                                                                 {showConfirmPass ? <EyeOff size={13} /> : <Eye size={13} />}
                                                             </button>
                                                         </div>
@@ -510,7 +510,7 @@ const ProfileManagement = () => {
 
                                             <button
                                                 onClick={handleChangePassword} disabled={!otpSent || secSaving}
-                                                className="self-start mt-2 flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[12.5px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="self-start mt-2 flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-primary hover:bg-primary text-white text-[12.5px] font-semibold shadow-sm shadow-blue-200 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {secSaving ? (<><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Changing…</>) : (<><ShieldCheck size={13} strokeWidth={2.5} /> Change Password</>)}
                                             </button>
@@ -526,7 +526,7 @@ const ProfileManagement = () => {
                                     <div className="px-6 pt-5 pb-0">
                                         <div className="flex items-center gap-2.5 mb-1">
                                             <div className="w-[34px] h-[34px] rounded-[10px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
-                                                <Bell size={16} className="text-blue-600" strokeWidth={2} />
+                                                <Bell size={16} className="text-primary" strokeWidth={2} />
                                             </div>
                                             <p className="text-[14px] font-bold text-[#0F1C4D]">Notification Preferences</p>
                                         </div>
@@ -544,7 +544,7 @@ const ProfileManagement = () => {
                                                 <div key={key} className="flex items-center justify-between px-6 py-4 hover:bg-[#FAFBFF] transition-colors duration-150">
                                                     <div className="flex items-center gap-3.5">
                                                         <div className="w-[36px] h-[36px] rounded-[10px] bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
-                                                            <IconComp size={15} className="text-blue-600" strokeWidth={1.8} />
+                                                            <IconComp size={15} className="text-primary" strokeWidth={1.8} />
                                                         </div>
                                                         <div>
                                                             <p className="text-[13px] font-semibold text-[#0F1C4D]">{cfg.label}</p>
@@ -554,7 +554,7 @@ const ProfileManagement = () => {
                                                     {/* Toggle switch */}
                                                     <button
                                                         onClick={() => handleNotifToggle(key)}
-                                                        className={`relative flex-shrink-0 w-10 h-[22px] rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-1 ${isOn ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                        className={`relative flex-shrink-0 w-10 h-[22px] rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-1 ${isOn ? 'bg-primary' : 'bg-slate-200'}`}
                                                         aria-label={`Toggle ${cfg.label}`}
                                                     >
                                                         <span className={`absolute top-[3px] left-[3px] w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isOn ? 'translate-x-[18px]' : 'translate-x-0'}`} />
@@ -582,3 +582,4 @@ const ProfileManagement = () => {
 };
 
 export default ProfileManagement;
+

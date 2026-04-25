@@ -241,7 +241,7 @@ const FocusGamesPage = () => {
     >
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
         <div className="space-y-2 md:space-y-3">
-          <div className="flex items-center gap-2 text-indigo-600">
+          <div className="flex items-center gap-2 text-primary">
             <Sparkles size={18} className="animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Cognitive Hub</span>
           </div>
@@ -278,7 +278,7 @@ const FocusGamesPage = () => {
             <h3 className="text-xl md:text-2xl font-black mb-2">{game.title}</h3>
             <p className="text-slate-500 text-xs md:text-sm font-medium leading-relaxed mb-4 md:mb-6 flex-grow">{game.text}</p>
             <div className="w-full h-[1px] bg-slate-100 mb-4 md:mb-6" />
-            <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-indigo-600 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-primary uppercase tracking-widest">
               Enter Focus <ChevronLeft size={14} className="rotate-180 group-hover:translate-x-1 transition-transform" />
             </div>
           </motion.button>
@@ -288,7 +288,7 @@ const FocusGamesPage = () => {
       <div className="bg-white/80 backdrop-blur-2xl p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-lg shadow-slate-200/40 border border-white mt-12 mb-8 relative overflow-hidden">
          <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-indigo-500 via-purple-500 to-amber-500" />
          <div className="flex items-center gap-3 mb-6">
-           <BarChart2 size={24} className="text-indigo-600" />
+           <BarChart2 size={24} className="text-primary" />
            <div>
              <h3 className="text-lg md:text-xl font-black text-slate-800">Daily Play Analytics</h3>
              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest">Today's Completed Sessions</p>
@@ -329,7 +329,7 @@ const FocusGamesPage = () => {
         exit="exit"
         className={`${isMemory ? 'max-w-2xl' : 'max-w-4xl'} mx-auto space-y-4 md:space-y-6`}
       >
-        <button onClick={() => setActiveGame(null)} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-colors group">
+        <button onClick={() => setActiveGame(null)} className="flex items-center gap-2 text-slate-400 hover:text-primary font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-colors group">
           <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back
         </button>
 
@@ -348,21 +348,21 @@ const FocusGamesPage = () => {
                   {isReaction && 'Kinetic Burst'}
                   {isAim && 'Focus Vortex'}
                 </h2>
-                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400">Optimized Focus Area</span>
+                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-primary">Optimized Focus Area</span>
               </div>
             </div>
 
             {isMemory && (
               <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200/50 scale-75 md:scale-90 origin-left md:origin-right">
                 {['Easy', 'Medium', 'Hard'].map(lvl => (
-                  <button key={lvl} onClick={() => setDifficulty(lvl)} className={`px-4 py-1.5 text-[9px] md:text-[10px] font-black rounded-lg transition-all ${difficulty === lvl ? 'bg-white shadow-md text-indigo-600' : 'text-slate-400 hover:text-indigo-600'}`}>{lvl}</button>
+                  <button key={lvl} onClick={() => setDifficulty(lvl)} className={`px-4 py-1.5 text-[9px] md:text-[10px] font-black rounded-lg transition-all ${difficulty === lvl ? 'bg-white shadow-md text-primary' : 'text-slate-400 hover:text-primary'}`}>{lvl}</button>
                 ))}
               </div>
             )}
 
             {isAim && (
-              <div className="flex items-center gap-2 md:gap-3 bg-emerald-50 px-4 py-2 md:px-5 md:py-2.5 rounded-[1.2rem] border border-emerald-100 shadow-sm self-start md:self-auto">
-                <Clock size={16} className="text-emerald-500" /><span className="text-lg md:text-xl font-black text-emerald-900 tabular-nums">{aimTimeLeft}s</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-secondary/10 px-4 py-2 md:px-5 md:py-2.5 rounded-[1.2rem] border border-emerald-100 shadow-sm self-start md:self-auto">
+                <Clock size={16} className="text-secondary" /><span className="text-lg md:text-xl font-black text-emerald-900 tabular-nums">{aimTimeLeft}s</span>
               </div>
             )}
           </div>
@@ -372,7 +372,7 @@ const FocusGamesPage = () => {
             {isMemory && (
               <div className="w-full max-w-lg space-y-4 md:space-y-6">
                 <div className="grid grid-cols-2 gap-2 md:gap-3 max-w-[240px] md:max-w-xs mx-auto">
-                  <div className="flex items-center justify-between px-4 py-2 bg-indigo-50/50 rounded-xl border border-indigo-100/50 text-indigo-900">
+                  <div className="flex items-center justify-between px-4 py-2 bg-primary/10/50 rounded-xl border border-indigo-100/50 text-indigo-900">
                     <Clock size={16} /><span className="text-base md:text-lg font-black">{memoryTimer}s</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 bg-purple-50/50 rounded-xl border border-purple-100/50 text-purple-900">
@@ -393,9 +393,9 @@ const FocusGamesPage = () => {
                   ))}
                 </div>
                 {matched.length === cards.length && cards.length > 0 && (
-                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="p-3 md:p-4 bg-emerald-500 rounded-xl md:rounded-2xl text-white flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="p-3 md:p-4 bg-secondary rounded-xl md:rounded-2xl text-white flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
                     <div className="text-center md:text-left"><h3 className="text-base md:text-lg font-black">Success!</h3><p className="text-[10px] md:text-xs opacity-90">Linked in {memoryTimer}s.</p></div>
-                    <button onClick={startMemory} className="bg-white text-emerald-600 px-5 py-1.5 md:px-6 md:py-2 rounded-lg font-black text-[10px] md:text-xs hover:scale-105 transition-transform">RETRY</button>
+                    <button onClick={startMemory} className="bg-white text-secondary px-5 py-1.5 md:px-6 md:py-2 rounded-lg font-black text-[10px] md:text-xs hover:scale-105 transition-transform">RETRY</button>
                   </motion.div>
                 )}
               </div>
@@ -405,7 +405,7 @@ const FocusGamesPage = () => {
               <div className="w-full max-w-lg space-y-6 md:space-y-8 flex flex-col items-center">
                 <div className="flex gap-2 mb-2 md:mb-4">
                   {reactionHistory.map((h, i) => (
-                    <div key={i} className="bg-blue-50/30 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-blue-100 text-center"><p className="text-[7px] md:text-[8px] font-black text-blue-300 uppercase">Last</p><p className="text-xs md:text-sm font-black text-blue-900">{h}ms</p></div>
+                    <div key={i} className="bg-primary/10/30 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-blue-100 text-center"><p className="text-[7px] md:text-[8px] font-black text-blue-300 uppercase">Last</p><p className="text-xs md:text-sm font-black text-blue-900">{h}ms</p></div>
                   ))}
                 </div>
                 <motion.button
@@ -414,9 +414,9 @@ const FocusGamesPage = () => {
                   onClick={handleReactionClick}
                   className={`w-full aspect-[16/9] rounded-[2rem] md:rounded-[3rem] flex flex-col items-center justify-center transition-all duration-300 shadow-xl ${reactionStatus === 'waiting' ? 'bg-slate-50 text-slate-300 border-2 border-dashed border-slate-100' :
                       reactionStatus === 'ready' ? 'bg-amber-50 text-amber-500 border-2 border-amber-200' :
-                        reactionStatus === 'clicking' ? 'bg-emerald-500 text-white' :
+                        reactionStatus === 'clicking' ? 'bg-secondary text-white' :
                           reactionStatus === 'early' ? 'bg-rose-500 text-white' :
-                            'bg-indigo-600 text-white'
+                            'bg-primary text-white'
                     }`}
                 >
                   <p className="text-3xl md:text-4xl font-black mb-2 uppercase tracking-tight">
@@ -442,7 +442,7 @@ const FocusGamesPage = () => {
                             <p className="text-[10px] md:text-xs font-bold text-slate-400">Hits | {Math.round((aimScore / aimClicks) * 100)}% Acc</p>
                           </div>
                         )}
-                        <button onClick={(e) => { e.stopPropagation(); startAim(); }} className="bg-emerald-600 text-white px-8 py-3.5 md:px-10 md:py-5 rounded-xl md:rounded-2xl font-black text-sm md:text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 md:gap-3">
+                        <button onClick={(e) => { e.stopPropagation(); startAim(); }} className="bg-secondary text-white px-8 py-3.5 md:px-10 md:py-5 rounded-xl md:rounded-2xl font-black text-sm md:text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 md:gap-3">
                           <Sparkles size={20} /> {aimTimeLeft === 30 ? 'START' : 'RETRY'}
                         </button>
                       </motion.div>
@@ -451,7 +451,7 @@ const FocusGamesPage = () => {
                         layoutId="target" key={aimScore}
                         initial={{ scale: 0 }} animate={{ scale: 1 }}
                         onClick={(e) => { e.stopPropagation(); setAimScore(s => s + 1); setAimClicks(c => c + 1); moveTarget(); }}
-                        className="absolute w-10 h-10 md:w-12 md:h-12 bg-white rounded-full shadow-lg border-4 md:border-[6px] border-emerald-500 active:scale-90"
+                        className="absolute w-10 h-10 md:w-12 md:h-12 bg-white rounded-full shadow-lg border-4 md:border-[6px] border-secondary active:scale-90"
                         style={{ top: `${aimPos.top}%`, left: `${aimPos.left}%` }}
                       />
                     )}
@@ -468,7 +468,7 @@ const FocusGamesPage = () => {
   return (
     <div className="min-h-screen bg-[#FDFDFF] p-4 md:p-6 lg:p-8 font-sans text-slate-900 relative flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50 rounded-full blur-[100px] -mr-32 -mt-32" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-purple-50 rounded-full blur-[80px] -ml-16 -mb-16" />
       </div>
 
@@ -496,13 +496,13 @@ const FocusGamesPage = () => {
               <div className="w-full flex flex-col gap-3">
                 <button
                   onClick={handleShare}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-black tracking-widest hover:bg-indigo-100 active:scale-95 transition-all text-sm uppercase"
+                  className="w-full flex items-center justify-center gap-2 py-4 bg-primary/10 text-primary border border-indigo-100 rounded-2xl font-black tracking-widest hover:bg-primary/10 active:scale-95 transition-all text-sm uppercase"
                 >
                   <Share2 size={18} /> {copySuccess ? 'Copied to Clipboard!' : 'Share Result'}
                 </button>
                 <button
                   onClick={() => setShowWinAlert(false)}
-                  className="w-full py-4 bg-indigo-600 outline-none text-white rounded-2xl font-black tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all text-sm uppercase"
+                  className="w-full py-4 bg-primary outline-none text-white rounded-2xl font-black tracking-widest shadow-xl shadow-indigo-200 hover:bg-primary active:scale-95 transition-all text-sm uppercase"
                 >
                   CONTINUE
                 </button>
@@ -516,3 +516,4 @@ const FocusGamesPage = () => {
 };
 
 export default FocusGamesPage;
+
