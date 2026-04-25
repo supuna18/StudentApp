@@ -105,10 +105,15 @@ function renderBlockScreen(url) {
                 <h1>Access Blocked</h1>
                 <p>EduSync Guardian has restricted access to this content to keep your workspace safe and focused.</p>
                 <div class="url-box">${url}</div>
-                <a href="http://localhost:5173/student-dashboard/safety" class="btn">Go Back to Safety</a>
+                <button class="btn" onclick="goBackToSafety()">Go Back to Safety</button>
             </div>
         </body>
     `;
+
+    // Inject the goBack function into the newly created page context
+    window.goBackToSafety = () => {
+        chrome.runtime.sendMessage({ action: 'NAVIGATE_TO_SAFETY' });
+    };
 }
 
 // ආරම්භක පරීක්ෂාව

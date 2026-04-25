@@ -53,4 +53,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .catch(() => sendResponse({ unsafeSite: false }));
         return true; // Asynchronous response සඳහා
     }
+
+    // Block screen ෙල "Go Back to Safety" button click කළවිට
+    if (request.action === "NAVIGATE_TO_SAFETY") {
+        chrome.tabs.update(sender.tab.id, { url: "http://localhost:5173/student-dashboard/safety" });
+    }
 });
