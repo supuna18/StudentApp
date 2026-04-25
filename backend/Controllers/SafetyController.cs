@@ -96,7 +96,8 @@ namespace StudentApp.Api.Controllers
             return Ok(new { message = "Report deleted successfully!" });
         }
 
-        // 5. Check URL - DATABASE එකේ තියෙන සම්පූර්ණ URL පවා හඳුනාගත හැකි පරිදි සකසා ඇත
+        // 5. Check URL - Chrome Extension uses this — no auth needed
+        [AllowAnonymous]
         [HttpGet("check-url")]
         public async Task<IActionResult> CheckUrl([FromQuery] string url)
         {
