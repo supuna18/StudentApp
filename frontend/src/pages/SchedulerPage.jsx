@@ -91,7 +91,13 @@ const SchedulerPage = () => {
     const isSeconds = session.duration.toString().includes('s');
     const durationValue = parseInt(session.duration);
     const durationMs = isSeconds ? durationValue * 1000 : durationValue * 60 * 1000;
+    const durationForExtension = isSeconds ? (durationValue / 60) : durationValue;
     const displayLabel = isSeconds ? `${durationValue} Seconds` : `${durationValue} Minutes`;
+
+   window.postMessage({ 
+    type: 'START_FOCUS_MODE', 
+    duration: durationForExtension 
+  }, '*');
 
     if ('Notification' in window && Notification.permission === 'default') {
       await Notification.requestPermission();
@@ -135,10 +141,10 @@ const SchedulerPage = () => {
         fetchSessions(); // Refresh list to remove from agenda AFTER clicking OK
       } catch (e) {
         console.error("Complete Update Error:", e);
-      }
+      } 
     }, durationMs);
 
-    window.postMessage({ type: 'START_FOCUS_MODE', duration: isSeconds ? 1 : durationValue }, '*');
+    
   };
 
   const handleDelete = async (id) => {
